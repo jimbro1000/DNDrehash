@@ -1,18 +1,19 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head runat="server">
-    <title>JSBasic Input Prompt</title>
+<head>
+    <title>Input Prompt</title>
     <style type="text/css">
     
 		body 
 		{
-			padding:0px; margin: 10px;
-			font-family: Arial;
+			padding:0;
+            margin: 10px;
+            font-family: Arial, serif;
 		}
 		
 		form 
 		{
-			padding: 0px; margin: 0px;
+			padding: 0; margin: 0;
 		}
     
 		#messageDiv 
@@ -32,8 +33,7 @@
     </style>
     <script type="text/javascript">
 		function updateText() {
-			var val = document.getElementById('inputBox').value;
-			window.returnValue = val;
+            window.returnValue = document.getElementById('inputBox').value;
 		}
 		
 		function init() {
@@ -66,8 +66,9 @@
 <body>
     <form action="PromptWindow.html">
 		<div id="messageDiv"></div>
-		<input type="text" id="inputBox" onchange="updateText();" onkeydown="return onKey();" />
-		<input type="button" id="inputButton" onclick="onClick();" value="Done" />
+		<input title="text input" type="text" id="inputBox" onchange="updateText();" onkeydown="return onKey();" />
+        &nbsp;
+		<input title="done" type="button" id="inputButton" onclick="onClick();" value="Done" />
     </form>
     
     <script type="text/javascript">
