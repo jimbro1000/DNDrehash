@@ -374,7 +374,7 @@ function Input() {
     if ((typeof(terminal) != "undefined") && (typeof(inputRow) != "undefined")) {
         terminal.printAt(inputRow, inputColumn, "_");
     }
-    terminal.info("waiting for input");
+    console.info("waiting for input");
 }
 
 function InputStr() {
@@ -389,7 +389,7 @@ function InputStr() {
     if ((typeof(terminal) != "undefined") && (typeof(inputRow) != "undefined")) {
         terminal.printAt(inputRow, inputColumn, "_");
     }
-    terminal.info("waiting for input");
+    console.info("waiting for input");
 }
 
 function InputX(items) {
@@ -402,7 +402,7 @@ function InputX(items) {
     if ((typeof(terminal) != "undefined") && (typeof(inputRow) != "undefined")) {
         terminal.printAt(inputRow, inputColumn, "_");
     }
-    terminal.info("waiting for input");
+    console.info("waiting for input");
 }
 
 function gotInput() {
@@ -423,7 +423,7 @@ function gotInput() {
             if ((typeof(terminal) != "undefined") && (typeof(inputRow) != "undefined")) {
                 terminal.printAt(inputRow, inputColumn, "_");
             }
-            terminal.info("waiting for input");
+            console.info("waiting for input");
         } else {
             terminal.println("");
             modelEngine();
@@ -444,14 +444,15 @@ function Main(terminal) {
 
 function loadScreen() { //1
     terminal.println("        DUNGEONS AND DRAGONS #1");
-    terminal.println("     (C) 1977-2014 Richard Garriott");
-    terminal.println("        Ported by Julian Brown");
-    terminal.println("all rights to this port remain property");
-    terminal.println("          of Richard Garriott");
-    terminal.println("    ******UPDATED 5 May 2014******");
+    terminal.println("     (C) 1977-2014 RICHARD GARRIOTT");
+    terminal.println("        PORTED BY JULIAN BROWN");
+    terminal.println("ALL RIGHTS TO THIS PORT REMAIN PROPERTY");
+    terminal.println("          OF RICHARD GARRIOTT");
+    terminal.println("    ******UPDATED 5 MAY 2014******");
     terminal.println("");
-    terminal.println("   warning, this site uses cookies, if you");
-    terminal.println(" don't want to store cookies please stop now");
+    terminal.println("    WARNING! THIS SITE USES COOKIES");
+    terminal.println("   IF YOU DON'T WANT TO STORE COOKIES");
+    terminal.println("           PLEASE STOP NOW");
     terminal.println("");
     terminal.print("DO YOU NEED INSTRUCTIONS ");
     stateMode = 2;
@@ -503,7 +504,7 @@ function fetchDungeonSave() { //7
     var stream;
     var elements;
     var m, n;
-    terminal.info("loading saved dungeon");
+    console.info("loading saved dungeon");
     //use cookies
     Dn = getCookie("dnd1file7.D");
     if (Dn != "") {
@@ -616,7 +617,7 @@ function loadDungeon(d) {
     for (m = 0; m <= 25; m++) {
         for (n = 0; n <= 25; n++) {
             if (d != 0) {
-                terminal.info("M=" + m + " N=" + n);
+                console.info("M=" + m + " N=" + n);
                 if (D[m][n] === 0) {
                     if (Rnd(0) >= 0.97) {
                         D[m][n] = 7;
@@ -2507,25 +2508,27 @@ function monsterSwings() { //207
 //global routines
 
 $(document).ready(function () {
-    Main(new Console('mainConsole', 20, 40));
-    $(document).on("endInput", function(e) {
-        if (debug) terminal.log(e);
+    Main(new Console('mainConsole', 30, 40));
+    $(document).on("endInput", function(event) {
+        if (debug) console.log(event);
+        gotInput();
     });
-    $(document).on("partialInput", function(e) {
-        if (debug) terminal.log(e);
+    $(document).on("partialInput", function(event) {
+        if (debug) console.log(event);
         partial();
     });
     $(document).keypress(function (event) {
+        console.info(reading, event.which);
         var charCode = parseInt(event.which);
         if (reading && charCode === 13) {
             event.preventDefault();
             reading = false;
-            $("document").trigger({
+            $(document).trigger("endInput", [{
                 type: "endInput",
                 message: "EOL",
                 time: new Date(),
-                event: event
-            });
+                inner: event
+            }]);
         } else if (reading) {
             if (
                 isNumber(inputString + String.fromCharCode(charCode))
@@ -2536,12 +2539,12 @@ $(document).ready(function () {
             } else {
                 inputString += String.fromCharCode(charCode);
             }
-            $("document").trigger({
+            $(document).trigger("partialInput", [{
                 type: "partialInput",
                 message: "DELTA",
                 time: new Date(),
-                event: event
-            });
+                inner: event
+            }]);
         }
     });
     $(document).keydown(function (event) {
@@ -2550,12 +2553,12 @@ $(document).ready(function () {
                 event.preventDefault();
                 if (inputString.length > 0) {
                     inputString = inputString.substr(0, inputString.length - 1);
-                    $("document").trigger({
+                    $(document).trigger("partialInput", [{
                         type: "partialInput",
                         message: "DELTA",
                         time: new Date(),
-                        event: event
-                    });
+                        inner: event
+                    }]);
                 }
             }
         }
