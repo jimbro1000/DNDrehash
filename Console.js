@@ -22,8 +22,9 @@ function Console(elementId, rows, columns) {
     // Get a reference to the HTML element which will hold the console.
     this.element = document.getElementById(elementId);
     if (!this.element) {
-        alert('No element with the ID ' + elementId + ' was found.');
-        return;
+        throw('No element with the ID ' + elementId + ' was found.');
+        // alert('No element with the ID ' + elementId + ' was found.');
+        // return;
     }
     // remove any child nodes of the element
     while (this.element.hasChildNodes()) {
@@ -37,9 +38,15 @@ function Console(elementId, rows, columns) {
     this.cursorPosition = {row: 0, column: 0};
     this.charGrid = new Array(this.rows);
 
+    // create an empty string for each row
+    var s = '';
+    for (var col = 0; col < this.columns; col++) {
+        s += ' ';
+    }
     // add the TextNode objects
     for (var i = 0; i < rows; i++) {
         var textNode = document.createTextNode('');
+        textNode.data = s;
         this.charGrid[i] = textNode;
         this.element.appendChild(textNode);
         if (i < rows - 1) {
@@ -47,8 +54,6 @@ function Console(elementId, rows, columns) {
             this.element.appendChild(document.createElement('br'));
         }
     }
-    // clear the console screen
-    // this.cls();
 }
 
 Console.prototype.cls = function () {
