@@ -73,6 +73,7 @@ function StateModel(id, name, process) {
 
 /***
  * Execute machine model state
+ * The process is responsible for determining the input token
  */
 StateModel.prototype.execute = function() {
     if (this.process) {
