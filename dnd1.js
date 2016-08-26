@@ -398,16 +398,16 @@ function main(terminal) {
 /* main game code starts here - each function (unless stated otherwise) represents a game state */
 
 function loadScreen() { //1
-    terminal.println("        DUNGEONS AND DRAGONS #1");
-    terminal.println("     (C) 1977-2014 RICHARD GARRIOTT");
-    terminal.println("        PORTED BY JULIAN BROWN");
-    terminal.println("ALL RIGHTS TO THIS PORT REMAIN PROPERTY");
-    terminal.println("          OF RICHARD GARRIOTT");
-    terminal.println("    ******UPDATED 5 MAY 2014******");
-    terminal.println("");
-    terminal.println("    WARNING! THIS SITE USES COOKIES");
-    terminal.println("   IF YOU DON'T WANT TO STORE COOKIES");
-    terminal.println("           PLEASE STOP NOW");
+    terminal.printc("DUNGEONS AND DRAGONS #1");
+    terminal.printc("(C) 1977-2014 RICHARD GARRIOTT");
+    terminal.printc("PORTED BY JULIAN BROWN");
+    terminal.printc("ALL RIGHTS TO THIS PORT REMAIN PROPERTY");
+    terminal.printc("OF RICHARD GARRIOTT");
+    terminal.printc("******UPDATED 26 Aug 2016******");
+    terminal.printc("");
+    terminal.printc("WARNING! THIS SITE USES COOKIES");
+    terminal.printc("IF YOU DON'T WANT TO STORE COOKIES");
+    terminal.printc("PLEASE STOP NOW");
     terminal.println("");
     terminal.print("DO YOU NEED INSTRUCTIONS ");
     gameStateMachine.stateMode = 2;
@@ -421,7 +421,7 @@ function gotInstructionInput() { //2
         gameStateMachine.stateMode = 4;
     }
     else {
-        terminal.print("OLD OR NEW GAME");
+        terminal.print("OLD OR NEW GAME ");
         gameStateMachine.stateMode = 3;
         gameStateMachine.waitTransition = true;
         inputStr();
@@ -433,7 +433,7 @@ function gotLoadInput() { //3
     if (strQ === "OLD") {
         gameStateMachine.stateMode = 7;
     } else {
-        terminal.print("DUNGEON #");
+        terminal.print("DUNGEON # ");
         gameStateMachine.stateMode = 6;
         gameStateMachine.waitTransition = true;
         input();
@@ -518,7 +518,7 @@ function fetchDungeonSave() { //7
 //load default dungeon where not locally saved
 function loadDungeon(d) {
     var m, n;
-    terminal.println("READING DUNGEON NUM. " + d);
+    terminal.println("READING DUNGEON # " + d);
     dungeonMap[0][0] = getCookie("dnd1file" + d + ".dungeonMap.0");
     if (dungeonMap[0][0] === "") {
         dungeonMap[0] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
@@ -607,7 +607,7 @@ function pickClass() {
     terminal.println("");
     terminal.println("CLASSIFICATION");
     terminal.println("WHICH DO YOU WANT TO BE");
-    terminal.print("FIGHTER ,CLERIC ,OR WIZARD");
+    terminal.print("FIGHTER ,CLERIC ,OR WIZARD ");
     gameStateMachine.stateMode = 11;
     gameStateMachine.waitTransition = true;
     inputStr();
@@ -654,7 +654,7 @@ function gotWizard() {
 
 function shopTop() {
     terminal.println("BUYING WEAPONS");
-    terminal.println("FAST OR NORM");
+    terminal.println("FAST OR NORM ");
     gameStateMachine.waitTransition = true;
     inputStr();
     gameStateMachine.stateMode = 16;
@@ -767,7 +767,7 @@ function welcome() {
     terminal.println("WELCOME TO DUNGEON #" + Dn);
     terminal.println("YOU ARE AT (" + mapY + "," + mapX + ")");
     terminal.println("");
-    terminal.print("COMANDS LIST" + vbTab);
+    terminal.print("COMMANDS LIST" + vbTab);
     gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 23.5;
     inputStr();
@@ -787,7 +787,7 @@ function showCommands() {
     terminal.println("1=MOVE  2=OPEN DOOR  3=SEARCH FOR TRAPS AND SECRET DOORS");
     terminal.println("4=SWITCH WEAPON HN HAND  5=FIGHT");
     terminal.println("6=LOOK AROUND  7=SAVE GAME  8=USER MAGIC  9=BUY MAGIC");
-    terminal.println("0=PASS  11=BUY mapX.equipmentPrice.");
+    terminal.println("0=PASS  11=BUY H.P.");
     gameStateMachine.stateMode = 25;
 }
 
@@ -1052,7 +1052,7 @@ function gold() {
     terminal.println("GP= " + attributes[7]);
     dungeonMap[mapY + S][mapX + T] = 0;
     if (rnd(0) <= 0.2) {
-        terminal.println("       POISON      ");
+        terminal.printc("POISON");
         attributes[0] -= int(rnd(0) * 4 + 1);
         terminal.println("HP= " + attributes[0]);
     }
@@ -1144,7 +1144,7 @@ function gotSwap() { //59
             }
         }
         if (found) {
-            terminal.println("O.currentMonster. YOU ARE NOW HOLDING A " + equipmentNames[Y]);
+            terminal.println("O.K. YOU ARE NOW HOLDING A " + equipmentNames[Y]);
             currentWeapon = Y;
             gameStateMachine.stateMode = 200;
         } else {
@@ -1428,7 +1428,7 @@ function throwFood() { //67
     if (strQ === "HIT") {
         gameStateMachine.stateMode = 72;
     } else {
-        terminal.print("THROW A-A=VE,monsterStats-BELOW,L-LEFT,OR R-RIGHT OF THE MONSTER");
+        terminal.print("THROW A-ABOVE,B-BELOW,L-LEFT,OR R-RIGHT OF THE MONSTER");
         Z5 = 0;
         gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 73;
@@ -1441,7 +1441,7 @@ function knucklehead() { //68
     if (strQ != "NO") {
         gameStateMachine.stateMode = 25;
     } else {
-        terminal.println("O.currentMonster. PUNCH BITE SCRATCH HIT ........");
+        terminal.println("O.K. PUNCH BITE SCRATCH HIT ........");
         var m = 0;
         var n = 0;
         for (M = -1; M < 1; M++) {
@@ -1980,9 +1980,9 @@ function clericSpellChoices() { //95
 function wizardSpellChoices() { //96
     strQ = inputString.trim();
     if (strQ === "NO") {
-        terminal.println("1-PUSH-75   6-M. M. #1-100");
-        terminal.println("2-KIHL-500  7-M. M. #2-200");
-        terminal.println("3-FIND TRAPS-200  8-M. M. #3-300");
+        terminal.println("1-PUSH-75   6-MAG. MISS. #1-100");
+        terminal.println("2-KIHL-500  7-MAG. MISS. #2-200");
+        terminal.println("3-FIND TRAPS-200  8-MAG. MISS. #3-300");
         terminal.println("4-TELEPORT-750  9-FIND S.DOORS-200");
         terminal.println("5-CHANGE 1+0-600  10-CHANGE 0+1-600");
         terminal.print("#OF ONE OU WANT  NEG.NUM.TO STOP");
@@ -2087,7 +2087,7 @@ function modifyGotMap() { //102.5
 }
 
 function modifyMapPos() { //103
-    terminal.print("inventoryCounter,Y,attributes");
+    terminal.print("X,Y,C");
     inputX(3);
     gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 104;
@@ -2150,11 +2150,11 @@ function routeGameMove() { //200
                         terminal.println("SORRY YOUR DEAD");
                         gameStateMachine.stateMode = 30;
                     } else {
-                        terminal.println("mapX.equipmentPrice.=0 BUT CONST. HOLDS");
+                        terminal.println("H.P.=0 BUT CONST. HOLDS");
                     }
                 }
             } else {
-                terminal.println("WATCH IT mapX.equipmentPrice.=" + attributes[0]);
+                terminal.println("WATCH IT H.P.=" + attributes[0]);
             }
         }
     }
@@ -2199,7 +2199,7 @@ function routeGameMove() { //200
 function gotMoreEquipment() { //201
     strQ = inputString.trim();
     if (strQ == "YES") {
-        terminal.println("YOUR mapX.equipmentPrice. ARE RESTORED 2 POINTS");
+        terminal.println("YOUR H.P. ARE RESTORED 2 POINTS");
         attributes[0] += 2;
         gameStateMachine.stateMode = 18;
     } else {
@@ -2287,7 +2287,7 @@ function makeAMonsterMove() { //204
 
 function resetAfterClear() { //205
     strQ = inputString.trim();
-    if (strQ == "YES") {
+    if (strQ === "YES") {
         // reset
         difficultyFactor += 1; //up difficultly level
         for (M = 1; M <= 10; M++) {
