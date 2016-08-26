@@ -399,7 +399,7 @@ function main(terminal) {
 
 function loadScreen() { //1
     terminal.println("        DUNGEONS AND DRAGONS #1");
-    terminal.println("     (attributes) 1977-2014 RICHARD GARRIOTT");
+    terminal.println("     (C) 1977-2014 RICHARD GARRIOTT");
     terminal.println("        PORTED BY JULIAN BROWN");
     terminal.println("ALL RIGHTS TO THIS PORT REMAIN PROPERTY");
     terminal.println("          OF RICHARD GARRIOTT");
