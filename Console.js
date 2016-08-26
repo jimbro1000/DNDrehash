@@ -16,7 +16,7 @@ console.println('Hello, ' + yourName);
 */
 
 
-function Console(elementId, rows, columns, promptWindowUrl) {
+function Console(elementId, rows, columns) {
 /// <summary>Creates a new Console in the HTML element with given ID, with the specified rows and columns, and optionally the URL to the PromptWindow if the input() function is used.</summary>
 
 	// Get a reference to the HTML element which will hold the console.
@@ -36,8 +36,7 @@ function Console(elementId, rows, columns, promptWindowUrl) {
 	this.columns = Math.floor(columns);
 	this.cursorPosition = { row: 0, column: 0 };
 	this.charGrid = new Array(this.rows);
-	this.promptWindowUrl = promptWindowUrl;
-	
+
 	// add the TextNode objects
 	for (var i = 0; i < rows; i++) {
 		var textNode = document.createTextNode('');
@@ -162,32 +161,3 @@ Console.prototype.setCursorPos = function(row, column) {
 	this.cursorPosition.row = row;
 	this.cursorPosition.column = column;
 };
-
-Console.prototype.input = function(message) {
-	/// <summary>Gets textual input from the user, and prints the message and the user's input to the screen.</summary>
-	if (message) {
-		this.print(message);
-	}
-	
-	var result;
-	if (window.showModalDialog) {
-		// IE7 blocks calls to window.prompt (insanity!), so we need to use their showModalDialog
-		if (!this.promptWindowUrl) {
-			alert('JS Console Error\nConsole.promptWindowUrl not set. Set this to the URL of PromptWindow.htm\nPrompts disabled in Internet Explorer.');
-			return '';
-		}
-		result = window.showModalDialog(this.promptWindowUrl, message, "dialogWidth:300px;dialogHeight:200px");
-	} else {
-		result = prompt(message);
-	}
-	
-	if (result) {
-	this.println(result);
-		return result;
-	} else {
-		return '';
-	}
-};
-
-
-

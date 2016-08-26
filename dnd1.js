@@ -2456,7 +2456,7 @@ function monsterSwings() { //207
 //global routines
 
 $(document).ready(function () {
-    Main(new Console('mainConsole', 20, 40, 'PromptWindow.html'));
+    Main(new Console('mainConsole', 20, 40));
     $(document).keypress( function( event ) {
         if (reading && event.which === 13) {
             event.preventDefault();
