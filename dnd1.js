@@ -281,7 +281,7 @@ function initialiseGlobals(gameConsole) {
         monsterStats[m] = [];
         for (n = 0; n < 6; n++) monsterStats[m][n] = 0;
     }
-    equipmentNames = ["", "SWORD", "2-mapX-SWORD", "DAGGER", "MACE", "SPEAR", "BOW", "ARROWS", "LEATHER MAIL", "CHAIN MAIL", "PLATE MAIL", "ROPE", "SPIKES", "FLASK OF OIL", "SILVER CROSS", "SPARE FOOD"];
+    equipmentNames = ["", "SWORD", "2-H-SWORD", "DAGGER", "MACE", "SPEAR", "BOW", "ARROWS", "LEATHER MAIL", "CHAIN MAIL", "PLATE MAIL", "ROPE", "SPIKES", "FLASK OF OIL", "SILVER CROSS", "SPARE FOOD"];
     equipmentPrice = [0, 10, 15, 3, 5, 2, 25, 2, 15, 30, 50, 1, 1, 2, 25, 5];
     attributeNames = ["", "STR", "DEX", "CON", "CHAR", "WIS", "INT", "GOLD"];
     clericSpellPrices = [0, 500, 200, 200, 200, 100, 300, 1000, 200];
