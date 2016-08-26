@@ -1,4 +1,4 @@
-describe('Console Constructor', function() {
+describe('Console constructor', function() {
     beforeEach(function() {
         var consoleNode = document.createElement("div");
         consoleNode.setAttribute("localName", "testConsole");

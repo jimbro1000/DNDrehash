@@ -7,14 +7,7 @@
  console.println('A console window with 20 rows and 40 characters.');
  console.setCursorPosition(6,6);
  console.print('Printing in row 6, column 6');
-
- To get user-input, include the URL of PromptWindow.htm in the constructor:
- var console = new Console('myConsoleDivId', 20, 40);
- var yourName = console.input('What is your name? ');
- console.println('Hello, ' + yourName);
-
- */
-
+*/
 
 function Console(elementId, rows, columns) {
 /// <summary>Creates a new Console in the HTML element with given ID, with the specified rows and columns, and optionally the URL to the PromptWindow if the input() function is used.</summary>
@@ -168,7 +161,7 @@ Console.prototype.printc = function (str) {
     while (lineLength + this.cursorPosition.column > this.columns){
         var currentLine = str.substr(0, this.columns - this.cursorPosition.column);
         str = str.substr(this.columns - this.cursorPosition.column);
-        this.println(currentLine);
+        this.print(currentLine);
         lineLength = str.length;
     }
     var extraSpaces = int((this.columns - this.cursorPosition.column - lineLength) / 2);
@@ -177,10 +170,12 @@ Console.prototype.printc = function (str) {
         s2 = ' ' + s2;
     }
     this.println(s2);
-}
+};
 
 Console.prototype.setCursorPos = function (row, column) {
     /// <summary>Sets the cursor position to the given row and column.</summary>
-    this.cursorPosition.row = row;
-    this.cursorPosition.column = column;
+    if (row > 0 && row < this.rows && column > 0 && column < this.columns) {
+        this.cursorPosition.row = row;
+        this.cursorPosition.column = column;
+    }
 };
