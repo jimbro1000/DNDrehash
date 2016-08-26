@@ -12,8 +12,9 @@
  2. Create maps
  3. Test Case Scripts
  */
-
+var debug = false; //global debug flag to enable logging
 var J4 = 0; //difficulty
+var J6; //only used once - investigate
 var X = 0; //inv counter
 var J = 0; //current weapon
 var K = 0; //current monster
@@ -26,6 +27,7 @@ var strC = []; // attribute names
 var W = []; // inventory
 var D = []; // map (25,25)
 var Dn = 1;
+var D2 = 1; // target map for modification actions, currently redundant
 var P; // price of equipment
 var strI; // equipment
 var B = []; // (100,6) monster stats
@@ -48,6 +50,7 @@ var N;
 var P0;
 var Y;
 var Z;
+var Z5; //only used once - investigate
 var R1, R2, R8, R9; //range calcs
 var R3, R4, R5; //combat calcs
 var terminal; // display terminal
@@ -190,7 +193,7 @@ function buildStateModel() {
 function setCookie(cname, cvalue, exdays) {
     var d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-    var expires = "expires=" + d.toGMTString();
+    var expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + "; " + expires;
 }
 
@@ -1713,7 +1716,7 @@ function saveGame() { //76
         stream += strB[m] + "|";
     }
     setCookie("dnd1file7.B$", stream, CL);
-    for (vm = 1; m <= 10; m++) {
+    for (m = 1; m <= 10; m++) {
         stream = "";
         for (n = 1; n <= 6; n++) {
             stream += B[m][n] + "|";
@@ -2176,16 +2179,17 @@ function modifyMapPos() { //103
 }
 
 function modifyMapDone() { //104
-    X9 = parseInt(inputStrings[2]);
-    Y9 = parseInt(inputStrings[1]);
-    C9 = parseInt(inputStrings[0]);
-    if (C9 < 0) {
+    var targetX, targetY, content;
+    targetX = parseInt(inputStrings[2]);
+    targetY = parseInt(inputStrings[1]);
+    content = parseInt(inputStrings[0]);
+    if (content < 0) {
         terminal.println("SAVE");
         Input();
         waitTransition = true;
         stateMode = 105;
     } else {
-        D[Y9][X9] = C9;
+        D[targetY][targetX] = content;
         stateMode = 103;
     }
 }
@@ -2228,10 +2232,10 @@ function routeGameMove() { //200
                 }
                 if (C[0] == 0) {
                     if (C[3] < 9) {
-                        terminal.Writeln("SORRY YOUR DEAD");
+                        terminal.println("SORRY YOUR DEAD");
                         stateMode = 30;
                     } else {
-                        terminal.Writeln("H.P.=0 BUT CONST. HOLDS");
+                        terminal.println("H.P.=0 BUT CONST. HOLDS");
                     }
                 }
             } else {
@@ -2294,7 +2298,7 @@ function gotMoreEquipment() { //201
 
 function monsterMove() { //202
     var moved = false;
-    Z7 = 1;
+    var Z7 = 1;
     while (!moved && Z7 <= 50) {
         M = 1;
         while (!moved && M <= 10) {
@@ -2338,9 +2342,9 @@ function makeAMonsterMove() { //204
     var loopCounter = 0;
     K = M;
     var moved = false;
-    while (!moved) { //dangerous - but statiscally should never lock unless it is a very poor map
+    while (!moved) { //dangerous - but statistically should never lock unless it is a very poor map
         loopCounter++; //stop it locking permanently
-        M1 = Int(Rnd(0) * 7 + 1);
+        var M1 = Int(Rnd(0) * 7 + 1);
         M = M1 * -1;
         while (!moved && M <= M1) {
             N = M1 * -1;
@@ -2386,6 +2390,7 @@ function resetAfterClear() { //205
 }
 
 function monsterAction() { //206
+    var F5, F6;
     findRange();
     if (B[K][3] < 1) { //Then Goto 08290
         //its a kill
@@ -2465,7 +2470,7 @@ function monsterAction() { //206
 
 function monsterSwings() { //207
     terminal.println(strB[K] + "WATCH IT");
-    var found = false;
+    var A1, found = false;
     M = 1;
     A1 = 6 + C[2];
     while (M <= X && !found) {
@@ -2503,29 +2508,39 @@ function monsterSwings() { //207
 
 $(document).ready(function () {
     Main(new Console('mainConsole', 20, 40));
+    $(document).on("endInput", function(e) {
+        if (debug) terminal.log(e);
+    });
+    $(document).on("partialInput", function(e) {
+        if (debug) terminal.log(e);
+        partial();
+    });
     $(document).keypress(function (event) {
-        if (reading && event.which === 13) {
+        var charCode = parseInt(event.which);
+        if (reading && charCode === 13) {
             event.preventDefault();
             reading = false;
-            $.event.trigger({
+            $("document").trigger({
                 type: "endInput",
                 message: "EOL",
-                time: new Date()
+                time: new Date(),
+                event: event
             });
         } else if (reading) {
             if (
-                isNumber(inputString + String.fromCharCode(event.which))
-                || (String.fromCharCode(event.which) === "-"
+                isNumber(inputString + String.fromCharCode(charCode))
+                || (String.fromCharCode(charCode) === "-"
                 && (inputString.length === 0))
             ) {
-                inputString += String.fromCharCode(event.which);
+                inputString += String.fromCharCode(charCode);
             } else {
-                inputString += String.fromCharCode(event.which);
+                inputString += String.fromCharCode(charCode);
             }
-            $.event.trigger({
+            $("document").trigger({
                 type: "partialInput",
                 message: "DELTA",
-                time: new Date()
+                time: new Date(),
+                event: event
             });
         }
     });
@@ -2535,10 +2550,11 @@ $(document).ready(function () {
                 event.preventDefault();
                 if (inputString.length > 0) {
                     inputString = inputString.substr(0, inputString.length - 1);
-                    $.event.trigger({
+                    $("document").trigger({
                         type: "partialInput",
                         message: "DELTA",
-                        time: new Date()
+                        time: new Date(),
+                        event: event
                     });
                 }
             }
