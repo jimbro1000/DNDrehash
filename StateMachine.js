@@ -18,8 +18,12 @@ function StateMachine() {
  * @param state
  */
 StateMachine.prototype.addState = function(state) {
-    this.xModel[this.maxState++] = state;
-    this.stateMode = 0;
+    if (state) {
+        if (state.id && state.process) {
+            this.xModel[this.maxState++] = state;
+            this.stateMode = 0;
+        } else console.println("Not a valid state");
+    } else console.println("State is undefined");
 };
 
 /***
@@ -34,7 +38,7 @@ StateMachine.prototype.modelEngine = function() {
     while (!this.waitTransition) {
         var check = true;
         var modeError = false;
-        var index = 1;
+        var index = 0;
         var actMode;
         while (check) {
             if (this.xModel[index].id === this.stateMode) {
@@ -42,7 +46,7 @@ StateMachine.prototype.modelEngine = function() {
                 check = false;
             } else {
                 index++;
-                check = (index <= this.maxState);
+                check = (index < this.maxState);
                 if (!check) {
                     result = "failed to find mode " + this.stateMode;
                     modeError = true;

@@ -175,6 +175,7 @@ function buildStateModel() {
     gameStateMachine.addState(new StateModel(205, "got reset answer", resetAfterClear));
     gameStateMachine.addState(new StateModel(206, "make a monster move small step", monsterAction));
     gameStateMachine.addState(new StateModel(207, "monster attacks player", monsterSwings));
+    gameStateMachine.stateMode = 1;
 }
 
 function setCookie(cname, cvalue, exdays) {
