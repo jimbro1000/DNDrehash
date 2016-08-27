@@ -70,6 +70,7 @@ describe("State Machine", function() {
 
 	describe("Executing Models", function() {
 		var initialState;
+		var waitState;
 
 		beforeEach(function() {
 			initialState = new StateModel(1, "test", function() {
@@ -77,11 +78,11 @@ describe("State Machine", function() {
 			});
 			testObj = new StateMachine();
 			testObj.addState(initialState);
-			var modelObj = new StateModel(2, "test 2", function() {
+			waitState = new StateModel(2, "test 2", function() {
 				testObj.waitTransition = true;
 			});
-			testObj.addState(modelObj);
-			modelObj = new StateModel(3, "test 3", function() {
+			testObj.addState(waitState);
+			var modelObj = new StateModel(3, "test 3", function() {
 				testObj.stateMode = 4;
 			});
 			testObj.addState(modelObj);
@@ -95,7 +96,9 @@ describe("State Machine", function() {
 		});
 
 		it("Executes states until a wait transition is set", function() {
+			spyOn(waitState, 'process').and.callThrough();
 			testObj.modelEngine();
+			expect(waitState.process).toHaveBeenCalled();
 			expect(testObj.waitTransition).toBe(true);
 		});
 
