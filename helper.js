@@ -9,7 +9,7 @@
  * @return {number}
  */
 function rnd(x) {
-    if (x === 0) return Math.random(); else return x * Math.random();
+    if (isNaN(x) || x === 0) return Math.random(); else return x * Math.random();
 }
 
 /**
@@ -17,6 +17,7 @@ function rnd(x) {
  * @return {number}
  */
 function int(x) {
+    if (isNaN(x)) return 0;
     if (x < 0) return Math.ceil(x); else return Math.floor(x);
 }
 
