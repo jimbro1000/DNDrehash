@@ -48,7 +48,7 @@ var T; // turn input / move delta
 var M;
 var N;
 var P0;
-var Y;
+var inputInt;
 var Z;
 var Z5; //only used once - investigate
 var range, R2, R8, R9; //range and hit calcs
@@ -80,7 +80,8 @@ var constants = {
     playerCha: 4,
     playerWis: 5,
     playerInt: 6,
-    playerGold: 7
+    playerGold: 7,
+    playerClass: 0
 };
 
 function buildStateModel() {
@@ -211,13 +212,13 @@ function findRange() {
     }
     R8 = tempY;
     R9 = tempX;
-    if (int(rnd(0) * 20 + 1) > 18) {
+    if (int(rnd(20) + 1) > 18) {
         R2 = 3;
     } else {
-        if (rnd(0) * 20 > monsterStats[currentMonster][2] == attributes[2] / 3) {
+        if (rnd(20) > monsterStats[currentMonster][2] == attributes[constants.playerDex] / 3) {
             R2 = 2;
         } else {
-            if (rnd(0) * 2 > 1.7) {
+            if (rnd(2) > 1.7) {
                 R2 = 1;
             } else {
                 R2 = 0;
@@ -559,7 +560,7 @@ function gotNameInput() {
 function rollNew() {
     for (var M = 1; M <= 7; M++) {
         for (var N = 1; N <= 3; N++) {
-            var R = int(rnd(0) * 6 + 1);
+            var R = int(rnd(6) + 1);
             attributes[M] = attributes[M] + R;
         }
         if (M === 7) {
@@ -581,14 +582,14 @@ function pickClass() {
 }
 
 function gotClassInput() {
-    attributeNames[0] = inputString.trim();
+    attributeNames[constants.playerHp] = inputString.trim();
     if (attributeNames[0] === "NONE") {
         for (var M = 0; M <= 7; M++) {
             attributes[M] = 0;
         }
         gameStateMachine.stateMode = 10;
     } else {
-        switch (attributeNames[0]) {
+        switch (attributeNames[constants.playerClass]) {
             case "FIGHTER":
                 gameStateMachine.stateMode = 12;
                 break;
@@ -605,17 +606,17 @@ function gotClassInput() {
 }
 
 function gotFighter() {
-    attributes[0] = int(rnd(0) * 8 + 1);
+    attributes[constants.playerHp] = int(rnd(8) + 1);
     gameStateMachine.stateMode = 15;
 }
 
 function gotCleric() {
-    attributes[0] = int(rnd(0) * 6 + 1);
+    attributes[constants.playerHp] = int(rnd(6) + 1);
     gameStateMachine.stateMode = 15;
 }
 
 function gotWizard() {
-    attributes[0] = int(rnd(0) * 4 + 1);
+    attributes[constants.playerHp] = int(rnd(4) + 1);
     gameStateMachine.stateMode = 15;
 }
 
@@ -651,38 +652,38 @@ function shopping() { //18
     input();
 }
 
-function buyItem(Y) {
+function buyItem(item) {
     inventoryCounter++;
-    attributes[7] = attributes[7] - equipmentPrice[Y];
-    terminal.println("GP= " + attributes[7]);
-    inventory[inventoryCounter] = Y;
+    attributes[constants.playerGold] -= equipmentPrice[item];
+    terminal.println("GP= " + attributes[constants.playerGold]);
+    inventory[inventoryCounter] = item;
 }
 
 function gotShoppingInput() {
-    Y = Math.floor(inputString);
-    if (Y < 0 || Y > 15) {
+    var inputInt = Math.floor(inputString);
+    if (inputInt < 0 || inputInt > 15) {
         gameStateMachine.stateMode = 20; //stop shopping
     } else {
-        if (attributes[7] < equipmentPrice[Y]) {
+        if (attributes[constants.playerGold] < equipmentPrice[inputInt]) {
             terminal.println("COSTS TOO MUCH");
             terminal.println("TRY AGAINN ");
         } else {
-            if (attributeNames[0] == "CLERIC") {
-                if (Y === 4 || Y === 8 || Y === 9 || Y > 10) {
-                    buyItem(Y);
+            if (attributeNames[constants.playerClass] == "CLERIC") {
+                if (inputInt === 4 || inputInt === 8 || inputInt === 9 || inputInt > 10) {
+                    buyItem(inputInt);
                 }
                 else {
                     terminal.println("YOUR A CLERIC YOU CANT USE THAT ");
                 }
-            } else if (attributeNames[0] == "WIZARD") {
-                if (Y === 3 || Y === 8 || Y > 10) {
-                    buyItem(Y);
+            } else if (attributeNames[constants.playerClass] == "WIZARD") {
+                if (inputInt === 3 || inputInt === 8 || inputInt > 10) {
+                    buyItem(inputInt);
                 }
                 else {
                     terminal.println("YOUR A WIZARD YOU CANT USE THAT ");
                 }
             } else {
-                buyItem(Y);
+                buyItem(inputInt);
             }
         }
         gameStateMachine.stateMode = 18;
@@ -716,11 +717,11 @@ function showInventory() {
 
 function showStats() {
     terminal.println("YOUR CHARACTERISTICS ARE:");
-    terminal.println(attributeNames[0]);
-    if (attributes[0] === 1) {
-        attributes[0] = 2;
+    terminal.println(attributeNames[constants.playerClass]);
+    if (attributes[constants.playerHp] === 1) {
+        attributes[constants.playerHp] = 2;
     }
-    terminal.println("HIT POINTS" + vbTab + attributes[0]);
+    terminal.println("HIT POINTS" + vbTab + attributes[constants.playerHp]);
     terminal.println("");
     terminal.println("");
     gameStateMachine.stateMode = 23;
@@ -766,8 +767,7 @@ function getCommand() { //25
 }
 
 function gotCommand() {
-    T = parseInt(inputString.trim());
-    switch (T) {
+    switch (parseInt(inputString.trim())) {
         case 1: // move
             gameStateMachine.stateMode = 45;
             break;
@@ -902,7 +902,7 @@ function thud() {
     terminal.println("YOU RAN INTO A WALL");
     if ((rnd(0) * 12 + 1) > 9) {
         terminal.println("AND LOOSE 1 HIT POINT");
-        attributes[0] -= 1;
+        attributes[constants.playerHp] -= 1;
     } else {
         terminal.println("BUT NO DAMAGE WAS INFLICTED");
     }
@@ -914,7 +914,7 @@ function itsatrap() {
     terminal.println("OOOOPS A TRAP AND YOU FELL IN");
     if ((rnd(0) * 2) < 2) {
         terminal.println("AND HIT POINTS LOOSE 1");
-        attributes[0] -= 1;
+        attributes[constants.playerHp] -= 1;
     }
     terminal.println("I HOPE YOU HAVE SOME SPIKES AND PREFERABLY ROPE");
     terminal.println("LET ME SEE");
@@ -951,7 +951,7 @@ function itsatrap() {
                     loop = false;
                 } else {
                     terminal.println("YOU FALL HALFWAY UP");
-                    if (int(rnd(0) * 6) > attributes[1] / 3) {
+                    if (int(rnd(0) * 6) > attributes[constants.playerStr] / 3) {
                         terminal.println("OOPS mapX.equipmentPrice. LOOSE 1");
                         attributes[0] -= 1;
                     }
@@ -967,7 +967,7 @@ function itsatrap() {
 }
 
 function hush() {
-    if (int(rnd(0) * 6) < 1) { //check original code - only partial logic present
+    if (int(rnd(6)) < 1) { //check original code - only partial logic present
         terminal.println("YOU JUST RAN INTO A SECRET DOOR");
         terminal.println("AND OPENED IT");
         mapY += S;
@@ -979,23 +979,23 @@ function hush() {
 }
 
 function boost1() {
-    attributes[1] += 1;
+    attributes[constants.playerStr] += 1;
     dungeonMap[mapY + S][mapX + T] = 0;
     if (rnd(0) <= 0.2) {
         terminal.println("       POISON      ");
-        attributes[0] -= int(rnd(0) * 4 + 1);
-        terminal.println("HP= " + attributes[0]);
+        attributes[constants.playerHp] -= int(rnd(4) + 1);
+        terminal.println("HP= " + attributes[constants.playerHp]);
     }
     gameStateMachine.stateMode = 47;
 }
 
 function boost2() {
-    attributes[3] += 1;
+    attributes[constants.playerCon] += 1;
     dungeonMap[mapY + S][mapX + T] = 0;
     if (rnd(0) <= 0.2) {
         terminal.println("       POISON      ");
         attributes[0] -= int(rnd(0) * 4 + 1);
-        terminal.println("HP= " + attributes[0]);
+        terminal.println("HP= " + attributes[constants.playerHp]);
     }
     gameStateMachine.stateMode = 47;
 }
@@ -1004,24 +1004,24 @@ function surprise() {
     terminal.println("YOU RAN INTO THE MONSTER");
     terminal.println("HE SHOVES YOU BACK");
     terminal.println("");
-    if (int(rnd(0) * 2) + 1 != 2) {
+    if (int(rnd(2)) + 1 != 2) {
         terminal.println("YOU LOOSE 6 HIT POINT ");
-        attributes[0] -= 6
+        attributes[constants.playerHp] -= 6
     }
     gameStateMachine.stateMode = 200;
 }
 
 function gold() {
     terminal.println("AH......GOLD......");
-    var G9 = int(rnd(0) * 500 + 10);
-    terminal.println(G9 + "PIECES");
-    attributes[7] = attributes[7] + G9;
-    terminal.println("GP= " + attributes[7]);
+    var goldFind = int(rnd(500) + 10);
+    terminal.println(goldFind + "PIECES");
+    attributes[constants.playerGold] += goldFind;
+    terminal.println("GP= " + attributes[constants.playerGold]);
     dungeonMap[mapY + S][mapX + T] = 0;
     if (rnd(0) <= 0.2) {
         terminal.printc("POISON");
-        attributes[0] -= int(rnd(0) * 4 + 1);
-        terminal.println("HP= " + attributes[0]);
+        attributes[constants.playerHp] -= int(rnd(4) + 1);
+        terminal.println("HP= " + attributes[constants.playerHp]);
     }
     gameStateMachine.stateMode = 47;
 }
@@ -1055,7 +1055,7 @@ function gotDoorMove() {
         var look = dungeonMap[mapY + S][mapX + T];
         if (look === 3 || look === 4) {
             terminal.println("PUSH");
-            if (int(rnd(0) * 20) + 1 >= attributes[1]) {
+            if (int(rnd(20)) + 1 >= attributes[constants.playerStr]) {
                 terminal.println("DIDNT BUDGE");
                 gameStateMachine.stateMode = 200;
             } else {
@@ -1073,7 +1073,7 @@ function gotDoorMove() {
 
 function searching() {
     terminal.println("SEARCH.........SEARCH...........SEARCH...........");
-    if (int(rnd(0) * 40) < attributes[5] + attributes[6]) {
+    if (int(rnd(40)) < attributes[constants.playerWis] + attributes[constants.playerInt]) {
         for (M = -1; M <= 1; M++) {
             for (N = -1; N <= 1; N++) {
                 if (dungeonMap[mapY + M][mapX + N] == 2) {
@@ -1101,18 +1101,18 @@ function swapWeapon() { //58
 }
 
 function gotSwap() { //59
-    Y = parseInt(inputString.trim());
-    if (Y != 0) {
+    inputInt = parseInt(inputString.trim());
+    if (inputInt != 0) {
         var found = false;
         for (M = 1; M <= inventoryCounter; M++) {
-            if (inventory[M] === Y) {
+            if (inventory[M] === inputInt) {
                 found = true;
                 M = inventoryCounter + 1;
             }
         }
         if (found) {
-            terminal.println("O.K. YOU ARE NOW HOLDING A " + equipmentNames[Y]);
-            currentWeapon = Y;
+            terminal.println("O.K. YOU ARE NOW HOLDING A " + equipmentNames[inputInt]);
+            currentWeapon = inputInt;
             gameStateMachine.stateMode = 200;
         } else {
             terminal.println("SORRY YOU DONT HAVE THAT ONE");
@@ -1184,12 +1184,12 @@ function swingASword() { //62
                 break;
             case 2:
                 terminal.println("GOOD HIT");
-                monsterStats[currentMonster][3] -= int(attributes[1] * 4 / 5);
+                monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * 4 / 5);
                 gameStateMachine.stateMode = 25;
                 break;
             default:
                 terminal.println("CRITICAL HIT");
-                monsterStats[currentMonster][3] -= int(attributes[1] / 2);
+                monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] / 2);
                 gameStateMachine.stateMode = 25;
                 break;
         }
@@ -1197,7 +1197,7 @@ function swingASword() { //62
 }
 
 function swingABigSword() { //63
-    terminal.println("SWHNG");
+    terminal.println("SWING");
     findRange();
     if (range > 2) {
         terminal.println("HE IS OUT OF RANGE");
@@ -1209,17 +1209,17 @@ function swingABigSword() { //63
                 gameStateMachine.stateMode = 200;
                 break;
             case 1:
-                terminal.println("HIT BUT ' WELL ENOUGH");
+                terminal.println("HIT BUT NOT WELL ENOUGH");
                 gameStateMachine.stateMode = 25;
                 break;
             case 2:
                 terminal.println("HIT");
-                monsterStats[currentMonster][3] -= int(attributes[1] * 5 / 7);
+                monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * 5 / 7);
                 gameStateMachine.stateMode = 25;
                 break;
             default:
                 terminal.println("CRITICAL HIT");
-                monsterStats[currentMonster][3] -= attributes[1];
+                monsterStats[currentMonster][3] -= attributes[constants.playerStr];
                 gameStateMachine.stateMode = 25;
                 break;
         }
@@ -1250,11 +1250,11 @@ function pokeADagger() { //64
                     break;
                 case 2:
                     terminal.println("HIT");
-                    monsterStats[currentMonster][3] -= int(attributes[1] / 4);
+                    monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] / 4);
                     break;
                 default:
                     terminal.println("CRITICAL HIT");
-                    monsterStats[currentMonster][3] -= int(attributes[1] * 3 / 10);
+                    monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * 3 / 10);
                     break;
             }
             if (range >= 2) {
@@ -1284,12 +1284,12 @@ function swingAMace() { //65
                 break;
             case 2:
                 terminal.println("HIT");
-                monsterStats[currentMonster][3] -= int(attributes[1] * 5 / 11);
+                monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * 5 / 11);
                 gameStateMachine.stateMode = 25;
                 break;
             default:
                 terminal.println("CRITICAL HIT");
-                monsterStats[currentMonster][3] -= int(attributes[1] * 4 / 9);
+                monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * 4 / 9);
                 gameStateMachine.stateMode = 25;
                 break;
         }
@@ -1427,7 +1427,7 @@ function knucklehead() { //68
         } else {
             if (int(rnd(0) * 20) + 1 > monsterStats[currentMonster][2]) {
                 terminal.println("GOOD A HIT");
-                monsterStats[currentMonster][3] -= int(attributes[1] / 6);
+                monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] / 6);
                 gameStateMachine.stateMode = 25;
             } else {
                 terminal.println("TERRIBLE NO GOOD");
@@ -1453,12 +1453,12 @@ function resolveImprov() { //69
                 break;
             case 2:
                 terminal.println("HIT");
-                monsterStats[currentMonster][3] -= int(attributes[1] * R4);
+                monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * R4);
                 gameStateMachine.stateMode = 71;
                 break;
             default:
                 terminal.println("CRITICAL HIT");
-                monsterStats[currentMonster][3] -= int(attributes[1] * R5);
+                monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * R5);
                 break;
         }
     }
@@ -1518,11 +1518,11 @@ function consumeWpn() { //71
 function peltMonster() { //72
     if (int(rnd(0) * 20) + 1 === 20) {
         terminal.println("DIRECT HIT");
-        monsterStats[currentMonster][3] -= int(attributes[1] / 6);
-    } else if (int(rnd(0) * 20) + 1 > monsterStats[currentMonster][2] - attributes[2] / 3) {
+        monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] / 6);
+    } else if (int(rnd(0) * 20) + 1 > monsterStats[currentMonster][2] - attributes[constants.playerDex] / 3) {
         terminal.println("HIT");
-        monsterStats[currentMonster][3] -= int(attributes[1] / 8);
-    } else if (int(rnd(0) * 20) + 1 > 10 - attributes[2] / 3) {
+        monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] / 8);
+    } else if (int(rnd(0) * 20) + 1 > 10 - attributes[constants.playerDex] / 3) {
         terminal.println("YOU HIT HIM BUT NOT GOOD ENOUGH");
     } else {
         terminal.println("TOTAL MISS");
@@ -1649,12 +1649,12 @@ function casting() { //77
     if (currentWeapon != 0) { //Then Goto 08740
         terminal.println("YOU CANT USE MAGIC WITH WEAPON IN HAND");
         gameStateMachine.stateMode = 200;
-    } else if (attributeNames[0] === "CLERIC") {
+    } else if (attributeNames[constants.playerClass] === "CLERIC") {
         terminal.print("CLERICAL SPELL #");
         gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 78;
         input();
-    } else if (attributeNames[0] === "WIZARD") {
+    } else if (attributeNames[constants.playerClass] === "WIZARD") {
         terminal.print("SPELL #");
         gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 87;
@@ -1725,7 +1725,7 @@ function gotClericSpell() { //78
 }
 
 function clericSpell1() { //79
-    if (rnd(0) * 3 > 1) {
+    if (rnd(3) > 1) {
         terminal.println("FAILED");
     } else {
         terminal.println("DONE");
@@ -1743,7 +1743,7 @@ function clericSpell2() { //80
 }
 
 function clericSpell3() { //81
-    attributes[3] += 3;
+    attributes[constants.playerCon] += 3;
     clericSpellbook[M] = 0;
     gameStateMachine.stateMode = 200;
 }
@@ -1778,7 +1778,7 @@ function clericSpell6() { //84
 
 function clericSpell7() { //85
     terminal.println("DONE");
-    attributes[3] += 3;
+    attributes[constants.playerCon] += 3;
     gameStateMachine.stateMode = 200;
 }
 
@@ -1906,9 +1906,9 @@ function gotWizardSpell4() { //91
 }
 
 function buyMagic() { //92
-    if (attributeNames[0] === "CLERIC") {
+    if (attributeNames[constants.playerClass] === "CLERIC") {
         gameStateMachine.stateMode = 93;
-    } else if (attributeNames[0] === "WIZARD") {
+    } else if (attributeNames[constants.playerClass] === "WIZARD") {
         gameStateMachine.stateMode = 94;
     } else {
         terminal.println("YOU CANT BUY ANY");
@@ -2104,16 +2104,16 @@ function routeGameMove() { //200
         if (attributes[constants.playerHp] < 2) { // low on health
             if (attributes[constants.playerHp] < 1) { // bleeding out
                 while (attributes[constants.playerHp] < 0) {
-                    if (attributes[3] < 9) {
+                    if (attributes[constants.playerCon] < 9) {
                         attributes[constants.playerHp] = 0;
-                        attributes[3] = 0; //exit loop, force dead
+                        attributes[constants.playerCon] = 0; //exit loop, force dead
                     } else {
-                        attributes[3] -= 2;
+                        attributes[constants.playerCon] -= 2;
                         attributes[constants.playerHp] += 1;
                     }
                 }
                 if (attributes[constants.playerHp] === 0) {
-                    if (attributes[3] < 9) {
+                    if (attributes[constants.playerCon] < 9) {
                         terminal.println("SORRY YOUR DEAD");
                         gameStateMachine.stateMode = 30;
                     } else {
@@ -2121,7 +2121,7 @@ function routeGameMove() { //200
                     }
                 }
             } else {
-                terminal.println("WATCH IT H.P.=" + attributes[0]);
+                terminal.println("WATCH IT H.P.=" + attributes[constants.playerHp]);
             }
         }
     }
@@ -2224,7 +2224,7 @@ function makeAMonsterMove() { //204
     var moved = false;
     while (!moved) { //dangerous - but statistically should never lock unless it is a very poor map
         loopCounter++; //stop it locking permanently
-        var M1 = int(rnd(0) * 7 + 1);
+        var M1 = int(rnd(7) + 1);
         M = M1 * -1;
         while (!moved && M <= M1) {
             N = M1 * -1;
