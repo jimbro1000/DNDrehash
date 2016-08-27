@@ -30,3 +30,30 @@ function isNumber(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
+/***
+ * sets a cookie by name and value with expiry in n days
+ * @param cookieName name of cookie to set
+ * @param cookieValue value to set
+ * @param expiryDays days to cookie expiration
+ */
+function setCookie(cookieName, cookieValue, expiryDays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cookieName + "=" + cookieValue + "; " + expires;
+}
+
+/***
+ * gets value of named cookie if it exists
+ * @param cookieName name of cookie to get
+ * @returns {object}
+ */
+function getCookie(cookieName) {
+    var name = cookieName + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i].trim();
+        if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+    }
+    return "";
+}
