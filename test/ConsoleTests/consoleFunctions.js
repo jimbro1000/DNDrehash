@@ -235,9 +235,9 @@ describe("Console function setCursorPosition", function() {
         expect(testConsole.cursorPosition.column).toBe(8);
     });
 
-    it('should not move the console cursor if the specified position is outside the limits of the console', function() {
-        testConsole.setCursorPos(-10, 8);
-        expect(testConsole.cursorPosition.row).toBe(0);
-        expect(testConsole.cursorPosition.column).toBe(0);
+    it('should move the console cursor if the specified position is outside the limits of the console', function() {
+        testConsole.setCursorPos(8, -10);
+        expect(testConsole.cursorPosition.row).toBe(8);
+        expect(testConsole.cursorPosition.column).toBe(-10);
     });
 });

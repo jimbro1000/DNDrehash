@@ -172,10 +172,13 @@ Console.prototype.printc = function (str) {
     this.println(s2);
 };
 
-Console.prototype.setCursorPos = function (row, column) {
+/***
+ * Moves the print cursor to a new logical position - validation of row, column coordinates is performed by the print functions
+ * @param targetRow
+ * @param targetColumn
+ */
+Console.prototype.setCursorPos = function (targetRow, targetColumn) {
     /// <summary>Sets the cursor position to the given row and column.</summary>
-    if (row > 0 && row < this.rows && column > 0 && column < this.columns) {
-        this.cursorPosition.row = row;
-        this.cursorPosition.column = column;
-    }
+    this.cursorPosition.row = targetRow;
+    this.cursorPosition.column = targetColumn;
 };
