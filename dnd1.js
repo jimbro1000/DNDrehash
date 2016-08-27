@@ -72,6 +72,17 @@ var inputColumn;
 
 var cookieLifespan;
 
+var constants = {
+    playerHp: 0,
+    playerStr: 1,
+    playerDex: 2,
+    playerCon: 3,
+    playerCha: 4,
+    playerWis: 5,
+    playerInt: 6,
+    playerGold: 7
+};
+
 function buildStateModel() {
     gameStateMachine = new StateMachine();
     gameStateMachine.addState(new StateModel(1, "loading", loadScreen));
@@ -2021,8 +2032,8 @@ function addHP() { //101
         terminal.println("NO");
         gameStateMachine.stateMode = 100;
     } else {
-        attributes[0] += int(Q);
-        attributes[7] -= int(Q) * 200;
+        attributes[constants.playerHp] += int(Q);
+        attributes[constants.playerGold] -= int(Q) * 200;
         terminal.println("OK DONE");
         terminal.println("HP= " + attributes[0]);
         for (M = 1; M <= 7; M++) terminal.println(attributeNames[M] + "= " + attributes[M]);
@@ -2090,18 +2101,18 @@ function routeGameMove() { //200
     if (K1 === -1) {
         gameStateMachine.stateMode = 203;
     } else {
-        if (attributes[0] < 2) { // low on health
-            if (attributes[0] < 1) { // bleeding out
-                while (attributes[0] < 0) {
+        if (attributes[constants.playerHp] < 2) { // low on health
+            if (attributes[constants.playerHp] < 1) { // bleeding out
+                while (attributes[constants.playerHp] < 0) {
                     if (attributes[3] < 9) {
-                        attributes[0] = 0;
+                        attributes[constants.playerHp] = 0;
                         attributes[3] = 0; //exit loop, force dead
                     } else {
                         attributes[3] -= 2;
-                        attributes[0] += 1;
+                        attributes[constants.playerHp] += 1;
                     }
                 }
-                if (attributes[0] === 0) {
+                if (attributes[constants.playerHp] === 0) {
                     if (attributes[3] < 9) {
                         terminal.println("SORRY YOUR DEAD");
                         gameStateMachine.stateMode = 30;
@@ -2119,14 +2130,14 @@ function routeGameMove() { //200
             //monster action
             gameStateMachine.stateMode = 206;
         } else if (mapY != 1) {
-            if (rnd(0) * 20 > 10) {
+            if (rnd(20) > 10) {
                 // move monsters
                 gameStateMachine.stateMode = 202;
             } else {
                 gameStateMachine.stateMode = 25;
             }
         } else if (mapX != 12) {
-            if (rnd(0) * 20 > 10) {
+            if (rnd(20) > 10) {
                 // move monsters
                 gameStateMachine.stateMode = 202;
             } else {
@@ -2134,15 +2145,15 @@ function routeGameMove() { //200
             }
         } else {
             terminal.println("SO YOU HAVE RETURNED");
-            if (attributes[7] < 100) {
-                if (rnd(0) * 20 > 10) {
+            if (attributes[constants.playerGold] < 100) {
+                if (rnd(20) > 10) {
                     // move monsters
                     gameStateMachine.stateMode = 202;
                 } else {
                     gameStateMachine.stateMode = 25;
                 }
             } else {
-                attributes[7] -= 100;
+                attributes[constants.playerGold] -= 100;
                 terminal.println("WANT TO BUY MORE EQUIPMENT");
                 gameStateMachine.waitTransition = true;
                 inputStr();
@@ -2156,10 +2167,10 @@ function gotMoreEquipment() { //201
     strQ = inputString.trim();
     if (strQ == "YES") {
         terminal.println("YOUR H.P. ARE RESTORED 2 POINTS");
-        attributes[0] += 2;
+        attributes[constants.playerHp] += 2;
         gameStateMachine.stateMode = 18;
     } else {
-        if (rnd(0) * 20 > 10) {
+        if (rnd(20) > 10) {
             gameStateMachine.stateMode = 202;
         } else {
             gameStateMachine.stateMode = 25;
@@ -2191,7 +2202,7 @@ function monsterMove() { //202
 
 function confirmedKill() { //203
     K1 = 0;
-    attributes[7] += monsterStats[currentMonster][6];
+    attributes[constants.playerGold] += monsterStats[currentMonster][6];
     F1 = 0;
     F2 = 0;
     terminal.println("GOOD WORK YOU JUST KILLED A " + monsterNames[currentMonster]);
@@ -2250,7 +2261,7 @@ function resetAfterClear() { //205
             monsterStats[M][3] = monsterStats[M][4] * difficultyFactor;
             monsterStats[M][6] = monsterStats[M][5] * difficultyFactor;
         }
-        attributes[0] += 5;
+        attributes[constants.playerHp] += 5;
         gameStateMachine.stateMode = 25;
     } else {
         gameStateMachine.stateMode = 30;
@@ -2337,45 +2348,59 @@ function monsterAction() { //206
     }
 }
 
-function monsterSwings() { //207
-    terminal.println(monsterNames[currentMonster] + "WATCH IT");
-    var A1, found = false;
-    M = 1;
-    A1 = 6 + attributes[2];
-    while (M <= inventoryCounter && !found) {
-        switch (inventory[M]) {
+/***
+ * Calculate protection value based on stat and equipment
+ * note: current method is very stupid
+ * @returns {int} protection value
+ */
+function calculatePlayerProtection() {
+    var result = 6 + attributes[constants.playerDex];
+    var i = 1, found = false;
+    while (i <= inventoryCounter && !found) {
+        switch (inventory[i]) {
             case 10:
                 found = true;
-                A1 = 20 + attributes[2];
+                result = 20 + attributes[constants.playerDex];
                 break;
             case 9:
                 found = true;
-                A1 = 16 + attributes[2];
+                result = 16 + attributes[constants.playerDex];
                 break;
             case 8:
                 found = true;
-                A1 = 8 + attributes[2];
+                result = 8 + attributes[constants.playerDex];
                 break;
         }
-        M++;
+        i++;
     }
-    if (rnd(0) * 40 > A1) {
+    return result;
+}
+
+/***
+ * Determines if the monster's attack connects or not
+ * On a hit HP is reduced by 1-n
+ * On a miss there is a 50% chance to end the attack
+ */
+function monsterSwings() { //207
+    terminal.println(monsterNames[currentMonster] + " WATCH IT");
+    if (rnd(40) > calculatePlayerProtection()) {
         terminal.println("MONSTER SCORES A HIT");
-        attributes[0] -= int(rnd(0) * monsterStats[currentMonster][2] + 1);
-        terminal.println("mapX.equipmentPrice.=" + attributes[0]);
-        gameStateMachine.stateMode = 200;
-    } else if (rnd(0) * 2 > 1) {
-        terminal.println("HE HIT BUT NOT GOOD ENOUGH");
+        attributes[constants.playerHp] -= int(rnd(0) * monsterStats[currentMonster][2] + 1);
+        terminal.println("H.P.=" + attributes[0]);
         gameStateMachine.stateMode = 200;
     } else {
-        terminal.println("HE MISSED");
-        gameStateMachine.stateMode = 25;
+        if (rnd(2) > 1) {
+            terminal.println("HE HIT BUT NOT GOOD ENOUGH");
+            gameStateMachine.stateMode = 200;
+        } else {
+            terminal.println("HE MISSED");
+            gameStateMachine.stateMode = 25;
+        }
     }
 }
 
 //global routines
-
-$(document).ready(function () {
+function initialiseGame() {
     main(new Console('mainConsole', 30, 40));
     $(document).on("endInput", function(event) {
         if (debug) console.log(event);
@@ -2431,4 +2456,4 @@ $(document).ready(function () {
             }
         }
     });
-});
+}
