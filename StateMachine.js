@@ -21,7 +21,7 @@ StateMachine.prototype.addState = function(state) {
     if (state) {
         if (state.id && state.process) {
             this.xModel[this.maxState++] = state;
-            this.stateMode = 0;
+            if (this.stateMode === -1) this.stateMode = state.id;
         } else console.println("Not a valid state");
     } else console.println("State is undefined");
 };
@@ -55,7 +55,7 @@ StateMachine.prototype.modelEngine = function() {
             }
         }
         if (!modeError) {
-            result = "processing " + actMode.name;
+            result = actMode.name;
             actMode.execute();
         }
     }
@@ -81,7 +81,7 @@ function StateModel(id, name, process) {
  */
 StateModel.prototype.execute = function() {
     if (this.process) {
-        this.process();
+        return this.process();
     } else {
         throw {
             error: "Missing state process",
