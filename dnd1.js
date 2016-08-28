@@ -225,7 +225,7 @@ function findRange() {
     if (int(rnd(20) + 1) > 18) {
         R2 = 3;
     } else {
-        if (rnd(20) > monsterStats[currentMonster][2] == attributes[constants.playerDex] / 3) {
+        if (rnd(20) > (monsterStats[currentMonster][2] - attributes[constants.playerDex] / 3)) {
             R2 = 2;
         } else {
             if (rnd(2) > 1.7) {
