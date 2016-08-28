@@ -45,8 +45,8 @@ var mapX; // map x
 var R; // only appears to be used once - investigate
 var S; // move delta
 var T; // turn input / move delta
-var M;
-var N;
+var M; // general purpose loop counter - dangerous reuse observed for other calcs
+var N; // general purpose loop counter
 var P0; //used but never modified - investigate
 var inputInt;
 var Z;
@@ -2281,9 +2281,10 @@ function resetAfterClear() { //205
 
 /***
  * refactored from state 206 (monsterAction)
+ * if in range - attack
+ * else move closer
  */
 function monsterMovement() {
-    var mapRowDelta, mapColumnDelta;
     findRange();
     if (range < 2.0) { //Then Goto 07600
         //it attacks
@@ -2291,61 +2292,64 @@ function monsterMovement() {
     } else if (P0 > 10) { //Then Goto 01590 //note P0 is NEVER modified from 0 suspect typo in original printout
         gameStateMachine.stateMode = 25;
     } else {
-        //he is coming
-        if (Math.abs(rangeRowOffset) > Math.abs(rangeColumnOffset)) { //Then Goto 07260
-            mapRowDelta = -(rangeRowOffset / Math.abs(rangeRowOffset));
-            mapColumnDelta = 0;
-        } else {
-            mapRowDelta = 0;
-            if (M === 1) { // Then Goto 07270
-                mapColumnDelta = 0;
-            } else {
-                mapColumnDelta = -(rangeColumnOffset / Math.abs(rangeColumnOffset))
-            }
-        }
-        // check movement is possible and resolve
-        if(inBounds(F1 + mapRowDelta, F2 + mapColumnDelta)) {
-            switch(dungeonMap[F1 + mapRowDelta][F2 + mapColumnDelta]) {
-                case 0:
-                case 6:
-                case 7:
-                case 8:
-                    //closer
-                    dungeonMap[F1][F2] = 0;
-                    F1 += mapRowDelta;
-                    F2 += mapColumnDelta;
-                    dungeonMap[F1][F2] = 5;
-                    findRange();
-                    gameStateMachine.stateMode = 25;
-                    break;
-                case 2:
-                    terminal.println("GOOD WORK  YOU LED HIM INTO A TRAP");
-                    K1 = -1;
-                    monsterStats[currentMonster][6] = 0;
-                    gameStateMachine.stateMode = 200; //auto kill
-                    break;
-                case 3:
-                case 4:
-                    //through the door
-                    if (dungeonMap[F1 + 2 * mapRowDelta][F2 + 2 * mapColumnDelta] === 0) { // Then Goto 07510
-                        mapRowDelta = mapRowDelta * 2;
-                        mapColumnDelta = mapColumnDelta * 2;
-                        //closer
-                        dungeonMap[F1][F2] = 0;
-                        F1 += mapRowDelta;
-                        F2 += mapColumnDelta;
-                        dungeonMap[F1][F2] = 5;
-                        findRange();
-                    }
-                    gameStateMachine.stateMode = 25;
-                    break;
-                default:
-                    gameStateMachine.stateMode = 25;
-            }
-        } else {
-            gameStateMachine.stateMode = 25;
+        resolveMonsterMove();
+    }
+}
+
+/***
+ * determine direction of movement and if the move can be made complete it
+ */
+function resolveMonsterMove() {
+    var mapRowDelta = 0, mapColumnDelta = 0;
+    // direction of movement
+    if (Math.abs(rangeRowOffset) > Math.abs(rangeColumnOffset)) { //Then Goto 07260
+        mapRowDelta = -(rangeRowOffset / Math.abs(rangeRowOffset));
+    } else {
+        if (M != 1) { // Then Goto 07270 - obscure logic
+            mapColumnDelta = -(rangeColumnOffset / Math.abs(rangeColumnOffset))
         }
     }
+    // check movement is possible and resolve
+    gameStateMachine.stateMode = 25;
+    if(inBounds(F1 + mapRowDelta, F2 + mapColumnDelta)) {
+        switch(dungeonMap[F1 + mapRowDelta][F2 + mapColumnDelta]) {
+            case 0:
+            case 6:
+            case 7:
+            case 8:
+                translateMonsterPosition(mapRowDelta, mapColumnDelta);
+                break;
+            case 2:
+                terminal.println("GOOD WORK  YOU LED HIM INTO A TRAP");
+                K1 = -1;
+                monsterStats[currentMonster][6] = 0;
+                gameStateMachine.stateMode = 200; //auto kill
+                break;
+            case 3:
+            case 4:
+                //through a door
+                if (dungeonMap[F1 + 2 * mapRowDelta][F2 + 2 * mapColumnDelta] === 0) { // Then Goto 07510
+                    mapRowDelta = mapRowDelta * 2;
+                    mapColumnDelta = mapColumnDelta * 2;
+                    translateMonsterPosition(mapRowDelta, mapColumnDelta);
+                }
+                break;
+        }
+    }
+}
+
+/***
+ * Move monster from A to B
+ * note the move destroys anything that the monster moves over
+ * @param rowDelta
+ * @param columnDelta
+ */
+function translateMonsterPosition(rowDelta, columnDelta) {
+    dungeonMap[F1][F2] = 0;
+    F1 += rowDelta;
+    F2 += columnDelta;
+    dungeonMap[F1][F2] = 5;
+    findRange();
 }
 
 /***
