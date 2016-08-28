@@ -377,5 +377,38 @@ describe("Game Functions", function() {
                 expect(dungeonMap[1][0]).toBe(5);
             });
         });
+
+        describe("Routes control according to range", function() {
+            beforeEach(function() {
+                gameStateMachine = { stateMode : 0 };
+            });
+
+            it("calculates the range from player to monster", function() {
+                spyOn(window,"findRange").and.callFake(function() { range = 0; });
+                monsterMovement();
+                expect(findRange).toHaveBeenCalled();
+            });
+
+            it("routes to attack if range < 2", function() {
+                spyOn(window,"findRange").and.callFake(function() { range = 0; });
+                monsterMovement();
+                expect(gameStateMachine.stateMode).toBe(207);
+            });
+
+            it("routes back to main loop if range >= 2 and P0 > 10", function() {
+                spyOn(window,"findRange").and.callFake(function() { range = 2; });
+                P0 = 11;
+                monsterMovement();
+                expect(gameStateMachine.stateMode).toBe(25);
+            });
+
+            it("routes back to movement if range >= 2 and P0 <= 10", function() {
+                spyOn(window,"findRange").and.callFake(function() { range = 2; });
+                spyOn(window,"resolveMonsterMove").and.callFake(function() {});
+                P0 = 9;
+                monsterMovement();
+                expect(resolveMonsterMove).toHaveBeenCalled();
+            });
+        });
     });
 });
