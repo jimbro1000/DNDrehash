@@ -66,6 +66,7 @@ describe("Game Functions", function() {
 			results = [17,1];
 			spyOn(window, 'rnd').and.callFake(notRnd);
 			monsterSwings();
+            expect(attributes[constants.playerHp]).not.toBe(10);
 		});
 
 		describe('Calculates chance to hit against protection', function() {
@@ -200,4 +201,181 @@ describe("Game Functions", function() {
 			expect(window.monsterMovement).toHaveBeenCalled();
 		});
 	});
+
+	describe("Monster position translation", function() {
+		beforeEach(function() {
+            F1=1; F2=1;
+            dungeonMap[0] = [0,0,0];
+            dungeonMap[1] = [0,5,0];
+            dungeonMap[2] = [0,0,0];
+		});
+
+        it("moves monster from A to B", function() {
+            translateMonsterPosition(1,0);
+            expect(dungeonMap[1][1]).toBe(0);
+            expect(dungeonMap[2][1]).toBe(5);
+        });
+	});
+
+    describe("Resolve monster movement", function() {
+        describe("Finds best direction of movement", function() {
+            beforeEach(function() {
+                F1=1; F2=1;
+                dungeonMap[0] = [0,0,0];
+                dungeonMap[1] = [0,5,0];
+                dungeonMap[2] = [0,0,0];
+                spyOn(window,"translateMonsterPosition").and.callThrough();
+            });
+
+            it("moves across row if vertical offset is larger", function() {
+                rangeRowOffset = 2;
+                rangeColumnOffset = 1;
+                resolveMonsterMove();
+                expect(translateMonsterPosition).toHaveBeenCalled();
+                expect(F1).toBe(0);
+                expect(F2).toBe(1);
+            });
+
+            it("moves along row if horizontal offset is larger", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = 2;
+                resolveMonsterMove();
+                expect(translateMonsterPosition).toHaveBeenCalled();
+                expect(F1).toBe(1);
+                expect(F2).toBe(0);
+            });
+
+            it("moves towards the target if above", function() {
+                rangeRowOffset = 2;
+                rangeColumnOffset = 1;
+                resolveMonsterMove();
+                expect(F1).toBe(0);
+                expect(F2).toBe(1);
+            });
+
+            it("moves towards the target if below", function() {
+                rangeRowOffset = -2;
+                rangeColumnOffset = 1;
+                resolveMonsterMove();
+                expect(F1).toBe(2);
+                expect(F2).toBe(1);
+            });
+
+            it("moves towards the target if to left", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = 2;
+                resolveMonsterMove();
+                expect(F1).toBe(1);
+                expect(F2).toBe(0);
+            });
+
+            it("moves towards the target if to right", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = -2;
+                resolveMonsterMove();
+                expect(F1).toBe(1);
+                expect(F2).toBe(2);
+            });
+        });
+
+        describe("Moves according to the target map cell", function() {
+            beforeEach(function() {
+                F1=1; F2=1;
+                dungeonMap[0] = [0,1,0,0];
+                dungeonMap[1] = [0,5,2,0];
+                loadMonsters();
+                currentMonster = 1;
+                spyOn(window,"inBounds").and.callFake(function() { return true; });
+                spyOn(window,"findRange").and.callFake(function() { });
+            });
+
+            it("kills the monster if it finds a trap", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = -2;
+                resolveMonsterMove();
+                expect(monsterStats[currentMonster][6]).toBe(0);
+            });
+
+            it("moves through a secret door if is clear on the opposite side", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = -2;
+                dungeonMap[1][2] = 3;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(0);
+                expect(dungeonMap[1][3]).toBe(5);
+            });
+
+            it("doesn't move through a secret door if is not clear on the opposite side", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = -2;
+                dungeonMap[1][2] = 3;
+                dungeonMap[1][3] = 1;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(5);
+                expect(dungeonMap[1][3]).toBe(1);
+            });
+
+            it("moves through a door if is clear on the opposite side", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = -2;
+                dungeonMap[1][2] = 4;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(0);
+                expect(dungeonMap[1][3]).toBe(5);
+            });
+
+            it("doesn't move through a door if is not clear on the opposite side", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = -2;
+                dungeonMap[1][2] = 4;
+                dungeonMap[1][3] = 1;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(5);
+                expect(dungeonMap[1][3]).toBe(1);
+            });
+
+            it("doesn't move into a wall", function() {
+                rangeRowOffset = 2;
+                rangeColumnOffset = 1;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(5);
+                expect(dungeonMap[0][1]).toBe(1);
+            });
+
+            it("moves into open space", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = 2;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(0);
+                expect(dungeonMap[1][0]).toBe(5);
+            });
+
+            it("moves into treasure", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = 2;
+                dungeonMap[1][0] = 6;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(0);
+                expect(dungeonMap[1][0]).toBe(5);
+            });
+
+            it("moves into a strength boost", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = 2;
+                dungeonMap[1][0] = 7;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(0);
+                expect(dungeonMap[1][0]).toBe(5);
+            });
+
+            it("moves into a constitution boost", function() {
+                rangeRowOffset = 1;
+                rangeColumnOffset = 2;
+                dungeonMap[1][0] = 8;
+                resolveMonsterMove();
+                expect(dungeonMap[1][1]).toBe(0);
+                expect(dungeonMap[1][0]).toBe(5);
+            });
+        });
+    });
 });

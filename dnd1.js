@@ -910,7 +910,7 @@ function completeMove() {
 
 function thud() {
     terminal.println("YOU RAN INTO A WALL");
-    if ((rnd(0) * 12 + 1) > 9) {
+    if ((rnd(12) + 1) > 9) {
         terminal.println("AND LOOSE 1 HIT POINT");
         attributes[constants.playerHp] -= 1;
     } else {
@@ -922,7 +922,7 @@ function thud() {
 function itsatrap() {
     var m;
     terminal.println("OOOOPS A TRAP AND YOU FELL IN");
-    if ((rnd(0) * 2) < 2) {
+    if ((rnd(2)) < 2) {
         terminal.println("AND HIT POINTS LOOSE 1");
         attributes[constants.playerHp] -= 1;
     }
@@ -1526,7 +1526,7 @@ function consumeWpn() { //71
 }
 
 function peltMonster() { //72
-    if (int(rnd(0) * 20) + 1 === 20) {
+    if (int(rnd(20)) + 1 === 20) {
         terminal.println("DIRECT HIT");
         monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] / 6);
     } else if (int(rnd(0) * 20) + 1 > monsterStats[currentMonster][2] - attributes[constants.playerDex] / 3) {
