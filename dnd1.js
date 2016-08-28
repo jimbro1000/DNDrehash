@@ -47,7 +47,7 @@ var S; // move delta
 var T; // turn input / move delta
 var M;
 var N;
-var P0;
+var P0; //used but never modified - investigate
 var inputInt;
 var Z;
 var Z5; //only used once - investigate
@@ -2282,7 +2282,7 @@ function monsterMovement() {
     if (range < 2.0) { //Then Goto 07600
         //it attacks
         gameStateMachine.stateMode = 207;
-    } else if (P0 > 10) { //Then Goto 01590
+    } else if (P0 > 10) { //Then Goto 01590 //note P0 is NEVER modified from 0 suspect typo in original printout
         gameStateMachine.stateMode = 25;
     } else {
         //he is coming
