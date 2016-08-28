@@ -51,7 +51,7 @@ var P0;
 var inputInt;
 var Z;
 var Z5; //only used once - investigate
-var range, R2, R8, R9; //range and hit calcs
+var range, R2, rangeRowOffset, rangeColumnOffset; //range and hit calcs
 var R3, R4, R5; //combat calcs
 var terminal; // display terminal
 var Q; // numeric input
@@ -190,6 +190,10 @@ function buildStateModel() {
     gameStateMachine.stateMode = 1;
 }
 
+function inBounds(row, column) {
+    return (row >= 0) && (row <=25) && (column >= 0) && (column <= 25);
+}
+
 function findRange() {
     //range and hit check
     var m, n;
@@ -199,7 +203,7 @@ function findRange() {
     tempX = 26;
     for (m = -25; m <= 25; m++) {
         for (n = -25; n <= 25; n++) {
-            if ((mapY + m <= 25) && (mapY + m >= 0) && (mapX + n <= 25) && (mapX + n >= 0)) {
+            if (inBounds(mapY + m, mapX + n)) {
                 if (dungeonMap[mapY + m][mapX + n] == 5) {
                     tempY = m;
                     tempX = n;
@@ -210,8 +214,8 @@ function findRange() {
             }
         }
     }
-    R8 = tempY;
-    R9 = tempX;
+    rangeRowOffset = tempY;
+    rangeColumnOffset = tempX;
     if (int(rnd(20) + 1) > 18) {
         R2 = 3;
     } else {
@@ -2269,82 +2273,83 @@ function resetAfterClear() { //205
     }
 }
 
-function monsterAction() { //206
-    var F5, F6;
+/***
+ * refactored from state 206 (monsterAction)
+ */
+function monsterMovement() {
+    var mapRowDelta, mapColumnDelta;
     findRange();
-    if (monsterStats[currentMonster][3] < 1) { //Then Goto 08290
-        //its a kill
-        gameStateMachine.stateMode = 203;
+    if (range < 2.0) { //Then Goto 07600
+        //it attacks
+        gameStateMachine.stateMode = 207;
+    } else if (P0 > 10) { //Then Goto 01590
+        gameStateMachine.stateMode = 25;
     } else {
-        if (range < 2.0) { //Then Goto 07600
-            //it attacks
-            gameStateMachine.stateMode = 207;
-        } else if (P0 > 10) { //Then Goto 01590
-            gameStateMachine.stateMode = 25;
+        //he is coming
+        if (Math.abs(rangeRowOffset) > Math.abs(rangeColumnOffset)) { //Then Goto 07260
+            mapRowDelta = -(rangeRowOffset / Math.abs(rangeRowOffset));
+            mapColumnDelta = 0;
         } else {
-            //he is coming
-            if (Math.abs(R8) > Math.abs(R9)) { //Then Goto 07260
-                F5 = -(R8 / Math.abs(R8));
-                F6 = 0;
+            mapRowDelta = 0;
+            if (M === 1) { // Then Goto 07270
+                mapColumnDelta = 0;
             } else {
-                F5 = 0;
-                if (M === 1) { // Then Goto 07270
-                    F6 = 0;
-                } else {
-                    F6 = -(R9 / Math.abs(R9))
-                }
-            }
-            Q = -1;
-            for (var q = 0; q <= 8; q++) {
-                if (q != 1 && q != 5) {
-                    if (!(F1 + F5 < 0 || F1 + F5 > 25 || F2 + F6 < 0 || F2 + F6 > 25)) {
-                        if (dungeonMap[F1 + F5][F2 + F6] == q) {
-                            Q = q;
-                            q = 9;
-                        }
-                    }
-                }
-            }
-            if (Q != -1) {
-                switch (Q) {
-                    case 0:
-                    case 6:
-                    case 7:
-                    case 8:
-                        //closer
-                        dungeonMap[F1][F2] = 0;
-                        F1 += F5;
-                        F2 += F6;
-                        dungeonMap[F1][F2] = 5;
-                        findRange();
-                        gameStateMachine.stateMode = 25;
-                        break;
-                    case 2:
-                        terminal.println("GOOD WORK  YOU LED HIM INTO A TRAP");
-                        K1 = -1;
-                        monsterStats[currentMonster][6] = 0;
-                        gameStateMachine.stateMode = 200;
-                        break;
-                    case 3:
-                    case 4:
-                        //through the door
-                        if (dungeonMap[F1 + 2 * F5][F2 + 2 * F6] === 0) { // Then Goto 07510
-                            F5 = F5 * 2;
-                            F6 = F6 * 2;
-                            //closer
-                            dungeonMap[F1][F2] = 0;
-                            F1 += F5;
-                            F2 += F6;
-                            dungeonMap[F1][F2] = 5;
-                            findRange();
-                        }
-                        gameStateMachine.stateMode = 25;
-                        break;
-                }
-            } else {
-                gameStateMachine.stateMode = 25;
+                mapColumnDelta = -(rangeColumnOffset / Math.abs(rangeColumnOffset))
             }
         }
+        // check movement is possible and resolve
+        if(inBounds(F1 + mapRowDelta, F2 + mapColumnDelta)) {
+            switch(dungeonMap[F1 + mapRowDelta][F2 + mapColumnDelta]) {
+                case 0:
+                case 6:
+                case 7:
+                case 8:
+                    //closer
+                    dungeonMap[F1][F2] = 0;
+                    F1 += mapRowDelta;
+                    F2 += mapColumnDelta;
+                    dungeonMap[F1][F2] = 5;
+                    findRange();
+                    gameStateMachine.stateMode = 25;
+                    break;
+                case 2:
+                    terminal.println("GOOD WORK  YOU LED HIM INTO A TRAP");
+                    K1 = -1;
+                    monsterStats[currentMonster][6] = 0;
+                    gameStateMachine.stateMode = 200; //auto kill
+                    break;
+                case 3:
+                case 4:
+                    //through the door
+                    if (dungeonMap[F1 + 2 * mapRowDelta][F2 + 2 * mapColumnDelta] === 0) { // Then Goto 07510
+                        mapRowDelta = mapRowDelta * 2;
+                        mapColumnDelta = mapColumnDelta * 2;
+                        //closer
+                        dungeonMap[F1][F2] = 0;
+                        F1 += mapRowDelta;
+                        F2 += mapColumnDelta;
+                        dungeonMap[F1][F2] = 5;
+                        findRange();
+                    }
+                    gameStateMachine.stateMode = 25;
+                    break;
+                default:
+                    gameStateMachine.stateMode = 25;
+            }
+        } else {
+            gameStateMachine.stateMode = 25;
+        }
+    }
+}
+
+/***
+ * dead or alive?
+ */
+function monsterAction() { //206
+    if (monsterStats[currentMonster][3] < 1) { //Then Goto 08290
+        gameStateMachine.stateMode = 203; //its a kill
+    } else {
+        monsterMovement();
     }
 }
 
@@ -2385,8 +2390,8 @@ function monsterSwings() { //207
     terminal.println(monsterNames[currentMonster] + " WATCH IT");
     if (rnd(40) > calculatePlayerProtection()) {
         terminal.println("MONSTER SCORES A HIT");
-        attributes[constants.playerHp] -= int(rnd(0) * monsterStats[currentMonster][2] + 1);
-        terminal.println("H.P.=" + attributes[0]);
+        attributes[constants.playerHp] -= int(rnd(monsterStats[currentMonster][2]) + 1);
+        terminal.println("H.P.=" + attributes[constants.playerHp]);
         gameStateMachine.stateMode = 200;
     } else {
         if (rnd(2) > 1) {

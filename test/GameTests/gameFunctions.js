@@ -177,4 +177,27 @@ describe("Game Functions", function() {
 			});
 		});
 	});
+
+	describe("Monster action live or die", function() {
+		beforeEach(function() {
+			attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+			currentMonster = 1;
+			loadMonsters();
+			gameStateMachine = function() {
+				var stateMode = 0;
+			};
+		});
+
+		it("detects dead monsters and routes to the killed routine", function() {
+			monsterStats[currentMonster][3] = 0;
+			monsterAction();
+			expect(gameStateMachine.stateMode === 203).toBe(true);
+		});
+
+		it("routes active monsters to action logic", function() {
+			spyOn(window, "monsterMovement").and.callFake(function() { });
+			monsterAction();
+			expect(window.monsterMovement).toHaveBeenCalled();
+		});
+	});
 });
