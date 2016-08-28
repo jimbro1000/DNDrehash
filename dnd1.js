@@ -190,6 +190,12 @@ function buildStateModel() {
     gameStateMachine.stateMode = 1;
 }
 
+/***
+ * Check if given coordinates are inside map bounds
+ * @param row
+ * @param column
+ * @returns {boolean} true if inside map limits
+ */
 function inBounds(row, column) {
     return (row >= 0) && (row <=25) && (column >= 0) && (column <= 25);
 }
