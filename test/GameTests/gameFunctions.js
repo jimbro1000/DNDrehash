@@ -184,8 +184,8 @@ describe("Game Functions", function() {
 			attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
 			currentMonster = 1;
 			loadMonsters();
-			gameStateMachine = function() {
-				var stateMode = 0;
+			gameStateMachine = {
+				stateMode : 0
 			};
 		});
 

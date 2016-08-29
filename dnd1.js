@@ -81,7 +81,9 @@ var constants = {
     playerWis: 5,
     playerInt: 6,
     playerGold: 7,
-    playerClass: 0
+    playerClass: 0,
+    monsterHp: 6,
+    monsterStartHp: 5
 };
 
 function buildStateModel() {
@@ -2201,7 +2203,7 @@ function monsterMove() { //202
     while (!moved && Z7 <= 50) {
         M = 1;
         while (!moved && M <= 10) {
-            if (monsterStats[M][5] >= 1 && rnd(0) > 0.925) {
+            if (monsterStats[M][constants.monsterHp] >= 1 && rnd(0) > 0.925) {
                 moved = true;
                 gameStateMachine.stateMode = 204;
             }
@@ -2219,17 +2221,17 @@ function monsterMove() { //202
 
 function confirmedKill() { //203
     K1 = 0;
-    attributes[constants.playerGold] += monsterStats[currentMonster][6];
+    attributes[constants.playerGold] += monsterStats[currentMonster][constants.monsterStartHp];
     F1 = 0;
     F2 = 0;
     terminal.println("GOOD WORK YOU JUST KILLED A " + monsterNames[currentMonster]);
-    terminal.println("AND GET " + monsterStats[currentMonster][6] + "GOLD PIECES");
-    if (J6 != 1) monsterStats[currentMonster][5] = 0;
-    terminal.println("YOU HAVE" + attributes[7] + " GOLD ");
-    monsterStats[currentMonster][6] = 0;
+    terminal.println("AND GET " + monsterStats[currentMonster][constants.monsterStartHp] + "GOLD PIECES");
+    if (J6 != 1) monsterStats[currentMonster][constants.monsterStartHp] = 0;
+    terminal.println("YOU HAVE" + attributes[constants.playerGold] + " GOLD ");
+    monsterStats[currentMonster][constants.monsterHp] = 0;
     if (J6 === 1) {
         monsterStats[currentMonster][3] = monsterStats[currentMonster][4] * monsterStats[currentMonster][1];
-        monsterStats[currentMonster][6] = monsterStats[currentMonster][5] * monsterStats[currentMonster][1];
+        monsterStats[currentMonster][constants.monsterHp] = monsterStats[currentMonster][constants.monsterStartHp] * monsterStats[currentMonster][1];
     }
     currentMonster = 0;
     gameStateMachine.stateMode = 25;
@@ -2269,6 +2271,11 @@ function makeAMonsterMove() { //204
     gameStateMachine.stateMode = 200;
 }
 
+/***
+ * on "yes":
+ * resets monsters, increases difficulty level
+ * else quit
+ */
 function resetAfterClear() { //205
     strQ = inputString.trim();
     if (strQ === "YES") {
@@ -2276,7 +2283,7 @@ function resetAfterClear() { //205
         difficultyFactor += 1; //up difficultly level
         for (M = 1; M <= 10; M++) {
             monsterStats[M][3] = monsterStats[M][4] * difficultyFactor;
-            monsterStats[M][6] = monsterStats[M][5] * difficultyFactor;
+            monsterStats[M][constants.monsterHp] = monsterStats[M][constants.monsterStartHp] * difficultyFactor;
         }
         attributes[constants.playerHp] += 5;
         gameStateMachine.stateMode = 25;
@@ -2329,7 +2336,7 @@ function resolveMonsterMove() {
             case 2:
                 terminal.println("GOOD WORK  YOU LED HIM INTO A TRAP");
                 K1 = -1;
-                monsterStats[currentMonster][6] = 0;
+                monsterStats[currentMonster][constants.monsterHp] = 0;
                 gameStateMachine.stateMode = 200; //auto kill
                 break;
             case 3:
