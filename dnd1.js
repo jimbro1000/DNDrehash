@@ -185,7 +185,7 @@ function buildStateModel() {
     gameStateMachine.addState(new StateModel(201, "got answer to more equipment", gotMoreEquipment));
     gameStateMachine.addState(new StateModel(202, "check if map is cleared", monsterMove));
     gameStateMachine.addState(new StateModel(203, "report kill", confirmedKill));
-    gameStateMachine.addState(new StateModel(204, "make a monster move big step", makeAMonsterMove));
+    gameStateMachine.addState(new StateModel(204, "make a monster (spawn)", makeAMonster));
     gameStateMachine.addState(new StateModel(205, "got reset answer", resetAfterClear));
     gameStateMachine.addState(new StateModel(206, "make a monster move small step", monsterAction));
     gameStateMachine.addState(new StateModel(207, "monster attacks player", monsterSwings));
@@ -2237,23 +2237,27 @@ function confirmedKill() { //203
     gameStateMachine.stateMode = 25;
 }
 
-function makeAMonsterMove() { //204
+/***
+ * scans map around player and creates current monster at a random location
+ * Sets up F1 and F2 after move prior to action check
+ */
+function makeAMonster() { //204
     var loopCounter = 0;
     currentMonster = M;
     var moved = false;
     while (!moved) { //dangerous - but statistically should never lock unless it is a very poor map
         loopCounter++; //stop it locking permanently
-        var M1 = int(rnd(7) + 1);
-        M = M1 * -1;
+        var M1 = int(rnd(7) + 1); //select a random range 1-7
+        M = M1 * -1; // vertical from negative range to positive range
         while (!moved && M <= M1) {
-            N = M1 * -1;
+            N = M1 * -1; // horizontal from negative range to positive range
             while (!moved && N <= M1) {
-                if (!(Math.abs(M) > 2 || Math.abs(N) > 2)) {
-                    if (!(mapY + M < 1 || mapX + N < 1 || mapY + M > 25 || mapX + N > 25)) {
-                        if (rnd(0) <= 0.7) {
-                            if (dungeonMap[mapY + M][mapX + N] == 0) {
+                if (!(Math.abs(M) > 2 || Math.abs(N) > 2)) { // if inside attack range
+                    if(inBounds(mapY + M, mapX + N)) {
+                        if (rnd(0) <= 0.7) { // 70% chance
+                            if (dungeonMap[mapY + M][mapX + N] === 0) { //if cell is empty
                                 moved = true;
-                                dungeonMap[mapY + M][mapX + N] = 5;
+                                dungeonMap[mapY + M][mapX + N] = 5; // spawn current monster
                                 F1 = mapY + M;
                                 F2 = mapX + N;
                             }
@@ -2264,7 +2268,7 @@ function makeAMonsterMove() { //204
             }
             M++;
         }
-        if (loopCounter > 1000) {
+        if (loopCounter > 10) {
             moved = true;
         } //break out of loop
     }
@@ -2281,9 +2285,9 @@ function resetAfterClear() { //205
     if (strQ === "YES") {
         // reset
         difficultyFactor += 1; //up difficultly level
-        for (M = 1; M <= 10; M++) {
-            monsterStats[M][3] = monsterStats[M][4] * difficultyFactor;
-            monsterStats[M][constants.monsterHp] = monsterStats[M][constants.monsterStartHp] * difficultyFactor;
+        for (var m = 1; m <= 10; m++) {
+            monsterStats[m][3] = monsterStats[m][4] * difficultyFactor;
+            monsterStats[m][constants.monsterHp] = monsterStats[m][constants.monsterStartHp] * difficultyFactor;
         }
         attributes[constants.playerHp] += 5;
         gameStateMachine.stateMode = 25;

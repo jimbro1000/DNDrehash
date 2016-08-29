@@ -411,4 +411,47 @@ describe("Game Functions", function() {
             });
         });
     });
+
+	describe("Reset after clear", function() {
+		beforeEach(function() {
+			loadMonsters();
+			for (var i=1; i<11; i++) {
+				monsterStats[i][3] = 0;
+				monsterStats[i][constants.monsterHp] = 0;
+			}
+			attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+			difficultyFactor = 1;
+			gameStateMachine = {
+				stateMode: 0
+			};
+			terminal = {};
+			terminal.println = function() {};
+		});
+
+		it("checks player input for a 'YES'", function() {
+			inputString = "YES";
+			resetAfterClear();
+			expect(gameStateMachine.stateMode).toBe(25);
+			expect(attributes[constants.playerHp]).toBe(15);
+			expect(difficultyFactor).toBe(2);
+			for(var i=1; i<11; i++) {
+				expect(monsterStats[i][3]).toBe(monsterStats[i][4] * difficultyFactor);
+				expect(monsterStats[i][constants.monsterHp]).toBe(monsterStats[i][constants.monsterStartHp] * difficultyFactor);
+			}
+		});
+
+		it("stops the game if input is not a 'YES'", function() {
+			inputString = "";
+			spyOn(terminal,"println").and.callThrough();
+			resetAfterClear();
+			expect(gameStateMachine.stateMode).toBe(30);
+			expect(attributes[constants.playerHp]).toBe(10);
+			expect(difficultyFactor).toBe(1);
+			for(var i=1; i<11; i++) {
+				expect(monsterStats[i][3]).toBe(0);
+				expect(monsterStats[i][constants.monsterHp]).toBe(0);
+			}
+			expect(terminal.println).toHaveBeenCalled();
+		});
+	});
 });
