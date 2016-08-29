@@ -5,14 +5,15 @@ This repository holds the complete code to run this port of Richard Garriott's o
 * In 1977 R.G. won a bet with his father that he could write a role playing game with the reward being a (then) very expensive Apple computer.  The subsequent code eventually transformed and grew into Akalabeth, the precursor to the Ultima series of games
 * This is a literal translation of that basic code into JavaScript, composed as part of a coding competition run by the original author in 2014 
 * The original ran through a crude teletype terminal, with the output to paper printout, in the interests of saving some trees, this version uses the screen for output
-* Version 0.3
+* Currently at version 0.3
 
 ### How do I get set up? ###
 
-* Outside of this respository the only additional requirement to run is a working html 5 compliant browser and somewhere to serve the code from
+* Outside of this repository the only additional requirement to run is a working html 5 compliant browser and somewhere to serve the code from
 * The application is launched from the default.html page. Save/Progress data is saved to local cookies if permitted
 * jQuery is used to resolve compatibility, version 3.1.0 is included in the repository
 * If you wish to run the test you will need to download the standalone jasmine 2 package (currently V2.4.1), this should be located in a folder called jasmine at the root of the package
+* The original supplied source code is included in the vbsource folder for reference
 
 `Download jasmine-standalone from https://github.com/jasmine/jasmine/releases`
 
