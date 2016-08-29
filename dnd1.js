@@ -2239,9 +2239,9 @@ function confirmedKill() { //203
 
 /***
  * scans map around player and creates current monster at a random location
- * Sets up F1 and F2 after move prior to action check
+ * Sets up F1 and F2 after spawn prior to action check
  */
-function makeAMonster() { //204
+function makeAMonster() { //204 line 8000
     var loopCounter = 0;
     currentMonster = M;
     var moved = false;
@@ -2252,14 +2252,12 @@ function makeAMonster() { //204
         while (!moved && M <= M1) {
             N = M1 * -1; // horizontal from negative range to positive range
             while (!moved && N <= M1) {
-                if (!(Math.abs(M) > 2 || Math.abs(N) > 2)) { // if inside attack range
+                if (Math.abs(M) > 2 || Math.abs(N) > 2) { // if outside attack range
                     if(inBounds(mapY + M, mapX + N)) {
                         if (rnd(0) <= 0.7) { // 70% chance
                             if (dungeonMap[mapY + M][mapX + N] === 0) { //if cell is empty
                                 moved = true;
-                                dungeonMap[mapY + M][mapX + N] = 5; // spawn current monster
-                                F1 = mapY + M;
-                                F2 = mapX + N;
+                                spawnMonsterAt(mapY + M, mapX + N);
                             }
                         }
                     }
@@ -2273,6 +2271,12 @@ function makeAMonster() { //204
         } //break out of loop
     }
     gameStateMachine.stateMode = 200;
+}
+
+function spawnMonsterAt(Y,X) {
+    dungeonMap[Y][X] = 5;
+    F1 = Y;
+    F2 = X;
 }
 
 /***

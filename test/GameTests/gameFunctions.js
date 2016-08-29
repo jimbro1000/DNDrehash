@@ -454,4 +454,22 @@ describe("Game Functions", function() {
 			expect(terminal.println).toHaveBeenCalled();
 		});
 	});
+
+	describe("Make a monster", function() {
+		xit("populates currentMonster from M", function() {
+
+		});
+
+		xit("changes state mode to 200", function() {
+
+		});
+
+		xit("it uses helper function rnd to generate random numbers", function() {
+
+		});
+
+		xit("it uses inbounds function to check validity of coordinates", function() {
+
+		});
+	});
 });
