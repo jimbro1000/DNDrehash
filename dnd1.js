@@ -2274,6 +2274,11 @@ function makeAMonster() { //204 line 8000
     return loopCounter;
 }
 
+/***
+ * Sets a map cell to 5 (monster)
+ * @param Y
+ * @param X
+ */
 function spawnMonsterAt(Y,X) {
     dungeonMap[Y][X] = 5;
     F1 = Y;
