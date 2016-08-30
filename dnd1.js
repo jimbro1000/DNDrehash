@@ -2247,7 +2247,7 @@ function makeAMonster() { //204 line 8000
     var moved = false;
     while (!moved) { //dangerous - but statistically should never lock unless it is a very poor map
         loopCounter++; //stop it locking permanently
-        var M1 = int(rnd(7) + 1); //select a random range 1-7
+        var M1 = int(rnd(5) + 3); //select a random range 3-7
         M = M1 * -1; // vertical from negative range to positive range
         while (!moved && M <= M1) {
             N = M1 * -1; // horizontal from negative range to positive range
@@ -2271,6 +2271,7 @@ function makeAMonster() { //204 line 8000
         } //break out of loop
     }
     gameStateMachine.stateMode = 200;
+    return loopCounter;
 }
 
 function spawnMonsterAt(Y,X) {
