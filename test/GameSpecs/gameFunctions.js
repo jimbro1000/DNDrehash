@@ -45,12 +45,12 @@ describe("Game Functions", function() {
 			currentMonster = 0;
 			loadMonsters();
 
-			terminal = function() {
-				var lastInput = "";
+			terminal = {
+				lastInput : ""
 			};
 			terminal.println = function(value) { this.lastInput = value; };
-			gameStateMachine = function() {
-				var stateMode = 0;
+			gameStateMachine = {
+				stateMode : 0
 			};
 		});
 
