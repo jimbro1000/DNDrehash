@@ -456,20 +456,63 @@ describe("Game Functions", function() {
 	});
 
 	describe("Make a monster", function() {
-		xit("populates currentMonster from M", function() {
-
+	    var randomResults = [];
+        var randomFakeCounter;
+		beforeEach(function() {
+			loadMonsters();
+			defaultMap();
+            currentMonster = 0;
+            M = 1;
+            mapX = 5;
+            mapY = 4;
+            F1 = -1;
+            F2 = -1;
+            spyOn(window,"rnd").and.callFake(function(){ return randomResults[randomFakeCounter++]; });
+            spyOn(window,"spawnMonsterAt").and.callThrough();
+            spyOn(window,"inBounds").and.callThrough();
+            gameStateMachine = { stateMode : 0 };
+            randomFakeCounter = 0;
 		});
 
-		xit("changes state mode to 200", function() {
-
+		it("populates currentMonster from M", function() {
+		    randomResults = [2, 0.1];
+            makeAMonster();
+            expect(currentMonster).toBe(1);
 		});
 
-		xit("it uses helper function rnd to generate random numbers", function() {
-
+		it("changes state mode to 200", function() {
+            randomResults = [2, 0.1];
+            makeAMonster();
+            expect(gameStateMachine.stateMode).toBe(200);
 		});
 
-		xit("it uses inbounds function to check validity of coordinates", function() {
-
+		it("uses helper function rnd to generate random numbers", function() {
+            randomResults = [2, 0.1];
+            makeAMonster();
+            expect(rnd).toHaveBeenCalled();
 		});
+
+        it("uses spawnMonsterAt to safely generate the monster position", function() {
+            randomResults = [2, 0.1];
+            makeAMonster();
+            expect(spawnMonsterAt).toHaveBeenCalled();
+        });
+
+		it("uses inbounds function to check validity of coordinates", function() {
+            randomResults = [2, 0.1];
+            makeAMonster();
+            expect(inBounds).toHaveBeenCalled();
+		});
+
+        it("populates the F1 and F2 global variables after the spawn completes", function() {
+            randomResults = [2, 0.1];
+            makeAMonster();
+            expect(F1).toBe(1);
+            expect(F2).toBe(2);
+        });
+
+        xit("safely completes if map data prevents successful spawn", function() {
+
+        });
 	});
 });
