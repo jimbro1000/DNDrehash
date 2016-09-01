@@ -2197,25 +2197,38 @@ function gotMoreEquipment() { //201
     }
 }
 
+/***
+ * Moves one monster - not so much a move as a teleport
+ * Scan all living monsters and give each one a 7.5% change to "move"
+ * Make 50 attempts and stop after the first successful move
+ */
 function monsterMove() { //202
     var moved = false;
+    var alive = false;
     var Z7 = 1;
     while (!moved && Z7 <= 50) {
         M = 1;
         while (!moved && M <= 10) {
-            if (monsterStats[M][constants.monsterHp] >= 1 && rnd(0) > 0.925) {
-                moved = true;
-                gameStateMachine.stateMode = 204;
+            if (monsterStats[M][constants.monsterHp] > 0) {
+                alive = true;
+                if (rnd(0) > 0.925) {
+                    moved = true;
+                    gameStateMachine.stateMode = 204;
+                }
             }
             M++;
         }
         Z7++;
     }
     if (!moved) {
-        terminal.println("ALL MONSTERS DEAD");
-        terminal.print("RESET");
-        inputStr();
-        gameStateMachine.stateMode = 205;
+        if (!alive) {
+            terminal.println("ALL MONSTERS DEAD");
+            terminal.print("RESET");
+            inputStr();
+            gameStateMachine.stateMode = 205;
+        } else {
+            gameStateMachine.stateMode = 200;
+        }
     }
 }
 

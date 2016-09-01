@@ -609,4 +609,26 @@ describe("Game Functions", function() {
             expect(gameStateMachine.stateMode).toBe(25);
         });
     });
+
+    xdescribe("Monster move", function() {
+        var randomResults = [];
+        var randomFakeCounter;
+
+        beforeEach(function() {
+            loadMonsters();
+            gameStateMachine = {
+                stateMode: 0
+            };
+            terminal = {};
+            terminal.println = function() {};
+            spyOn(terminal,"println").and.callThrough();
+            spyOn(window, "rnd").and.callFake(function() { return randomResults[randomFakeCounter++]; });
+            randomFakeCounter = 0;
+        });
+
+        it("routes game state to 205 if no monsters left to move", function() {
+            monsterMove();
+            expect(gameStateMachine.stateMode).toBe(205);
+        });
+    });
 });
