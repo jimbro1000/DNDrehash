@@ -552,4 +552,61 @@ describe("Game Functions", function() {
             expect(F2).toBe(1);
         });
     });
+
+    describe("Confirmed kill", function() {
+        beforeEach(function() {
+            loadMonsters();
+            F1 = -1;
+            F2 = -1;
+            attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+            gameStateMachine = {
+                stateMode: 0
+            };
+            terminal = {};
+            terminal.println = function() {};
+            currentMonster = 1;
+            K1 = -1;
+            spyOn(terminal,"println").and.callThrough();
+        });
+
+        it("reports the kill to the terminal", function() {
+            confirmedKill();
+            expect(terminal.println).toHaveBeenCalledTimes(3);
+        });
+
+        it("gives the player a gold reward", function() {
+            var initialGold = attributes[constants.playerGold];
+            var reward = monsterStats[currentMonster][constants.monsterStartHp];
+            confirmedKill();
+            expect(attributes[constants.playerGold]).toBe(initialGold + reward);
+        });
+
+        it("clears the monster temporary data", function() {
+            confirmedKill();
+            expect(currentMonster).toBe(0);
+            expect(K1).toBe(0);
+            expect(F1).toBe(0);
+            expect(F2).toBe(0);
+        });
+
+        it("resets the monster health and strength for a respawn if J6 = 1", function() {
+            var targetMonster = currentMonster;
+            J6 = 1;
+            confirmedKill();
+            expect(monsterStats[targetMonster][3]).toBe(monsterStats[targetMonster][4] * monsterStats[targetMonster][1]);
+            expect(monsterStats[targetMonster][constants.monsterHp]).not.toBe(0);
+        });
+
+        it("sets monster health to 0 if J6 != 1", function() {
+            var targetMonster = currentMonster;
+            J6 = 0;
+            confirmedKill();
+            expect(monsterStats[targetMonster][constants.monsterHp]).toBe(0);
+        });
+
+        it("routes game state to 25", function() {
+            confirmedKill();
+            expect(gameStateMachine.stateMode).toBe(25);
+        });
+    });
 });
