@@ -667,4 +667,48 @@ describe("Game Functions", function() {
             expect(M).toBe(2);
         });
     });
+
+    describe("Got more equipment",function() {
+        var randomResults = [];
+        var randomFakeCounter;
+
+        beforeEach(function() {
+            gameStateMachine = {
+                stateMode: 0
+            };
+            terminal = {};
+            terminal.println = function() {};
+            spyOn(terminal,"println").and.callThrough();
+            spyOn(window, "rnd").and.callFake(function() { return randomResults[randomFakeCounter++]; });
+            randomFakeCounter = 0;
+            attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+        });
+
+        it("checks user input for a 'YES' and routes to state 25 (shop) if true", function() {
+            inputString = "YES";
+            gotMoreEquipment();
+            expect(gameStateMachine.stateMode).toBe(18);
+        });
+
+        it("gifts the player 2 hp if a 'YES' and informs the player", function() {
+            inputString = "YES";
+            gotMoreEquipment();
+            expect(terminal.println).toHaveBeenCalled();
+            expect(attributes[constants.playerHp]).toBe(12);
+        });
+
+        it("runs a 50% chance to move a monster if user input is not a 'YES'", function() {
+            inputString = "NO";
+            randomResults = [20];
+            gotMoreEquipment();
+            expect(gameStateMachine.stateMode).toBe(202);
+        });
+
+        it("routes to the main loop if all other tests are false", function() {
+            inputString = "NO";
+            randomResults = [0];
+            gotMoreEquipment();
+            expect(gameStateMachine.stateMode).toBe(25);
+        });
+    });
 });
