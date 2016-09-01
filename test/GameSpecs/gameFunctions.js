@@ -610,7 +610,7 @@ describe("Game Functions", function() {
         });
     });
 
-    xdescribe("Monster move", function() {
+    describe("Monster move", function() {
         var randomResults = [];
         var randomFakeCounter;
 
@@ -621,14 +621,50 @@ describe("Game Functions", function() {
             };
             terminal = {};
             terminal.println = function() {};
+            terminal.print = function() {};
             spyOn(terminal,"println").and.callThrough();
+            spyOn(terminal,"print").and.callThrough();
             spyOn(window, "rnd").and.callFake(function() { return randomResults[randomFakeCounter++]; });
+            spyOn(window, "inputStr").and.callFake(function() {});
             randomFakeCounter = 0;
         });
 
-        it("routes game state to 205 if no monsters left to move", function() {
+        it("routes game state to 205 if no monsters left to move (all dead)", function() {
+            for(var i=1; i<11; i++) monsterStats[i][constants.monsterHp] = 0;
             monsterMove();
             expect(gameStateMachine.stateMode).toBe(205);
+        });
+
+        it("routes game state to 204 once a 'move' is identified", function() {
+            randomResults = [0.95];
+            monsterMove();
+            expect(gameStateMachine.stateMode).toBe(204);
+        });
+
+        it("routes game state to 200 if no moves are identified", function() {
+            for (var i=0;i<500;i++) randomResults[i] = 0;
+            monsterMove();
+            expect(gameStateMachine.stateMode).toBe(200);
+        });
+
+        it("asks the user if a reset is desired if all monsters are dead", function() {
+            for(var i=1; i<11; i++) monsterStats[i][constants.monsterHp] = 0;
+            monsterMove();
+            expect(terminal.println).toHaveBeenCalled();
+            expect(terminal.print).toHaveBeenCalled();
+            expect(inputStr).toHaveBeenCalled();
+        });
+
+        it("uses rnd to generate random numbers for determining move", function() {
+            randomResults = [9.5];
+            monsterMove();
+            expect(rnd).toHaveBeenCalled();
+        });
+
+        it("stores the monster id moved in M", function() {
+            randomResults = [0, 9.5];
+            monsterMove();
+            expect(M).toBe(2);
         });
     });
 });

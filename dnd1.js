@@ -2198,7 +2198,8 @@ function gotMoreEquipment() { //201
 }
 
 /***
- * Moves one monster - not so much a move as a teleport
+ * Moves one monster - not so much a move as a clone as it
+ * potentially leaves a "5" on the map elsewhere.
  * Scan all living monsters and give each one a 7.5% change to "move"
  * Make 50 attempts and stop after the first successful move
  */
@@ -2214,6 +2215,7 @@ function monsterMove() { //202
                 if (rnd(0) > 0.925) {
                     moved = true;
                     gameStateMachine.stateMode = 204;
+                    M--; // retard M for a moment to give the right result at the end of the routine
                 }
             }
             M++;
@@ -2223,7 +2225,7 @@ function monsterMove() { //202
     if (!moved) {
         if (!alive) {
             terminal.println("ALL MONSTERS DEAD");
-            terminal.print("RESET");
+            terminal.print("RESET?");
             inputStr();
             gameStateMachine.stateMode = 205;
         } else {
@@ -2256,7 +2258,7 @@ function confirmedKill() { //203
  */
 function makeAMonster() { //204 line 8000
     var loopCounter = 0;
-    currentMonster = M;
+    currentMonster = M; // value carried from move a monster (202)
     var moved = false;
     while (!moved) { //dangerous - but statistically should never lock unless it is a very poor map
         loopCounter++; //stop it locking permanently
