@@ -2066,7 +2066,6 @@ function addHP() { //101
 function modifyMap() { //102
     terminal.print("DNG");
     input();
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 102.5;
 }
 
@@ -2078,7 +2077,6 @@ function modifyGotMap() { //102.5
 function modifyMapPos() { //103
     terminal.print("X,Y,C");
     inputX(3);
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 104;
 }
 
