@@ -1043,4 +1043,22 @@ describe("Game Functions", function() {
             });
         });
     });
+
+    describe("Show Cheat Map", function() {
+        beforeEach(function() {
+            terminal.println = function(value) { this.lastInput = value; };
+            gameStateMachine = {
+                stateMode : 1,
+                waitTransition : false
+            };
+            defaultMap();
+            spyOn(terminal,"println").and.callThrough();
+        });
+
+        it("displays the entire map to the player", function() {
+            showCheatMap();
+            expect(terminal.println).toHaveBeenCalledTimes(26);
+            expect(gameStateMachine.stateMode).toBe(25);
+        });
+    });
 });

@@ -45,21 +45,21 @@ var mapX; // map x
 var R; // only appears to be used once - investigate
 var S; // move delta
 var T; // turn input / move delta
-var M; // general purpose loop counter - dangerous reuse observed for other calcs
+var M; // general purpose loop counter - dangerous reuse observed for other calculations
 var N; // general purpose loop counter
 var P0; //used but never modified - investigate
 var inputInt;
 var Z;
 var Z5; //only used once - investigate
-var range, R2, rangeRowOffset, rangeColumnOffset; //range and hit calcs
-var R3, R4, R5; //combat calcs
+var range, R2, rangeRowOffset, rangeColumnOffset; //range and hit calculations
+var R3, R4, R5; //combat calculations
 var terminal; // display terminal
 var Q; // numeric input
 var strQ; //string input
 var strN; // player name
 var vbTab; // tab character
 
-var reading; // block keypress event when true
+var reading; // block key press event when true
 var inputString;
 var inputStrings = [];
 var inputsCount;
