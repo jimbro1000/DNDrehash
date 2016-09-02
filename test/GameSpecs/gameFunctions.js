@@ -744,4 +744,77 @@ describe("Game Functions", function() {
             expect(gameStateMachine.stateMode).toBe(202);
         });
     });
+
+    describe("Check Player Health", function() {
+        beforeEach(function() {
+            attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+            terminal = {
+                lastInput : ""
+            };
+            terminal.println = function(value) { this.lastInput = value; };
+            gameStateMachine = {
+                stateMode : 1
+            };
+            spyOn(terminal,"println").and.callThrough();
+        });
+
+        it("checks HP to see if it is 2 or over and does nothing if true", function() {
+            attributes[constants.playerHp] = 2;
+            checkPlayerHealth();
+            expect(attributes[constants.playerHp]).toBe(2);
+            expect(attributes[constants.playerCon]).toBe(10);
+            expect(terminal.println).not.toHaveBeenCalled();
+        });
+
+        it("checks if HP is 1 and warns player if true", function() {
+            attributes[constants.playerHp] = 1;
+            checkPlayerHealth();
+            expect(attributes[constants.playerHp]).toBe(1);
+            expect(attributes[constants.playerCon]).toBe(10);
+            expect(terminal.println).toHaveBeenCalled();
+            expect(terminal.lastInput).toBe("WATCH IT H.P.=1");
+        });
+
+        it("checks if HP is 0 and kills player if Con is less than 9", function() {
+            attributes[constants.playerHp] = 0;
+            attributes[constants.playerCon] = 8;
+            checkPlayerHealth();
+            expect(attributes[constants.playerHp]).toBe(0);
+            expect(attributes[constants.playerCon]).toBe(8);
+            expect(terminal.println).toHaveBeenCalled();
+            expect(terminal.lastInput).toBe("SORRY YOUR DEAD");
+            expect(gameStateMachine.stateMode).toBe(30);
+        });
+
+        it("checks if HP is 0 and warns player if Con is 9 or more", function() {
+            attributes[constants.playerHp] = 0;
+            attributes[constants.playerCon] = 9;
+            checkPlayerHealth();
+            expect(attributes[constants.playerHp]).toBe(0);
+            expect(attributes[constants.playerCon]).toBe(9);
+            expect(terminal.println).toHaveBeenCalled();
+            expect(terminal.lastInput).toBe("H.P.=0 BUT CONST. HOLDS");
+        });
+
+        it("checks if HP is less than 0 and transfers Con to HP (2:1) until HP is 0 and Con is 9 or more then warns player", function() {
+            attributes[constants.playerHp] = -2;
+            attributes[constants.playerCon] = 13;
+            checkPlayerHealth();
+            expect(attributes[constants.playerHp]).toBe(0);
+            expect(attributes[constants.playerCon]).toBe(9);
+            expect(terminal.println).toHaveBeenCalled();
+            expect(terminal.lastInput).toBe("H.P.=0 BUT CONST. HOLDS");
+        });
+
+        it("checks if HP is less than 0 and transfers Con to HP (2:1) until HP is less than 0 and Con is less than 9 then kills player", function() {
+            attributes[constants.playerHp] = -3;
+            attributes[constants.playerCon] = 12;
+            checkPlayerHealth();
+            expect(attributes[constants.playerHp]).toBe(0);
+            expect(attributes[constants.playerCon]).toBe(0);
+            expect(terminal.println).toHaveBeenCalled();
+            expect(terminal.lastInput).toBe("SORRY YOUR DEAD");
+            expect(gameStateMachine.stateMode).toBe(30);
+        });
+    });
 });
