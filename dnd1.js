@@ -2090,7 +2090,6 @@ function modifyMapDone() { //104
     if (content < 0) {
         terminal.println("SAVE");
         input();
-        gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 105;
     } else {
         dungeonMap[targetY][targetX] = content;
