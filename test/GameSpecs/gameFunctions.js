@@ -889,71 +889,111 @@ describe("Game Functions", function() {
         });
     });
 
-    describe("Modify Map Save", function() {
-        beforeEach(function() {
-            defaultMap();
-            gameStateMachine = {
-                stateMode : 1
-            };
-            cookieLifespan = 2000;
-            spyOn(window,"setCookie").and.callFake(function() {});
+    describe("Modify Map Process", function() {
+        describe("Modify Map Save", function() {
+            beforeEach(function() {
+                defaultMap();
+                gameStateMachine = {
+                    stateMode : 1
+                };
+                cookieLifespan = 2000;
+                spyOn(window,"setCookie").and.callFake(function() {});
+            });
+
+            it("checks player input to confirm save (1) and writes to cookie", function() {
+                inputString = "1";
+                Dn = 1;
+                modifyMapSave();
+                expect(setCookie).toHaveBeenCalledTimes(26);
+                expect(setCookie).toHaveBeenCalledWith("dnd1file1.dungeonMap.0","1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|",2000);
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+
+            it("checks player input to confirm save (0)", function() {
+                inputString="0";
+                Dn = 1;
+                modifyMapSave();
+                expect(setCookie).not.toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
         });
 
-        it("checks player input to confirm save (1) and writes to cookie", function() {
-            inputString = "1";
-            Dn = 1;
-            modifyMapSave();
-            expect(setCookie).toHaveBeenCalledTimes(26);
-            expect(setCookie).toHaveBeenCalledWith("dnd1file1.dungeonMap.0","1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|",2000);
-            expect(gameStateMachine.stateMode).toBe(200);
+        describe("Modify Map Done", function() {
+            beforeEach(function() {
+                terminal = {
+                    lastInput : ""
+                };
+                terminal.println = function(value) { this.lastInput = value; };
+                gameStateMachine = {
+                    stateMode : 1,
+                    waitTransition : false
+                };
+                defaultMap();
+                spyOn(window,"setCookie").and.callFake(function() {});
+                spyOn(terminal,"println").and.callThrough();
+                spyOn(window,"input").and.callFake(function() { gameStateMachine.waitTransition = true; });
+            });
+
+            it("accepts player input x,y,content and modifies map", function() {
+                inputStrings[2] = "1";
+                inputStrings[1] = "2";
+                inputStrings[0] = "5";
+                modifyMapDone();
+                expect(dungeonMap[2][1]).toBe(5);
+                expect(input).not.toHaveBeenCalled();
+                expect(terminal.println).not.toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(103);
+            });
+
+            it("treats a negative content value as an instruction to stop", function() {
+                inputStrings[2] = "1";
+                inputStrings[1] = "2";
+                inputStrings[0] = "-5";
+                modifyMapDone();
+                expect(input).toHaveBeenCalled();
+                expect(dungeonMap[2][1]).toBe(0);
+                expect(terminal.println).toHaveBeenCalled();
+                expect(terminal.lastInput).toBe("SAVE");
+                expect(gameStateMachine.stateMode).toBe(105);
+            });
         });
 
-        it("checks player input to confirm save (0)", function() {
-            inputString="0";
-            Dn = 1;
-            modifyMapSave();
-            expect(setCookie).not.toHaveBeenCalled();
-            expect(gameStateMachine.stateMode).toBe(200);
-        });
-    });
+        describe("Modify Got Map", function() {
+            beforeEach(function() {
+                gameStateMachine = {
+                    stateMode : 1
+                };
+            });
 
-    describe("Modify Map Done", function() {
-        beforeEach(function() {
-            terminal = {
-                lastInput : ""
-            };
-            terminal.println = function(value) { this.lastInput = value; };
-            gameStateMachine = {
-                stateMode : 1,
-                waitTransition : false
-            };
-            defaultMap();
-            spyOn(window,"setCookie").and.callFake(function() {});
-            spyOn(terminal,"println").and.callThrough();
-            spyOn(window,"input").and.callFake(function() { gameStateMachine.waitTransition = true; })
+            it("converts user input into dungeon number", function() {
+                Dn = 0;
+                inputString = "1";
+                modifyGotMap();
+                expect(Dn).toBe(1);
+                expect(gameStateMachine.stateMode).toBe(103);
+            });
         });
 
-        it("accepts player input x,y,content and modifies map", function() {
-            inputStrings[2] = "1";
-            inputStrings[1] = "2";
-            inputStrings[0] = "5";
-            modifyMapDone();
-            expect(dungeonMap[2][1]).toBe(5);
-            expect(input).not.toHaveBeenCalled();
-            expect(terminal.println).not.toHaveBeenCalled();
-            expect(gameStateMachine.stateMode).toBe(103);
-        });
+        describe("Modify Map", function() {
+            beforeEach(function() {
+                terminal = {
+                    lastInput : ""
+                };
+                terminal.print = function(value) { this.lastInput = value; };
+                gameStateMachine = {
+                    stateMode : 1,
+                    waitTransition : false
+                };
+                spyOn(terminal,"print").and.callThrough();
+                spyOn(window,"input").and.callFake(function() { gameStateMachine.waitTransition = true; })
+            });
 
-        it("treats a negative content value as an instruction to stop", function() {
-            inputStrings[2] = "1";
-            inputStrings[1] = "2";
-            inputStrings[0] = "-5";
-            modifyMapDone();
-            expect(input).toHaveBeenCalled();
-            expect(dungeonMap[2][1]).toBe(0);
-            expect(terminal.println).toHaveBeenCalled();
-            expect(terminal.lastInput).toBe("SAVE");
-            expect(gameStateMachine.stateMode).toBe(105);
+            it("prompts the user for a dungeon number", function() {
+                modifyMap();
+                expect(terminal.print).toHaveBeenCalledWith("DNG");
+                expect(input).toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(102.5);
+            });
         });
     });
 });

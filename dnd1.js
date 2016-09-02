@@ -2070,7 +2070,7 @@ function modifyMap() { //102
 }
 
 function modifyGotMap() { //102.5
-    D2 = parseInt(inputString.trim());
+    Dn = parseInt(inputString.trim());
     gameStateMachine.stateMode = 103;
 }
 
