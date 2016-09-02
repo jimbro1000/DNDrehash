@@ -888,4 +888,32 @@ describe("Game Functions", function() {
             expect(gameStateMachine.stateMode).not.toBe(0);
         });
     });
+
+    describe("Modify Map Save", function() {
+        beforeEach(function() {
+            defaultMap();
+            gameStateMachine = {
+                stateMode : 1
+            };
+            cookieLifespan = 2000;
+            spyOn(window,"setCookie").and.callFake(function() {});
+        });
+
+        it("checks player input to confirm save (1) and writes to cookie", function() {
+            inputString = "1";
+            Dn = 1;
+            modifyMapSave();
+            expect(setCookie).toHaveBeenCalledTimes(26);
+            expect(setCookie).toHaveBeenCalledWith("dnd1file1.dungeonMap.0","1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|",2000);
+            expect(gameStateMachine.stateMode).toBe(200);
+        });
+
+        it("checks player input to confirm save (0)", function() {
+            inputString="0";
+            Dn = 1;
+            modifyMapSave();
+            expect(setCookie).not.toHaveBeenCalled();
+            expect(gameStateMachine.stateMode).toBe(200);
+        });
+    });
 });
