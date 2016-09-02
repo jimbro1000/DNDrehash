@@ -241,8 +241,8 @@ function findRange() {
 
 function initialiseGlobals(gameConsole) {
     cookieLifespan = 365; //cookie lifespan
-    mapY = int(rnd(24) + 2);
-    mapX = int(rnd(24) + 2);
+    mapY = 1; //int(rnd(24) + 2);
+    mapX = 12; //int(rnd(24) + 2);
     terminal = gameConsole;
     reading = false;
     inputString = "";
@@ -2144,9 +2144,14 @@ function checkPlayerHealth() {
     }
 }
 
+function testForCloneMove() { // 50% change to start a clone move
+    if (rnd(20) > 10) gameStateMachine.stateMode = 202; else gameStateMachine.stateMode = 25;
+}
+
 /***
  * Route game move
  * One of the trickier pieces of code to decipher
+ *
  */
 function routeGameMove() { //200
     gameStateMachine.stateMode = 0;
@@ -2157,31 +2162,13 @@ function routeGameMove() { //200
     }
     if (gameStateMachine.stateMode === 0) {
         if (currentMonster > 0) { // 07160
-            //monster action
-            gameStateMachine.stateMode = 206;
-        } else if (mapY != 1) {
-            if (rnd(20) > 10) {
-                // move monsters
-                gameStateMachine.stateMode = 202;
-            } else {
-                gameStateMachine.stateMode = 25;
-            }
-        } else if (mapX != 12) {
-            if (rnd(20) > 10) {
-                // move monsters
-                gameStateMachine.stateMode = 202;
-            } else {
-                gameStateMachine.stateMode = 25;
-            }
+            gameStateMachine.stateMode = 206;    //monster action (actual move)
+        } else if (!(mapY === 1 && mapX === 12)) {
+            testForCloneMove();
         } else {
             terminal.println("SO YOU HAVE RETURNED");
             if (attributes[constants.playerGold] < 100) {
-                if (rnd(20) > 10) {
-                    // move monsters
-                    gameStateMachine.stateMode = 202;
-                } else {
-                    gameStateMachine.stateMode = 25;
-                }
+                testForCloneMove();
             } else {
                 attributes[constants.playerGold] -= 100;
                 terminal.println("WANT TO BUY MORE EQUIPMENT");
@@ -2202,11 +2189,7 @@ function gotMoreEquipment() { //201
         attributes[constants.playerHp] += 2;
         gameStateMachine.stateMode = 18;
     } else {
-        if (rnd(20) > 10) {
-            gameStateMachine.stateMode = 202;
-        } else {
-            gameStateMachine.stateMode = 25;
-        }
+        testForCloneMove();
     }
 }
 
