@@ -1941,14 +1941,12 @@ function buyMagic() { //92
 function askACleric() { //93
     terminal.println("DO YOU KNOW THE CHOICES");
     inputStr();
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 95;
 }
 
 function askAWizard() { //94
     terminal.println("DO YOU KNOW THE SPELLS");
     inputStr();
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 96;
 }
 
@@ -1962,7 +1960,6 @@ function clericSpellChoices() { //95
         terminal.print("INPUT # WANTED   NEG.NUM.TO STOP");
     }
     input();
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 97;
 }
 
@@ -1977,7 +1974,6 @@ function wizardSpellChoices() { //96
         terminal.print("#OF ONE OU WANT  NEG.NUM.TO STOP");
     }
     input();
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 98;
 }
 
@@ -1987,14 +1983,12 @@ function clericSpellPurchase() { //97
             if (attributes[7] - clericSpellPrices[int(Q)] < 0) {// Then Goto 10270
                 terminal.println("COSTS TOO MUCH");
             } else {
-                attributes[7] -= clericSpellPrices[int(Q)];
+                attributes[constants.playerGold] -= clericSpellPrices[int(Q)];
                 terminal.println("IT IS YOURS");
-                clericSpellCounter += 1;
-                clericSpellbook[clericSpellCounter] = int(Q);
+                clericSpellbook[++clericSpellCounter] = int(Q);
             }
         }
         input();
-        gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 97;
     } else {
         terminal.println("YOUR SPELLS ARE");
@@ -2019,7 +2013,6 @@ function wizardSpellPurchase() { //98
             }
         }
         input();
-        gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 98;
     } else {
         terminal.println("YOU NOW HAVE");
@@ -2030,8 +2023,7 @@ function wizardSpellPurchase() { //98
     }
 }
 
-function showCheatMap() { //99
-    // CHEATING
+function showCheatMap() { //99 - cheating
     var line;
     for (M = 0; M <= 25; M++) {
         line = "";

@@ -1061,4 +1061,201 @@ describe("Game Functions", function() {
             expect(gameStateMachine.stateMode).toBe(25);
         });
     });
+
+    describe("Purchase Magic (Cleric & Wizard)", function() {
+        beforeEach(function() {
+            attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+            attributeNames = [];
+            terminal = {
+                lastInput : ""
+            };
+            terminal.println = function(value) { this.lastInput = value; };
+            terminal.print = function(value) { this.lastInput = value; };
+            gameStateMachine = {
+                stateMode : 1,
+                waitTransition : false
+            };
+            clericSpellCounter = 0;
+            wizardSpellCounter = 0;
+            clericSpellbook = [];
+            wizardSpellbook = [];
+            clericSpellPrices = [0, 500, 200, 200, 200, 100, 300, 1000, 200];
+            wizardSpellPrices = [0, 75, 500, 200, 750, 600, 100, 200, 300, 200, 600];
+            spyOn(terminal,"println").and.callThrough();
+            spyOn(terminal,"print").and.callThrough();
+            spyOn(window,"inputStr").and.callFake(function() {});
+            spyOn(window,"input").and.callFake(function() {});
+        });
+
+        describe("Buy Magic Prompt", function() {
+            it("rejects non-MU", function() {
+                attributeNames[constants.playerClass] = "FIGHTER";
+                buyMagic();
+                expect(terminal.println).toHaveBeenCalledWith("YOU CANT BUY ANY");
+                expect(gameStateMachine.stateMode).toBe(25);
+            });
+
+            it("accepts cleric class", function() {
+                attributeNames[constants.playerClass] = "CLERIC";
+                buyMagic();
+                expect(terminal.println).not.toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(93);
+            });
+
+            it("accepts wizard class", function() {
+                attributeNames[constants.playerClass] = "WIZARD";
+                buyMagic();
+                expect(terminal.println).not.toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(94);
+            });
+        });
+
+        describe("Ask A Cleric", function() {
+            it("prompts the user if the list of spell choices is known", function() {
+                askACleric();
+                expect(terminal.println).toHaveBeenCalledWith("DO YOU KNOW THE CHOICES");
+                expect(inputStr).toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(95);
+            });
+        });
+
+        describe("Ask A Wizard", function() {
+            it("prompts the user if the list of spell choices is known", function() {
+                askAWizard();
+                expect(terminal.println).toHaveBeenCalledWith("DO YOU KNOW THE SPELLS");
+                expect(inputStr).toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(96);
+            });
+        });
+
+        describe("Cleric Spell Choices", function() {
+            it("routes to the input response for cleric spell choices", function() {
+                inputString = "";
+                clericSpellChoices();
+                expect(input).toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(97);
+            });
+
+            it("if the user inputs 'NO' the list of spells is shown", function() {
+                inputString = "NO";
+                clericSpellChoices();
+                expect(terminal.println).toHaveBeenCalledTimes(4);
+                expect(terminal.print).toHaveBeenCalledTimes(1);
+            });
+
+            it("if the user doesn't input 'NO' the list of spells is skipped", function() {
+                inputString = "YES";
+                clericSpellChoices();
+                expect(terminal.println).not.toHaveBeenCalled();
+                expect(terminal.print).not.toHaveBeenCalled();
+            });
+        });
+
+        describe("Wizard Spell Choices", function() {
+            it("routes to the input response for wizard spell choices", function() {
+                inputString = "";
+                wizardSpellChoices();
+                expect(input).toHaveBeenCalled();
+                expect(gameStateMachine.stateMode).toBe(98);
+            });
+
+            it("if the user inputs 'NO' the list of spells is shown", function() {
+                inputString = "NO";
+                wizardSpellChoices();
+                expect(terminal.println).toHaveBeenCalledTimes(5);
+                expect(terminal.print).toHaveBeenCalledTimes(1);
+            });
+
+            it("if the user doesn't input 'NO' the list of spells is skipped", function() {
+                inputString = "YES";
+                wizardSpellChoices();
+                expect(terminal.println).not.toHaveBeenCalled();
+                expect(terminal.print).not.toHaveBeenCalled();
+            });
+        });
+
+        describe("Purchase Cleric Spell", function() {
+            it("checks input for a negative number and lists spellbook and exits purchase if true", function() {
+                Q = -1;
+                clericSpellbook = [0, "A","B", "C"];
+                clericSpellCounter = 3;
+                clericSpellPurchase();
+                expect(gameStateMachine.stateMode).toBe(25);
+                expect(terminal.println).toHaveBeenCalledWith("YOUR SPELLS ARE");
+                expect(terminal.println).toHaveBeenCalledTimes(5);
+            });
+
+            it("checks input for the upper positive limit and if true skips input and repeats", function() {
+                Q = 9;
+                clericSpellPurchase();
+                expect(gameStateMachine.stateMode).toBe(97);
+                expect(input).toHaveBeenCalled();
+                expect(terminal.println).not.toHaveBeenCalled();
+            });
+
+            it("adds the chosen spell if enough gold is carried", function() {
+                Q = 4;
+                clericSpellPurchase();
+                expect(gameStateMachine.stateMode).toBe(97);
+                expect(input).toHaveBeenCalled();
+                expect(terminal.println).toHaveBeenCalledWith("IT IS YOURS");
+                expect(clericSpellCounter).toBe(1);
+                expect(clericSpellbook[1]).toBe(4);
+                expect(attributes[constants.playerGold]).toBe(800);
+            });
+
+            it("warns player if insufficient gold is carried", function() {
+                Q = 4;
+                attributes[constants.playerGold] = 0;
+                clericSpellPurchase();
+                expect(gameStateMachine.stateMode).toBe(97);
+                expect(input).toHaveBeenCalled();
+                expect(terminal.println).toHaveBeenCalledWith("COSTS TOO MUCH");
+                expect(clericSpellCounter).toBe(0);
+                expect(attributes[constants.playerGold]).toBe(0);
+            });
+        });
+
+        describe("Purchase Wizard Spell", function() {
+            it("checks input for a negative number and lists spellbook and exits purchase if true", function() {
+                Q = -1;
+                wizardSpellbook = [0, "A","B", "C"];
+                wizardSpellCounter = 3;
+                wizardSpellPurchase();
+                expect(gameStateMachine.stateMode).toBe(25);
+                expect(terminal.println).toHaveBeenCalledWith("YOU NOW HAVE");
+                expect(terminal.println).toHaveBeenCalledTimes(4);
+            });
+
+            it("checks input for the upper positive limit and if true skips input and repeats", function() {
+                Q = 11;
+                wizardSpellPurchase();
+                expect(gameStateMachine.stateMode).toBe(98);
+                expect(input).toHaveBeenCalled();
+                expect(terminal.println).not.toHaveBeenCalled();
+            });
+
+            it("adds the chosen spell if enough gold is carried", function() {
+                Q = 4;
+                wizardSpellPurchase();
+                expect(gameStateMachine.stateMode).toBe(98);
+                expect(input).toHaveBeenCalled();
+                expect(terminal.println).toHaveBeenCalledWith("IT IS YOURS");
+                expect(wizardSpellCounter).toBe(1);
+                expect(wizardSpellbook[1]).toBe(4);
+                expect(attributes[constants.playerGold]).toBe(250);
+            });
+
+            it("warns player if insufficient gold is carried", function() {
+                Q = 4;
+                attributes[constants.playerGold] = 0;
+                wizardSpellPurchase();
+                expect(gameStateMachine.stateMode).toBe(98);
+                expect(input).toHaveBeenCalled();
+                expect(terminal.println).toHaveBeenCalledWith("COSTS TOO MUCH");
+                expect(wizardSpellCounter).toBe(0);
+                expect(attributes[constants.playerGold]).toBe(0);
+            });
+        });
+    });
 });
