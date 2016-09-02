@@ -711,4 +711,37 @@ describe("Game Functions", function() {
             expect(gameStateMachine.stateMode).toBe(25);
         });
     });
+
+    describe("check for clone move", function() {
+        var randomResults = [];
+        var randomFakeCounter;
+
+        beforeEach(function() {
+            gameStateMachine = {
+                stateMode: 0
+            };
+            spyOn(window, "rnd").and.callFake(function () {
+                return randomResults[randomFakeCounter++];
+            });
+            randomFakeCounter = 0;
+        });
+
+        it("uses rnd to generate random numbers for determining move", function() {
+            randomResults = [20];
+            testForCloneMove();
+            expect(rnd).toHaveBeenCalled();
+        });
+
+        it("sets state to 25 (main loop) on 50%", function() {
+            randomResults = [10];
+            testForCloneMove();
+            expect(gameStateMachine.stateMode).toBe(25);
+        });
+
+        it("sets state to 202 (clone move) on other 50%", function() {
+            randomResults = [11];
+            testForCloneMove();
+            expect(gameStateMachine.stateMode).toBe(202);
+        });
+    });
 });
