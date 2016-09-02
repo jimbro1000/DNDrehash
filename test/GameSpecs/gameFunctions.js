@@ -817,4 +817,75 @@ describe("Game Functions", function() {
             expect(gameStateMachine.stateMode).toBe(30);
         });
     });
+
+    describe("Route Game Move", function() {
+        beforeEach(function() {
+            K1 = 0;
+            attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+            terminal = {
+                lastInput : ""
+            };
+            terminal.println = function(value) { this.lastInput = value; };
+            gameStateMachine = {
+                stateMode : 1,
+                waitTransition : false
+            };
+            spyOn(terminal,"println").and.callThrough();
+            spyOn(window,"checkPlayerHealth").and.callThrough();
+            spyOn(window,"testForCloneMove").and.callFake(function() { gameStateMachine.stateMode = 25; });
+        });
+
+        it("checks for a kill", function() {
+            K1 = -1;
+            routeGameMove();
+            expect(gameStateMachine.stateMode).toBe(203);
+        });
+
+        it("checks if not a kill then check player is dead", function() {
+            attributes[constants.playerHp] = -1;
+            attributes[constants.playerCon] = 8;
+            routeGameMove();
+            expect(gameStateMachine.stateMode).toBe(30);
+            expect(checkPlayerHealth).toHaveBeenCalled();
+        });
+
+        it("checks if a monster is waiting to move", function() {
+            currentMonster = 1;
+            routeGameMove();
+            expect(gameStateMachine.stateMode).toBe(206);
+        });
+
+        it("checks if player is at the starting position and offers to shop if gold >= 100", function() {
+            currentMonster = 0;
+            mapY = 1;
+            mapX = 12;
+            spyOn(window,"inputStr").and.callFake(function() { gameStateMachine.waitTransition = true; });
+            routeGameMove();
+            expect(gameStateMachine.stateMode).toBe(201);
+            expect(attributes[constants.playerGold]).toBe(900);
+            expect(gameStateMachine.waitTransition).toBe(true);
+            expect(terminal.lastInput).toBe("WANT TO BUY MORE EQUIPMENT");
+        });
+
+        it("checks if player is at the starting position and welcomes if gold < 100 and hands off to main routine", function() {
+            currentMonster = 0;
+            mapY = 1;
+            mapX = 12;
+            attributes[constants.playerGold] = 99;
+            routeGameMove();
+            expect(testForCloneMove).toHaveBeenCalled();
+            expect(attributes[constants.playerGold]).toBe(99);
+            expect(terminal.lastInput).toBe("SO YOU HAVE RETURNED");
+            expect(gameStateMachine.stateMode).not.toBe(0);
+        });
+
+        it("checks the player is not at the starting position and hands off to main routine", function() {
+            currentMonster = 0;
+            mapY = 2;
+            mapX = 12;
+            routeGameMove();
+            expect(testForCloneMove).toHaveBeenCalled();
+            expect(gameStateMachine.stateMode).not.toBe(0);
+        });
+    });
 });
