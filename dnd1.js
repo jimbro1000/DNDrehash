@@ -301,6 +301,7 @@ function partial() {
 }
 
 function input() {
+    gameStateMachine.waitTransition = true;
     inputFilter = 1;
     inputString = "";
     inputsCount = 0;
@@ -315,6 +316,7 @@ function input() {
 }
 
 function inputStr() {
+    gameStateMachine.waitTransition = true;
     inputFilter = 0;
     inputString = "";
     inputsCount = 0;
@@ -329,6 +331,7 @@ function inputStr() {
 }
 
 function inputX(items) {
+    gameStateMachine.waitTransition = true;
     inputsCount = items;
     inputFilter = 1;
     inputString = "";
@@ -2115,34 +2118,42 @@ function modifyMapSave() {
     gameStateMachine.stateMode = 200;
 }
 
+function checkPlayerHealth() {
+    if (attributes[constants.playerHp] < 2) { // low on health
+        if (attributes[constants.playerHp] < 1) { // bleeding out
+            while (attributes[constants.playerHp] < 0) {
+                if (attributes[constants.playerCon] < 9) {
+                    attributes[constants.playerHp] = 0;
+                    attributes[constants.playerCon] = 0; //exit loop, force dead
+                } else {
+                    attributes[constants.playerCon] -= 2;
+                    attributes[constants.playerHp] += 1;
+                }
+            }
+            if (attributes[constants.playerHp] === 0) {
+                if (attributes[constants.playerCon] < 9) {
+                    terminal.println("SORRY YOUR DEAD");
+                    gameStateMachine.stateMode = 30;
+                } else {
+                    terminal.println("H.P.=0 BUT CONST. HOLDS");
+                }
+            }
+        } else {
+            terminal.println("WATCH IT H.P.=" + attributes[constants.playerHp]);
+        }
+    }
+}
+
+/***
+ * Route game move
+ * One of the trickier pieces of code to decipher
+ */
 function routeGameMove() { //200
     gameStateMachine.stateMode = 0;
-    if (K1 === -1) {
+    if (K1 === -1) { // if target is dead credit the kill
         gameStateMachine.stateMode = 203;
-    } else {
-        if (attributes[constants.playerHp] < 2) { // low on health
-            if (attributes[constants.playerHp] < 1) { // bleeding out
-                while (attributes[constants.playerHp] < 0) {
-                    if (attributes[constants.playerCon] < 9) {
-                        attributes[constants.playerHp] = 0;
-                        attributes[constants.playerCon] = 0; //exit loop, force dead
-                    } else {
-                        attributes[constants.playerCon] -= 2;
-                        attributes[constants.playerHp] += 1;
-                    }
-                }
-                if (attributes[constants.playerHp] === 0) {
-                    if (attributes[constants.playerCon] < 9) {
-                        terminal.println("SORRY YOUR DEAD");
-                        gameStateMachine.stateMode = 30;
-                    } else {
-                        terminal.println("H.P.=0 BUT CONST. HOLDS");
-                    }
-                }
-            } else {
-                terminal.println("WATCH IT H.P.=" + attributes[constants.playerHp]);
-            }
-        }
+    } else { //check player health and report
+        checkPlayerHealth();
     }
     if (gameStateMachine.stateMode === 0) {
         if (currentMonster > 0) { // 07160
@@ -2174,7 +2185,6 @@ function routeGameMove() { //200
             } else {
                 attributes[constants.playerGold] -= 100;
                 terminal.println("WANT TO BUY MORE EQUIPMENT");
-                gameStateMachine.waitTransition = true;
                 inputStr();
                 gameStateMachine.stateMode = 201;
             }
@@ -2182,6 +2192,9 @@ function routeGameMove() { //200
     }
 }
 
+/***
+ * Response to user input to buy more equipment
+ */
 function gotMoreEquipment() { //201
     strQ = inputString.trim();
     if (strQ == "YES") {
