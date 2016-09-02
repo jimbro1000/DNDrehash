@@ -2083,10 +2083,9 @@ function modifyMapPos() { //103
 }
 
 function modifyMapDone() { //104
-    var targetX, targetY, content;
-    targetX = parseInt(inputStrings[2]);
-    targetY = parseInt(inputStrings[1]);
-    content = parseInt(inputStrings[0]);
+    var targetX = parseInt(inputStrings[2]);
+    var targetY = parseInt(inputStrings[1]);
+    var content = parseInt(inputStrings[0]);
     if (content < 0) {
         terminal.println("SAVE");
         input();

@@ -916,4 +916,44 @@ describe("Game Functions", function() {
             expect(gameStateMachine.stateMode).toBe(200);
         });
     });
+
+    describe("Modify Map Done", function() {
+        beforeEach(function() {
+            terminal = {
+                lastInput : ""
+            };
+            terminal.println = function(value) { this.lastInput = value; };
+            gameStateMachine = {
+                stateMode : 1,
+                waitTransition : false
+            };
+            defaultMap();
+            spyOn(window,"setCookie").and.callFake(function() {});
+            spyOn(terminal,"println").and.callThrough();
+            spyOn(window,"input").and.callFake(function() { gameStateMachine.waitTransition = true; })
+        });
+
+        it("accepts player input x,y,content and modifies map", function() {
+            inputStrings[2] = "1";
+            inputStrings[1] = "2";
+            inputStrings[0] = "5";
+            modifyMapDone();
+            expect(dungeonMap[2][1]).toBe(5);
+            expect(input).not.toHaveBeenCalled();
+            expect(terminal.println).not.toHaveBeenCalled();
+            expect(gameStateMachine.stateMode).toBe(103);
+        });
+
+        it("treats a negative content value as an instruction to stop", function() {
+            inputStrings[2] = "1";
+            inputStrings[1] = "2";
+            inputStrings[0] = "-5";
+            modifyMapDone();
+            expect(input).toHaveBeenCalled();
+            expect(dungeonMap[2][1]).toBe(0);
+            expect(terminal.println).toHaveBeenCalled();
+            expect(terminal.lastInput).toBe("SAVE");
+            expect(gameStateMachine.stateMode).toBe(105);
+        });
+    });
 });
