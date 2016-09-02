@@ -26,7 +26,7 @@ var attributeNames = [];
 var inventory = [];
 var dungeonMap = [];
 var Dn = 1;
-var D2 = 1; // target map for modification actions, currently redundant
+// var D2 = 1; // target map for modification actions, currently redundant
 var equipmentPrice = [];
 var equipmentNames;
 var monsterStats = []; // (100,6)
