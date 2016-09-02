@@ -2044,7 +2044,6 @@ function showCheatMap() { //99
 function buyHP() { //100
     terminal.print("HOW MANY 200 GP. EACH ");
     input();
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 101;
 }
 

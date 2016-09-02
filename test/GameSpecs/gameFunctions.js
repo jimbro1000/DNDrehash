@@ -996,4 +996,51 @@ describe("Game Functions", function() {
             });
         });
     });
+
+    describe("Buy Health", function() {
+        beforeEach(function() {
+            attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+            terminal = {
+                lastInput : ""
+            };
+            terminal.println = function(value) { this.lastInput = value; };
+            terminal.print = function(value) { this.lastInput = value; };
+            gameStateMachine = {
+                stateMode : 1,
+                waitTransition : false
+            };
+            spyOn(terminal,"println").and.callThrough();
+            spyOn(terminal,"print").and.callThrough();
+            spyOn(window,"input").and.callFake(function() {});
+        });
+
+        describe("Add HP", function() {
+            it("accepts player input and converts gold to health if enough gold is carried and reports result", function() {
+                inputString = "4";
+                addHP();
+                expect(attributes[constants.playerGold]).toBe(200);
+                expect(attributes[constants.playerHp]).toBe(14);
+                expect(gameStateMachine.stateMode).toBe(200);
+                expect(terminal.println).toHaveBeenCalledTimes(9);
+            });
+
+            it("rejects player input if insufficient gold carried", function() {
+                inputString = "6";
+                addHP();
+                expect(attributes[constants.playerGold]).toBe(1000);
+                expect(attributes[constants.playerHp]).toBe(10);
+                expect(gameStateMachine.stateMode).toBe(100);
+                expect(terminal.println).toHaveBeenCalledTimes(1);
+            });
+        });
+
+        describe("Buy HP", function() {
+            it("prompts the user for quantity of hp to buy", function() {
+                buyHP();
+                expect(input).toHaveBeenCalled();
+                expect(terminal.print).toHaveBeenCalledWith("HOW MANY 200 GP. EACH ");
+                expect(gameStateMachine.stateMode).toBe(101);
+            });
+        });
+    });
 });
