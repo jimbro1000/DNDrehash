@@ -1046,6 +1046,9 @@ describe("Game Functions", function() {
 
     describe("Show Cheat Map", function() {
         beforeEach(function() {
+            terminal = {
+                lastInput : ""
+            };
             terminal.println = function(value) { this.lastInput = value; };
             gameStateMachine = {
                 stateMode : 1,
@@ -1255,6 +1258,102 @@ describe("Game Functions", function() {
                 expect(terminal.println).toHaveBeenCalledWith("COSTS TOO MUCH");
                 expect(wizardSpellCounter).toBe(0);
                 expect(attributes[constants.playerGold]).toBe(0);
+            });
+        });
+    });
+
+    describe("Casting Spells (Cleric & Wizard)", function() {
+        beforeAll(function() {
+            terminal = {
+                lastInput : ""
+            };
+            terminal.println = function(value) { this.lastInput = value; };
+            terminal.print = function(value) { this.lastInput = value; };
+            defaultMap();
+        });
+
+        beforeEach(function() {
+            gameStateMachine = {
+                stateMode : 1,
+                waitTransition : false
+            };
+            currentWeapon = 0;
+            spyOn(terminal,"println").and.callThrough();
+            spyOn(terminal,"print").and.callThrough();
+            spyOn(window,"input").and.callFake(function() {});
+            spyOn(window,"inputStr").and.callFake(function() {});
+        });
+
+        describe("Validate Casting Action Choice", function() {
+            it("checks that a weapon isn't equipped", function() {
+                currentWeapon = 1;
+                casting();
+                expect(gameStateMachine.stateMode).toBe(200);
+                expect(terminal.println).toHaveBeenCalledWith("YOU CANT USE MAGIC WITH WEAPON IN HAND");
+            });
+
+            it("checks that the player is not a magic user", function() {
+                attributeNames[constants.playerClass] = "FIGHTER";
+                casting();
+                expect(gameStateMachine.stateMode).toBe(200);
+                expect(terminal.println).toHaveBeenCalledWith("YOU CANT USE MAGIC YOUR NOT A M.U.");
+            });
+
+            it("checks that the player is a wizard", function() {
+                attributeNames[constants.playerClass] = "WIZARD";
+                casting();
+                expect(gameStateMachine.stateMode).toBe(87);
+                expect(terminal.print).toHaveBeenCalledWith("SPELL #");
+                expect(input).toHaveBeenCalled();
+            });
+
+            it("checks that the player is a cleric", function() {
+                attributeNames[constants.playerClass] = "CLERIC";
+                casting();
+                expect(gameStateMachine.stateMode).toBe(78);
+                expect(terminal.print).toHaveBeenCalledWith("CLERICAL SPELL #");
+                expect(input).toHaveBeenCalled();
+            });
+        });
+
+        describe("Wizard Spell Casting", function() {
+            beforeEach(function() {
+                wizardSpellbook = [0,1,2,3,4];
+                wizardSpellCounter = 4;
+                mapX = 5;
+                mapY = 5;
+            });
+
+            describe("Route Spell Choice", function() {
+                it("accepts user input and checks it is a valid spell choice, warns user if not", function() {
+                    inputString = "5";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(25);
+                    expect(terminal.println).toHaveBeenCalledWith("YOU DONT HAVE THAT ONE");
+                });
+
+                it("accepts PUSH(1) spell and skips input if range is 0", function() {
+                    inputString = "1";
+                    F1 = mapY;
+                    F2 = mapX;
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(73);
+                    expect(S).toBe(0);
+                    expect(T).toBe(0);
+                    expect(Z5).toBe(1);
+                    expect(inputString).toBe("");
+                    expect(terminal.println).not.toHaveBeenCalled();
+                });
+
+                it("accepts PUSH(1) spell and prompts user for further input if range > 0", function() {
+                    inputString = "1";
+                    F1 = 1;
+                    F2 = 1;
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(73);
+                    expect(terminal.println).toHaveBeenCalledWith("ARE YOU ABOVE,BELOW,RIGHT, OR LEFT OF IT");
+                    expect(inputStr).toHaveBeenCalled();
+                });
             });
         });
     });

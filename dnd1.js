@@ -1673,12 +1673,10 @@ function casting() { //77
         gameStateMachine.stateMode = 200;
     } else if (attributeNames[constants.playerClass] === "CLERIC") {
         terminal.print("CLERICAL SPELL #");
-        gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 78;
         input();
     } else if (attributeNames[constants.playerClass] === "WIZARD") {
         terminal.print("SPELL #");
-        gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 87;
         input();
     } else {
@@ -1854,19 +1852,19 @@ function gotWizardSpell() { //87  //09320
                     break;
                 case 5:
                     Q = 0;
-                    gameStateMachine.stateMode = 92;
+                    gameStateMachine.stateMode = 92; // wrong state
                     break;
                 case 6:
                     Q = 3;
-                    gameStateMachine.stateMode = 93;
+                    gameStateMachine.stateMode = 93; // wrong state
                     break;
                 case 7:
                     Q = 6;
-                    gameStateMachine.stateMode = 93;
+                    gameStateMachine.stateMode = 93; // wrong state
                     break;
                 case 8:
                     Q = 9;
-                    gameStateMachine.stateMode = 93;
+                    gameStateMachine.stateMode = 93; // wrong state
                     break;
                 case 9:
                     Q = 3;
@@ -1874,7 +1872,7 @@ function gotWizardSpell() { //87  //09320
                     break;
                 case 10:
                     Q = 1;
-                    gameStateMachine.stateMode = 94;
+                    gameStateMachine.stateMode = 94; // wrong state
                     break;
                 default:
                     terminal.println("YOU DONT HAVE THAT ONE");
