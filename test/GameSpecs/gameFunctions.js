@@ -1354,6 +1354,24 @@ describe("Game Functions", function() {
                     expect(terminal.println).toHaveBeenCalledWith("ARE YOU ABOVE,BELOW,RIGHT, OR LEFT OF IT");
                     expect(inputStr).toHaveBeenCalled();
                 });
+
+                it("accepts KILL(2) and routes to function", function() {
+                    inputString = "2";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(88);
+                });
+
+                it("accepts FIND TRAPS(3) and routes to function", function() {
+                    inputString = "3";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(89);
+                });
+
+                it("accepts TELEPORT(4) and routes to function", function() {
+                    inputString = "4";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(90);
+                });
             });
         });
     });
