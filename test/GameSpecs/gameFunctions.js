@@ -1263,6 +1263,9 @@ describe("Game Functions", function() {
     });
 
     describe("Casting Spells (Cleric & Wizard)", function() {
+        var randomResults = [];
+        var randomCounter;
+
         beforeAll(function() {
             terminal = {
                 lastInput : ""
@@ -1278,10 +1281,13 @@ describe("Game Functions", function() {
                 waitTransition : false
             };
             currentWeapon = 0;
+            randomCounter = 0;
             spyOn(terminal,"println").and.callThrough();
             spyOn(terminal,"print").and.callThrough();
             spyOn(window,"input").and.callFake(function() {});
             spyOn(window,"inputStr").and.callFake(function() {});
+            spyOn(window, "rnd").and.callFake(function() { return randomResults[randomCounter++]; });
+            spyOn(window, "inBounds").and.callThrough();
         });
 
         describe("Validate Casting Action Choice", function() {
@@ -1416,6 +1422,36 @@ describe("Game Functions", function() {
                     gotWizardSpell();
                     expect(gameStateMachine.stateMode).toBe(91.5);
                     expect(Q).toBe(1);
+                });
+            });
+
+            describe("KILL spell", function() {
+                it("fails on the first 33% chance", function() {
+                    randomResults = [ 1 ];
+                    wizardSpellKill();
+                    expect(gameStateMachine.stateMode).toBe(200);
+                    expect(rnd).toHaveBeenCalled();
+                    expect(terminal.println).toHaveBeenCalledWith("FAILED");
+                });
+
+                it("succeeds on the upper 66% chance", function() {
+                    randomResults = [ 1.1 ];
+                    wizardSpellKill();
+                    expect(gameStateMachine.stateMode).toBe(200);
+                    expect(rnd).toHaveBeenCalled();
+                    expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(K1).toBe(-1);
+                });
+            });
+
+            describe("Find Traps spell", function() {
+                it("identifies any traps within a 7x7 area centred on the player", function() {
+                    Q = 2;
+                    wizardSpellFindTrap();
+                    expect(terminal.println).toHaveBeenCalledWith("THERE IS ONE AT 3LAT.6LONG.");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                    expect(terminal.println).toHaveBeenCalledWith("NO MORE");
+                    expect(inBounds).toHaveBeenCalled();
                 });
             });
         });

@@ -1888,7 +1888,7 @@ function gotWizardSpell() { //87  //09320
 }
 
 function wizardSpellKill() { //88 KILL
-    if (rnd(0) * 3 > 1) {
+    if (rnd(3) > 1) {
         terminal.println("DONE");
         K1 = -1;
     } else {
@@ -1898,12 +1898,11 @@ function wizardSpellKill() { //88 KILL
 }
 
 function wizardSpellFindTrap() { //89 find traps
-    wizardSpellbook[M] = 0;
+    wizardSpellbook[M] = 0; //?
     for (M = -3; M < 4; M++) {
         for (N = -3; N < 4; N++) {
-            if (!((mapY + M < 0) || (mapY + M > 25) || (mapX + N < 0) || (mapX + N > 25))) {
-                if (dungeonMap[mapY + M][mapX + N] === Q) terminal.println("THERE IS ONE AT " + M + "LAT." + N + "LONG.");
-            }
+            if (inBounds(mapY + M, mapX + N))
+                if (dungeonMap[mapY + M][mapX + N] === Q) terminal.println("THERE IS ONE AT " + (mapY + M) + "LAT." + (mapX + N) + "LONG.");
         }
     }
     terminal.println("NO MORE");
