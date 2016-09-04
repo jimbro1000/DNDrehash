@@ -1318,14 +1318,15 @@ describe("Game Functions", function() {
 
         describe("Wizard Spell Casting", function() {
             beforeEach(function() {
-                wizardSpellbook = [0,1,2,3,4];
-                wizardSpellCounter = 4;
+                wizardSpellbook = [0,1,2,3,4,5,6,7,8,9,10];
+                wizardSpellCounter = 10;
                 mapX = 5;
                 mapY = 5;
             });
 
             describe("Route Spell Choice", function() {
                 it("accepts user input and checks it is a valid spell choice, warns user if not", function() {
+                    wizardSpellbook[5] = 0;
                     inputString = "5";
                     gotWizardSpell();
                     expect(gameStateMachine.stateMode).toBe(25);
@@ -1365,12 +1366,56 @@ describe("Game Functions", function() {
                     inputString = "3";
                     gotWizardSpell();
                     expect(gameStateMachine.stateMode).toBe(89);
+                    expect(Q).toBe(2);
                 });
 
                 it("accepts TELEPORT(4) and routes to function", function() {
                     inputString = "4";
                     gotWizardSpell();
                     expect(gameStateMachine.stateMode).toBe(90);
+                    expect(Q).toBe(2);
+                });
+
+                it("accepts CHANGE(5) and routes to function", function() {
+                    inputString = "5";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(91.5);
+                    expect(Q).toBe(0);
+                });
+
+                it("accepts MAG.MISS 1(6) and routes to equivalent cleric function", function() {
+                    inputString = "6";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(83);
+                    expect(Q).toBe(3);
+                });
+
+                it("accepts MAG.MISS 2(7) and routes to equivalent cleric function", function() {
+                    inputString = "7";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(80);
+                    expect(Q).toBe(6);
+                });
+
+                it("accepts MAG.MISS 3(8) and routes to equivalent cleric function", function() {
+                    inputString = "8";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(84);
+                    expect(Q).toBe(9);
+                });
+
+                it("accepts FIND SECRET DOORS (9) and routes to function", function() {
+                    inputString = "9";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(89);
+                    expect(Q).toBe(3);
+                });
+
+                it("accepts CHANGE(10) and routes to function", function() {
+                    inputString = "10";
+                    gotWizardSpell();
+                    expect(gameStateMachine.stateMode).toBe(91.5);
+                    expect(Q).toBe(1);
                 });
             });
         });
