@@ -32,4 +32,4 @@ This repository holds the complete code to run this port of Richard Garriott's o
 ### History ###
 * **Version 0.1** 15 April 2014 - verbatim translation of the original Microsoft BASIC code
 * **Version 0.2** 15 May 2014 - refined and operational code as submitted to Portalarium Inc for entry into the coding contest (no prizes though - mostly due to being untested against iOs and Android I suspect due to how input is handled)
-* **Version 0.3** 26 August 2016 - resurrected code, updated to use jQuery 3.1 and refactored for readibility
+* **Version 0.3** 26 August 2016 - resurrected code, updated to use jQuery 3.1 and refactored for readability
