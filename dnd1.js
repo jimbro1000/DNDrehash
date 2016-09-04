@@ -162,10 +162,12 @@ function buildStateModel() {
     gameStateMachine.addState(new StateModel(85, "cast cleric spell 7 (cure light wounds #2)", clericSpell7));
     gameStateMachine.addState(new StateModel(86, "cast cleric spell 9 (cheat - push)", clericSpell9));
     gameStateMachine.addState(new StateModel(87, "cast a wizard spell", gotWizardSpell));
-    gameStateMachine.addState(new StateModel(88, "cast wizard spell 2", wizardSpell2));
-    gameStateMachine.addState(new StateModel(89, "cast wizard spell 3", wizardSpell3));
-    gameStateMachine.addState(new StateModel(90, "cast wizard spell 4", wizardSpell4));
-    gameStateMachine.addState(new StateModel(91, "accept wizard spell 4", gotWizardSpell4));
+    gameStateMachine.addState(new StateModel(88, "cast wizard spell 2", wizardSpellKill));
+    gameStateMachine.addState(new StateModel(89, "cast wizard spell 3", wizardSpellFindTrap));
+    gameStateMachine.addState(new StateModel(90, "cast wizard spell 4", wizardSpellTeleport));
+    gameStateMachine.addState(new StateModel(91, "accept wizard spell 4", gotTeleportCoordinates));
+    gameStateMachine.addState(new StateModel(91.5, "cast wizard spell CHANGE 5 and 10", gotSpellChange));
+    gameStateMachine.addState(new StateModel(91.6, "accept wizard spell CHANGE coordinates", gotChangeCoordinates));
     gameStateMachine.addState(new StateModel(92, "buy spells", buyMagic));
     gameStateMachine.addState(new StateModel(93, "cleric spell choice question", askACleric));
     gameStateMachine.addState(new StateModel(94, "wizard spell choice question", askAWizard));
@@ -1824,7 +1826,7 @@ function gotWizardSpell() { //87  //09320
         }
     }
     if (found) {  //09380
-        if (wizardSpellbook[M] === 1) {
+        if (wizardSpellbook[M] === 1) { // push
             if ((F1 - mapY === 0) && (F2 - mapX === 0)) {
                 S = 0;
                 T = 0;
@@ -1832,7 +1834,6 @@ function gotWizardSpell() { //87  //09320
                 inputString = "";
             } else {
                 terminal.println("ARE YOU ABOVE,BELOW,RIGHT, OR LEFT OF IT");
-                gameStateMachine.waitTransition = true;
                 inputStr();
             }
             gameStateMachine.stateMode = 73;
@@ -1852,19 +1853,19 @@ function gotWizardSpell() { //87  //09320
                     break;
                 case 5:
                     Q = 0;
-                    gameStateMachine.stateMode = 92; // wrong state
+                    gameStateMachine.stateMode = 91.5;
                     break;
                 case 6:
                     Q = 3;
-                    gameStateMachine.stateMode = 93; // wrong state
+                    gameStateMachine.stateMode = 83; // shared with cleric
                     break;
                 case 7:
                     Q = 6;
-                    gameStateMachine.stateMode = 93; // wrong state
+                    gameStateMachine.stateMode = 80; // shared with cleric
                     break;
                 case 8:
                     Q = 9;
-                    gameStateMachine.stateMode = 93; // wrong state
+                    gameStateMachine.stateMode = 84; // shared with cleric
                     break;
                 case 9:
                     Q = 3;
@@ -1872,7 +1873,7 @@ function gotWizardSpell() { //87  //09320
                     break;
                 case 10:
                     Q = 1;
-                    gameStateMachine.stateMode = 94; // wrong state
+                    gameStateMachine.stateMode = 91.5;
                     break;
                 default:
                     terminal.println("YOU DONT HAVE THAT ONE");
@@ -1886,7 +1887,7 @@ function gotWizardSpell() { //87  //09320
     }
 }
 
-function wizardSpell2() { //88
+function wizardSpellKill() { //88 KILL
     if (rnd(0) * 3 > 1) {
         terminal.println("DONE");
         K1 = -1;
@@ -1896,7 +1897,7 @@ function wizardSpell2() { //88
     gameStateMachine.stateMode = 200;
 }
 
-function wizardSpell3() { //89
+function wizardSpellFindTrap() { //89 find traps
     wizardSpellbook[M] = 0;
     for (M = -3; M < 4; M++) {
         for (N = -3; N < 4; N++) {
@@ -1909,19 +1910,49 @@ function wizardSpell3() { //89
     gameStateMachine.stateMode = 200;
 }
 
-function wizardSpell4() { //90
-    terminal.print("INPUT CO-ORDINATES");
-    gameStateMachine.waitTransition = true;
+function wizardSpellTeleport() { //90 teleport
     gameStateMachine.stateMode = 91;
-    inputX(2);
+    getSpellCoordinates();
 }
 
-function gotWizardSpell4() { //91
+function gotTeleportCoordinates() { //91 teleport
     M = inputStrings[0];
     N = inputStrings[1];
     terminal.println("DONE");
     mapY = M;
     mapX = N;
+    gameStateMachine.stateMode = 200;
+}
+
+function getSpellCoordinates() {
+    terminal.print("INPUT CO-ORDINATES");
+    inputX(2);
+}
+
+function gotSpellChange() { //91.5
+    terminal.print("INPUT CO-ORDINATES");
+    gameStateMachine.stateMode = 91.6;
+    getSpellCoordinates();
+}
+
+function gotChangeCoordinates() { //91.6
+    var toCell;
+    var fromCell;
+    if (Q === 1) {
+        fromCell = 0;
+        toCell = 1;
+    } else {
+        fromCell = 1;
+        toCell = 0;
+    }
+    M = inputStrings[0];
+    N = inputStrings[1];
+    if (dungeonMap[M][N] === fromCell) {
+        dungeonMap[M][N] = toCell;
+        terminal.println("DONE");
+    } else {
+        terminal.println("FAILED");
+    }
     gameStateMachine.stateMode = 200;
 }
 
