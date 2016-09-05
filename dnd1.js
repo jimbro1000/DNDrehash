@@ -153,13 +153,13 @@ function buildStateModel() {
     gameStateMachine.addState(new StateModel(76, "save", saveGame));
     gameStateMachine.addState(new StateModel(77, "cast a spell", casting));
     gameStateMachine.addState(new StateModel(78, "cast a cleric spell", gotClericSpell));
-    gameStateMachine.addState(new StateModel(79, "cast cleric spell 1 (kill)", clericSpell1));
-    gameStateMachine.addState(new StateModel(80, "cast cleric spell 2 (magic missile #2)", clericSpell2));
-    gameStateMachine.addState(new StateModel(81, "cast cleric spell 3 (cure light wounds #1)", clericSpell3));
-    gameStateMachine.addState(new StateModel(82, "cast cleric spell 4/8 (find all traps/s.doors)", clericSpell4));
-    gameStateMachine.addState(new StateModel(83, "cast cleric spell 5 (magic missile #1)", clericSpell5));
-    gameStateMachine.addState(new StateModel(84, "cast cleric spell 6 (magic missile #3)", clericSpell6));
-    gameStateMachine.addState(new StateModel(85, "cast cleric spell 7 (cure light wounds #2)", clericSpell7));
+    gameStateMachine.addState(new StateModel(79, "cast cleric spell 1 (kill)", clericSpellKill));
+    gameStateMachine.addState(new StateModel(80, "cast cleric spell 2 (magic missile #2)", clericSpellMagicMissileAdvanced));
+    gameStateMachine.addState(new StateModel(81, "cast cleric spell 3 (cure light wounds #1)", clericSpellCureLight));
+    gameStateMachine.addState(new StateModel(82, "cast cleric spell 4/8 (find all traps/s.doors)", clericSpellFindTraps));
+    gameStateMachine.addState(new StateModel(83, "cast cleric spell 5 (magic missile #1)", clericSpellMagicMissile));
+    gameStateMachine.addState(new StateModel(84, "cast cleric spell 6 (magic missile #3)", clericSpellMagicMissileUltimate));
+    gameStateMachine.addState(new StateModel(85, "cast cleric spell 7 (cure light wounds #2)", clericSpellCureLightAdvanced));
     gameStateMachine.addState(new StateModel(86, "cast cleric spell 9 (cheat - push)", clericSpell9));
     gameStateMachine.addState(new StateModel(87, "cast a wizard spell", gotWizardSpell));
     gameStateMachine.addState(new StateModel(88, "cast wizard spell 2", wizardSpellKill));
@@ -968,14 +968,14 @@ function itsatrap() {
             terminal.println("NO ROPE BUT AT LEAST SPIKES");
             var loop = true;
             while (loop) {
-                if (int(rnd(0) * 3) + 1 != 2) {
+                if (int(rnd(3)) + 1 != 2) {
                     terminal.println("YOU MANAGE TO GET OUT EASY");
                     terminal.println("YOUR STANDING NEXT TO THE EDGE THOUGH I'dungeonMap MOVE");
                     gameStateMachine.stateMode = 45;
                     loop = false;
                 } else {
                     terminal.println("YOU FALL HALFWAY UP");
-                    if (int(rnd(0) * 6) > attributes[constants.playerStr] / 3) {
+                    if (int(rnd(6)) > attributes[constants.playerStr] / 3) {
                         terminal.println("OOPS mapX.equipmentPrice. LOOSE 1");
                         attributes[0] -= 1;
                     }
@@ -1690,6 +1690,7 @@ function casting() { //77
 function gotClericSpell() { //78
     Q = parseInt(inputString.trim());
     var found = false;
+    var spellChoice;
     for (var m = 1; m <= clericSpellCounter; m++) {
         if (Q === clericSpellbook[m]) {
             M = m;
@@ -1701,16 +1702,16 @@ function gotClericSpell() { //78
         terminal.println("YOU DONT HAVE THAT SPELL");
         gameStateMachine.stateMode = 200;
     } else {
-        wizardSpellCounter = clericSpellbook[M];
+        spellChoice = clericSpellbook[M];
         clericSpellbook[M] = 0;
         //route clerical spell choice
-        if (wizardSpellCounter > 3) {
+        if (spellChoice > 3) {
             Q = 2;
         } //bug fix - find all spell uses Q to match floor tile types, not Q2 or Q3
-        if (wizardSpellCounter > 4) {
+        if (spellChoice > 4) {
             Q = 3;
         }
-        switch (wizardSpellCounter) {
+        switch (spellChoice) {
             case 1:
                 gameStateMachine.stateMode = 79;
                 break;
@@ -1746,7 +1747,7 @@ function gotClericSpell() { //78
     }
 }
 
-function clericSpell1() { //79
+function clericSpellKill() { //79
     if (rnd(3) > 1) {
         terminal.println("FAILED");
     } else {
@@ -1757,20 +1758,20 @@ function clericSpell1() { //79
     gameStateMachine.stateMode = 200;
 }
 
-function clericSpell2() { //80
+function clericSpellMagicMissileAdvanced() { //80
     terminal.println("DONE");
     monsterStats[currentMonster][3] -= 4;
     clericSpellbook[M] = 0;
     gameStateMachine.stateMode = 200;
 }
 
-function clericSpell3() { //81
+function clericSpellCureLight() { //81
     attributes[constants.playerCon] += 3;
     clericSpellbook[M] = 0;
     gameStateMachine.stateMode = 200;
 }
 
-function clericSpell4() { //82
+function clericSpellFindTraps() { //82
     clericSpellbook[M] = 0;
     for (M = -3; M < 4; M++) {
         for (N = -3; N < 4; N++) {
@@ -1784,21 +1785,21 @@ function clericSpell4() { //82
     gameStateMachine.stateMode = 200;
 }
 
-function clericSpell5() { //83
+function clericSpellMagicMissile() { //83
     terminal.println("DONE");
     clericSpellbook[M] = 0;
     monsterStats[currentMonster][3] -= 2;
     gameStateMachine.stateMode = 200;
 }
 
-function clericSpell6() { //84
+function clericSpellMagicMissileUltimate() { //84
     terminal.println("DONE");
     clericSpellbook[M] = 0;
     monsterStats[currentMonster][3] -= 6;
     gameStateMachine.stateMode = 200;
 }
 
-function clericSpell7() { //85
+function clericSpellCureLightAdvanced() { //85
     terminal.println("DONE");
     attributes[constants.playerCon] += 3;
     gameStateMachine.stateMode = 200;
@@ -1915,8 +1916,8 @@ function wizardSpellTeleport() { //90 teleport
 }
 
 function gotTeleportCoordinates() { //91 teleport
-    M = int(inputStrings[1]);
-    N = int(inputStrings[0]);
+    M = parseInt(inputStrings[1]);
+    N = parseInt(inputStrings[0]);
     if (inBounds(M, N)) {
         terminal.println("DONE");
         mapY = M;
@@ -1948,8 +1949,8 @@ function gotChangeCoordinates() { //91.6
         fromCell = 1;
         toCell = 0;
     }
-    M = int(inputStrings[1]);
-    N = int(inputStrings[0]);
+    M = parseInt(inputStrings[1]);
+    N = parseInt(inputStrings[0]);
     if (inBounds(M,N)) {
         if (dungeonMap[M][N] === fromCell) {
             dungeonMap[M][N] = toCell;
