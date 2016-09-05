@@ -1915,11 +1915,15 @@ function wizardSpellTeleport() { //90 teleport
 }
 
 function gotTeleportCoordinates() { //91 teleport
-    M = inputStrings[0];
-    N = inputStrings[1];
-    terminal.println("DONE");
-    mapY = M;
-    mapX = N;
+    M = int(inputStrings[1]);
+    N = int(inputStrings[0]);
+    if (inBounds(M, N)) {
+        terminal.println("DONE");
+        mapY = M;
+        mapX = N;
+    } else {
+        terminal.println("FAILED");
+    }
     gameStateMachine.stateMode = 200;
 }
 
@@ -1944,8 +1948,8 @@ function gotChangeCoordinates() { //91.6
         fromCell = 1;
         toCell = 0;
     }
-    M = inputStrings[0];
-    N = inputStrings[1];
+    M = int(inputStrings[1]);
+    N = int(inputStrings[0]);
     if (dungeonMap[M][N] === fromCell) {
         dungeonMap[M][N] = toCell;
         terminal.println("DONE");
@@ -2008,7 +2012,7 @@ function wizardSpellChoices() { //96
 function clericSpellPurchase() { //97
     if (Q > 0) { //Then Goto 10290
         if (Q <= 8) { //Then Goto 10100
-            if (attributes[7] - clericSpellPrices[int(Q)] < 0) {// Then Goto 10270
+            if (attributes[constants.playerGold] - clericSpellPrices[int(Q)] < 0) {// Then Goto 10270
                 terminal.println("COSTS TOO MUCH");
             } else {
                 attributes[constants.playerGold] -= clericSpellPrices[int(Q)];
@@ -2031,10 +2035,10 @@ function clericSpellPurchase() { //97
 function wizardSpellPurchase() { //98
     if (Q > 0) {
         if (Q <= 10) {
-            if (attributes[7] - wizardSpellPrices[int(Q)] < 0) {
+            if (attributes[constants.playerGold] - wizardSpellPrices[int(Q)] < 0) {
                 terminal.println("COSTS TOO MUCH");
             } else {
-                attributes[7] -= wizardSpellPrices[int(Q)];
+                attributes[constants.playerGold] -= wizardSpellPrices[int(Q)];
                 terminal.println("IT IS YOURS");
                 wizardSpellCounter += 1;
                 wizardSpellbook[wizardSpellCounter] = int(Q);

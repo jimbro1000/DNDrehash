@@ -1286,6 +1286,7 @@ describe("Game Functions", function() {
             spyOn(terminal,"print").and.callThrough();
             spyOn(window,"input").and.callFake(function() {});
             spyOn(window,"inputStr").and.callFake(function() {});
+            spyOn(window, "inputX").and.callFake(function() {});
             spyOn(window, "rnd").and.callFake(function() { return randomResults[randomCounter++]; });
             spyOn(window, "inBounds").and.callThrough();
         });
@@ -1444,7 +1445,7 @@ describe("Game Functions", function() {
                 });
             });
 
-            describe("Find Traps spell", function() {
+            describe("FIND TRAPS spell", function() {
                 it("identifies any traps within a 7x7 area centred on the player", function() {
                     Q = 2;
                     wizardSpellFindTrap();
@@ -1452,6 +1453,33 @@ describe("Game Functions", function() {
                     expect(gameStateMachine.stateMode).toBe(200);
                     expect(terminal.println).toHaveBeenCalledWith("NO MORE");
                     expect(inBounds).toHaveBeenCalled();
+                });
+            });
+
+            describe("TELEPORT spell", function() {
+                it("prompts user for a target location on map", function() {
+                    wizardSpellTeleport();
+                    expect(inputX).toHaveBeenCalled();
+                    expect(terminal.print).toHaveBeenCalledWith("INPUT CO-ORDINATES");
+                    expect(gameStateMachine.stateMode).toBe(91);
+                });
+
+                it("accepts user input for a target location on map and moves the player to that point if in bounds", function() {
+                    inputStrings = ["6", "7"];
+                    gotTeleportCoordinates();
+                    expect(mapX).toBe(6);
+                    expect(mapY).toBe(7);
+                    expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("accepts user input for a target location on map and blocks the move if not in bounds", function() {
+                    inputStrings = ["6", "27"];
+                    gotTeleportCoordinates();
+                    expect(mapX).toBe(5);
+                    expect(mapY).toBe(5);
+                    expect(terminal.println).toHaveBeenCalledWith("FAILED");
+                    expect(gameStateMachine.stateMode).toBe(200);
                 });
             });
         });
