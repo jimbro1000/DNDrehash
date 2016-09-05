@@ -1950,9 +1950,13 @@ function gotChangeCoordinates() { //91.6
     }
     M = int(inputStrings[1]);
     N = int(inputStrings[0]);
-    if (dungeonMap[M][N] === fromCell) {
-        dungeonMap[M][N] = toCell;
-        terminal.println("DONE");
+    if (inBounds(M,N)) {
+        if (dungeonMap[M][N] === fromCell) {
+            dungeonMap[M][N] = toCell;
+            terminal.println("DONE");
+        } else {
+            terminal.println("FAILED");
+        }
     } else {
         terminal.println("FAILED");
     }

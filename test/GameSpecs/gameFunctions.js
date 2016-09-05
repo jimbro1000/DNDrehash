@@ -1482,6 +1482,58 @@ describe("Game Functions", function() {
                     expect(gameStateMachine.stateMode).toBe(200);
                 });
             });
+
+            describe("CHANGE spell", function() {
+                it("prompts the user for map coordinates", function() {
+                    gotSpellChange();
+                    expect(inputX).toHaveBeenCalled();
+                    expect(terminal.print).toHaveBeenCalledWith("INPUT CO-ORDINATES");
+                    expect(gameStateMachine.stateMode).toBe(91.6);
+                });
+
+                it("rejects map coordinates outside the bounds of the map", function() {
+                    inputStrings = ["28", "1"];
+                    gotChangeCoordinates();
+                    expect(terminal.println).toHaveBeenCalledWith("FAILED");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("converts a map cell from a wall to open space", function() {
+                    Q = 0;
+                    inputStrings = ["6", "6"];
+                    gotChangeCoordinates();
+                    expect(dungeonMap[6][6]).toBe(0);
+                    expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("fails to convert anything but wall to open space", function() {
+                    Q = 0;
+                    inputStrings = ["8", "1"];
+                    gotChangeCoordinates();
+                    expect(dungeonMap[1][8]).toBe(4);
+                    expect(terminal.println).toHaveBeenCalledWith("FAILED");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("converts a map cell from open space to a wall", function() {
+                    Q = 1;
+                    inputStrings = ["5", "6"];
+                    gotChangeCoordinates();
+                    expect(dungeonMap[6][5]).toBe(1);
+                    expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("fails to convert anything but open space to wall", function() {
+                    Q = 1;
+                    inputStrings = ["8", "1"];
+                    gotChangeCoordinates();
+                    expect(dungeonMap[1][8]).toBe(4);
+                    expect(terminal.println).toHaveBeenCalledWith("FAILED");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+            });
         });
     });
 });
