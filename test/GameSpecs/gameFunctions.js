@@ -1561,93 +1561,64 @@ describe("Game Functions", function() {
                     clericSpellbook[5] = 0;
                     inputString = "5";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(25);
+                    expect(gameStateMachine.stateMode).toBe(200);
                     expect(terminal.println).toHaveBeenCalledWith("YOU DONT HAVE THAT SPELL");
                 });
 
-                it("accepts PUSH(1) spell and skips input if range is 0", function() {
+                it("accepts KILL(1) and routes to function", function() {
                     inputString = "1";
-                    F1 = mapY;
-                    F2 = mapX;
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(73);
-                    expect(S).toBe(0);
-                    expect(T).toBe(0);
-                    expect(Z5).toBe(1);
-                    expect(inputString).toBe("");
-                    expect(terminal.println).not.toHaveBeenCalled();
+                    expect(gameStateMachine.stateMode).toBe(79);
                 });
 
-                it("accepts PUSH(1) spell and prompts user for further input if range > 0", function() {
-                    inputString = "1";
-                    F1 = 1;
-                    F2 = 1;
-                    gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(73);
-                    expect(terminal.println).toHaveBeenCalledWith("ARE YOU ABOVE,BELOW,RIGHT, OR LEFT OF IT");
-                    expect(inputStr).toHaveBeenCalled();
-                });
-
-                it("accepts KILL(2) and routes to function", function() {
+                it("accepts MAG.MISS 2(2) and routes to function", function() {
                     inputString = "2";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(88);
+                    expect(gameStateMachine.stateMode).toBe(80);
                 });
 
-                it("accepts FIND TRAPS(3) and routes to function", function() {
+                it("accepts CURE LIGHT WOUNDS(3) and routes to function", function() {
                     inputString = "3";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(89);
-                    expect(Q).toBe(2);
+                    expect(gameStateMachine.stateMode).toBe(81);
                 });
 
-                it("accepts TELEPORT(4) and routes to function", function() {
+                it("accepts FIND TRAPS(4) and routes to function", function() {
                     inputString = "4";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(90);
+                    expect(gameStateMachine.stateMode).toBe(82);
                     expect(Q).toBe(2);
                 });
 
-                it("accepts CHANGE(5) and routes to function", function() {
+                it("accepts MAG.MISS 1(5) and routes to function", function() {
                     inputString = "5";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(91.5);
-                    expect(Q).toBe(0);
+                    expect(gameStateMachine.stateMode).toBe(83);
                 });
 
-                it("accepts MAG.MISS 1(6) and routes to equivalent cleric function", function() {
+                it("accepts MAG.MISS 3(6) and routes to function", function() {
                     inputString = "6";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(83);
-                    expect(Q).toBe(3);
+                    expect(gameStateMachine.stateMode).toBe(84);
                 });
 
-                it("accepts MAG.MISS 2(7) and routes to equivalent cleric function", function() {
+                it("accepts CURE LIGHT WOUNDS 2(7) and routes to function", function() {
                     inputString = "7";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(80);
-                    expect(Q).toBe(6);
+                    expect(gameStateMachine.stateMode).toBe(85);
                 });
 
-                it("accepts MAG.MISS 3(8) and routes to equivalent cleric function", function() {
+                it("accepts FIND SECRET DOORS(8) and routes to function", function() {
                     inputString = "8";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(84);
-                    expect(Q).toBe(9);
-                });
-
-                it("accepts FIND SECRET DOORS (9) and routes to function", function() {
-                    inputString = "9";
-                    gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(89);
+                    expect(gameStateMachine.stateMode).toBe(82);
                     expect(Q).toBe(3);
                 });
 
-                it("accepts CHANGE(10) and routes to function", function() {
-                    inputString = "10";
+                it("accepts UNKNOWN(9) and routes to function", function() {
+                    inputString = "9";
                     gotClericSpell();
-                    expect(gameStateMachine.stateMode).toBe(91.5);
-                    expect(Q).toBe(1);
+                    expect(gameStateMachine.stateMode).toBe(86);
                 });
             });
         });
