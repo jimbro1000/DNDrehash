@@ -1554,6 +1554,7 @@ describe("Game Functions", function() {
                 clericSpellCounter = 9;
                 mapX = 5;
                 mapY = 5;
+                loadMonsters();
             });
 
             describe("Route Spell Choice", function() {
@@ -1619,6 +1620,57 @@ describe("Game Functions", function() {
                     inputString = "9";
                     gotClericSpell();
                     expect(gameStateMachine.stateMode).toBe(86);
+                });
+            });
+
+            describe("KILL spell", function() {
+                it("is removed from the cleric spellbook after casting", function() {
+                    M = 1;
+                    clericSpellKill();
+                    expect(clericSpellbook[M]).toBe(0);
+                });
+
+                it("fails on the upper 66% chance", function() {
+                    randomResults = [ 1.1 ];
+                    clericSpellKill();
+                    expect(gameStateMachine.stateMode).toBe(200);
+                    expect(rnd).toHaveBeenCalled();
+                    expect(terminal.println).toHaveBeenCalledWith("FAILED");
+                });
+
+                it("succeeds on the first 33% chance", function() {
+                    randomResults = [ 1 ];
+                    K1 = 1;
+                    clericSpellKill();
+                    expect(gameStateMachine.stateMode).toBe(200);
+                    expect(rnd).toHaveBeenCalled();
+                    expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(K1).toBe(-1);
+                });
+            });
+
+            describe("MAGIC MISSLE 2 spell", function() {
+                it("is removed from the cleric spellbook after casting", function() {
+                    M = 2;
+                    currentMonster = 1;
+                    clericSpellMagicMissileAdvanced();
+                    expect(clericSpellbook[M]).toBe(0);
+                });
+
+                it("decreases the health of the current monster by 4", function() {
+                    currentMonster = 1;
+                    M = 2;
+                    monsterStats[currentMonster][constants.monsterHp] = 10;
+                    clericSpellMagicMissileAdvanced();
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(6);
+                });
+
+                it("notifies the player that the action is complete", function() {
+                    currentMonster = 1;
+                    M = 2;
+                    clericSpellMagicMissileAdvanced();
+                    expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(gameStateMachine.stateMode).toBe(200);
                 });
             });
         });

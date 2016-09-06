@@ -82,8 +82,12 @@ var constants = {
     playerInt: 6,
     playerGold: 7,
     playerClass: 0,
-    monsterHp: 6,
-    monsterStartHp: 5
+    monsterLevel: 1,
+    monsterStrength: 2,
+    monsterHp: 3,
+    monsterStartHp: 4,
+    monsterStartGold: 5,
+    monsterGold: 6
 };
 
 function buildStateModel() {
@@ -1760,7 +1764,7 @@ function clericSpellKill() { //79
 
 function clericSpellMagicMissileAdvanced() { //80
     terminal.println("DONE");
-    monsterStats[currentMonster][3] -= 4;
+    monsterStats[currentMonster][constants.monsterHp] -= 4;
     clericSpellbook[M] = 0;
     gameStateMachine.stateMode = 200;
 }
@@ -1788,14 +1792,14 @@ function clericSpellFindTraps() { //82
 function clericSpellMagicMissile() { //83
     terminal.println("DONE");
     clericSpellbook[M] = 0;
-    monsterStats[currentMonster][3] -= 2;
+    monsterStats[currentMonster][constants.monsterHp] -= 2;
     gameStateMachine.stateMode = 200;
 }
 
 function clericSpellMagicMissileUltimate() { //84
     terminal.println("DONE");
     clericSpellbook[M] = 0;
-    monsterStats[currentMonster][3] -= 6;
+    monsterStats[currentMonster][constants.monsterHp] -= 6;
     gameStateMachine.stateMode = 200;
 }
 
