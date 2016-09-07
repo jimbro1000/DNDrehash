@@ -1781,7 +1781,7 @@ function clericSpellFindTraps() { //82
         for (N = -3; N < 4; N++) {
             if (!((mapY + M < 0) || (mapY + M > 25) || (mapX + N < 0) || (mapX + N > 25))) {
                 if (dungeonMap[mapY + M][mapX + N] == Q)
-                    terminal.println("THERE IS ONE AT " + M + "LAT." + N + "LONG.");
+                    terminal.println("THERE IS ONE AT " + (mapY + M) + "LAT." + (mapX + N) + "LONG.");
             }
         }
     }

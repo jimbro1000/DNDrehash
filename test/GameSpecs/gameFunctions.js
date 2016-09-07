@@ -293,7 +293,7 @@ describe("Game Functions", function() {
                 rangeRowOffset = 1;
                 rangeColumnOffset = -2;
                 resolveMonsterMove();
-                expect(monsterStats[currentMonster][6]).toBe(0);
+                expect(monsterStats[currentMonster][constants.monsterHp]).toBe(0);
             });
 
             it("moves through a secret door if is clear on the opposite side", function() {
@@ -1670,6 +1670,142 @@ describe("Game Functions", function() {
                     M = 2;
                     clericSpellMagicMissileAdvanced();
                     expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+            });
+
+            describe("CURE LIGHT WOUNDS 1 spell", function() {
+                beforeEach(function() {
+                    M = 3;
+                    clericSpellbook[M] = 3;
+                    attributes[constants.playerCon] = 10;
+                    clericSpellCureLight();
+                });
+
+                it("is removed from the cleric spellbook after casting", function() {
+                    expect(clericSpellbook[M]).toBe(0);
+                });
+
+                it("increases the constitution of the player by 3", function() {
+                    expect(attributes[constants.playerCon]).toBe(13);
+                });
+
+                it("routes control to the main loop", function() {
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+            });
+
+            describe("FIND TRAPS spell", function() {
+                beforeEach(function() {
+                    Q = 2;
+                    M = 4;
+                });
+
+                it("is removed from the cleric spellbook after casting", function() {
+                    clericSpellFindTraps();
+                    expect(clericSpellbook[M]).toBe(0);
+                });
+
+                it("reports findings to the player", function() {
+                    clericSpellFindTraps();
+                    expect(terminal.println).toHaveBeenCalledWith("THERE IS ONE AT 3LAT.6LONG.");
+                    expect(terminal.println).toHaveBeenCalledWith("NO MORE");
+                });
+
+                it("routes control to the main loop", function() {
+                    clericSpellFindTraps();
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+            });
+
+            describe("MAGIC MISSLE 1 spell", function() {
+                beforeEach(function() {
+                    M = 5;
+                    currentMonster = 1;
+                });
+
+                it("is removed from the cleric spellbook after casting", function() {
+                    clericSpellMagicMissile();
+                    expect(clericSpellbook[M]).toBe(0);
+                });
+
+                it("decreases the health of the current monster by 2", function() {
+                    monsterStats[currentMonster][constants.monsterHp] = 10;
+                    clericSpellMagicMissile();
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(8);
+                });
+
+                it("notifies the player that the action is complete", function() {
+                    clericSpellMagicMissile();
+                    expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+            });
+
+            describe("MAGIC MISSLE 3 spell", function() {
+                beforeEach(function() {
+                    M = 6;
+                    currentMonster = 1;
+                });
+
+                it("is removed from the cleric spellbook after casting", function() {
+                    clericSpellMagicMissileUltimate();
+                    expect(clericSpellbook[M]).toBe(0);
+                });
+
+                it("decreases the health of the current monster by 6", function() {
+                    monsterStats[currentMonster][constants.monsterHp] = 10;
+                    clericSpellMagicMissileUltimate();
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(4);
+                });
+
+                it("notifies the player that the action is complete", function() {
+                    clericSpellMagicMissileUltimate();
+                    expect(terminal.println).toHaveBeenCalledWith("DONE");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+            });
+
+            describe("CURE LIGHT WOUNDS 2 spell", function() {
+                beforeEach(function() {
+                    M = 7;
+                    attributes[constants.playerCon] = 10;
+                    clericSpellCureLightAdvanced();
+                });
+
+                it("is stays in the cleric spellbook after casting", function() {
+                    expect(clericSpellbook[M]).toBe(7);
+                });
+
+                it("increases the constitution of the player by 3", function() {
+                    expect(attributes[constants.playerCon]).toBe(13);
+                });
+
+                it("routes control to the main loop", function() {
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+            });
+
+            describe("FIND SECRET DOORS spell", function() {
+                beforeEach(function() {
+                    Q = 3;
+                    M = 8;
+                });
+
+                it("is removed from the cleric spellbook after casting", function() {
+                    clericSpellFindTraps();
+                    expect(clericSpellbook[8]).toBe(0);
+                });
+
+                it("reports findings to the player", function() {
+                    clericSpellFindTraps();
+                    expect(terminal.println).toHaveBeenCalledWith("THERE IS ONE AT 4LAT.3LONG.");
+                    expect(terminal.println).toHaveBeenCalledWith("THERE IS ONE AT 8LAT.4LONG.");
+                    expect(terminal.println).toHaveBeenCalledWith("NO MORE");
+                });
+
+                it("routes control to the main loop", function() {
+                    clericSpellFindTraps();
                     expect(gameStateMachine.stateMode).toBe(200);
                 });
             });
