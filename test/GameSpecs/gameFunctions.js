@@ -1698,12 +1698,12 @@ describe("Game Functions", function() {
             describe("FIND TRAPS spell", function() {
                 beforeEach(function() {
                     Q = 2;
-                    M = 4;
+                    M = 4; // M is destroyed by the spell function
                 });
 
                 it("is removed from the cleric spellbook after casting", function() {
                     clericSpellFindTraps();
-                    expect(clericSpellbook[M]).toBe(0);
+                    expect(clericSpellbook[4]).toBe(0);
                 });
 
                 it("reports findings to the player", function() {
@@ -1808,6 +1808,12 @@ describe("Game Functions", function() {
                     clericSpellFindTraps();
                     expect(gameStateMachine.stateMode).toBe(200);
                 });
+            });
+
+            xdescribe("spell 9 (undefined)", function() {
+                // this spell is incomplete with no definable result and cannot be purchased
+                // original code suggests this would be a turn undead as it checks for skeleton or mummy as the current monster
+                xit("only affects a skeleton or mummy");
             });
         });
     });
