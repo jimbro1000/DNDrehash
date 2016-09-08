@@ -56,7 +56,7 @@ var R3, R4, R5; //combat calculations
 var terminal; // display terminal
 var Q; // numeric input
 var strQ; //string input
-var strN; // player name
+var characterName; // player name
 var vbTab; // tab character
 
 var reading; // block key press event when true
@@ -482,7 +482,7 @@ function fetchDungeonSave() { //7
             attributeNames[m] = elements[m * 2];
             attributes[m] = parseInt(elements[m * 2 + 1]);
         }
-        strN = getCookie("dnd1file7.N$");
+        characterName = getCookie("dnd1file7.N$");
         F1 = parseInt(getCookie("dnd1file7.F1"));
         stream = getCookie("dnd1file7.I$");
         elements = stream.split("|");
@@ -577,8 +577,8 @@ function gotResetInput() { //8
 }
 
 function gotNameInput() {
-    strN = inputString.trim();
-    if (strN === "SHAVS") {
+    characterName = inputString.trim();
+    if (characterName === "SHAVS") {
         gameStateMachine.stateMode = 10;
     } else {
         gameStateMachine.stateMode = 4;
@@ -1655,7 +1655,7 @@ function saveGame() { //76
     stream = "";
     for (m = 0; m <= 7; m++) stream += attributeNames[m] + "|" + attributes[m] + "|";
     setCookie("dnd1file7.attributes", stream, cookieLifespan);
-    setCookie("dnd1file7.N$", strN, cookieLifespan);
+    setCookie("dnd1file7.N$", characterName, cookieLifespan);
     setCookie("dnd1file7.F1", F1, cookieLifespan);
     stream = "";
     for (m = 1; m <= 15; m++) stream += equipmentNames[m] + "|";
