@@ -1606,20 +1606,27 @@ function consumeFood() { //74
 }
 
 function looking() { //75
-    var line;
+    var line, m, n;
     for (M = -5; M < 6; M++) {
         line = "";
         for (N = -5; N < 6; N++) {
-            if (!((M + mapY > 25) || (M + mapY < 0) || (mapX + N > 25) || (mapX + N < 0))) {
+            m = M + mapY;
+            n = N + mapX;
+            if (inBounds(m, n)) {
                 if ((M == 0) && (N == 0)) {
                     line += "9";
                 } else {
-                    if (dungeonMap[M + mapY][N + mapX] == 3) {
-                        line += "1";
-                    } else if (dungeonMap[M + mapY][N + mapX] == 2 || dungeonMap[M + mapY][N + mapX] == 7 || dungeonMap[M + mapY][N + mapX] == 8) {
-                        line += "0";
-                    } else {
-                        line += dungeonMap[M + mapY][N + mapX];
+                    switch (dungeonMap[m][n]) {
+                        case 3:
+                            line += "1";
+                            break;
+                        case 2:
+                        case 7:
+                        case 8:
+                            line += "0";
+                            break;
+                        default:
+                            line += dungeonMap[m][n];
                     }
                 }
             }

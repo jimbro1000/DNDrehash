@@ -25,6 +25,19 @@ This repository holds the complete code to run this port of Richard Garriott's o
 * The tests originally composed for this code have been abandoned and need recomposing to validate behaviours, this is being performed in jasmine. To run the tests view the file SpecRunner.html in the test folder
 * The code is intentionally crude in the current version and has significant scope for refinement
 
+### Plans for version 0.4 ###
+
+* Resolve any missing or broken code in the original source
+* Migrate functionality to enable hosting as a Node/Angular app
+* Convert user input to sockets instead of the clunky original input mechanism
+* Streamline spell and inventory system to reduce code duplication
+
+### Plans for version 1.0 and beyond
+
+* Enable a full game experience (retaining the console based ASCII gameplay)
+* Extend editing of maps
+* Introduce meta game state for storytelling
+
 ### Who do I talk to? ###
 
 * At the moment the code is the sole responsibility of the repo owner but if you wish to contribute please get in touch
