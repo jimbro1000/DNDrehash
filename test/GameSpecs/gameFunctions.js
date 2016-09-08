@@ -1817,4 +1817,90 @@ describe("Game Functions", function() {
             });
         });
     });
+
+    describe("Actions", function() {
+        beforeEach(function() {
+            terminal = {
+                lastInput : ""
+            };
+            terminal.println = function(value) { this.lastInput = value; };
+            terminal.print = function(value) { this.lastInput = value; };
+            gameStateMachine = {
+                stateMode : 1,
+                waitTransition : false
+            };
+            defaultMap();
+            spyOn(terminal,"println").and.callThrough();
+            spyOn(terminal,"print").and.callThrough();
+            spyOn(window,"inBounds").and.callThrough();
+        });
+
+        describe("Looking", function() {
+            it("displays the map around the player with a range of 5", function() {
+                mapY = 3;
+                mapX = 3;
+                looking();
+                expect(inBounds).toHaveBeenCalled();
+                expect(terminal.println).toHaveBeenCalledWith("100910001");
+            });
+
+            it("treats secret doors as walls", function() {
+                mapY = 2;
+                mapX = 11;
+                looking();
+                expect(terminal.println).toHaveBeenCalledWith("00400010161");
+                expect(terminal.println).not.toHaveBeenCalledWith("00400030161");
+            });
+
+            it("treats traps as open space", function() {
+                mapY = 4;
+                mapX = 5;
+                looking();
+                expect(terminal.println).toHaveBeenCalledWith("10001000100");
+                expect(terminal.println).not.toHaveBeenCalledWith("10001020100");
+            });
+
+            it("treats boosts(7) as open space", function() {
+                mapY = 4;
+                mapX = 5;
+                dungeonMap[3][1] = 7;
+                looking();
+                expect(terminal.println).toHaveBeenCalledWith("10001000100");
+                expect(terminal.println).not.toHaveBeenCalledWith("17001000100");
+            });
+
+            it("treats boosts(8) as open space", function() {
+                mapY = 4;
+                mapX = 5;
+                dungeonMap[3][1] = 8;
+                looking();
+                expect(terminal.println).toHaveBeenCalledWith("10001000100");
+                expect(terminal.println).not.toHaveBeenCalledWith("18001000100");
+            });
+        });
+
+        describe("Consume Food after baiting monster", function() {
+            it("uses up food from the inventory and empties the hands of the player", function() {
+                inventory[1] = 15;
+                inventoryCounter = 1;
+                currentWeapon = 15;
+                Z5 = 0;
+                consumeFood();
+                expect(inventory[1]).toBe(0);
+                expect(currentWeapon).toBe(0);
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+
+            it("doesn't use food or empty the hands of the player if a spell was cast", function() {
+                inventory[1] = 15;
+                inventoryCounter = 1;
+                currentWeapon = 1;
+                Z5 = 1;
+                consumeFood();
+                expect(inventory[1]).toBe(15);
+                expect(currentWeapon).toBe(1);
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+        });
+    });
 });

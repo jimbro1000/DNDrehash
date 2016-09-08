@@ -1583,7 +1583,7 @@ function kiteMonster() { //73
     } else if (look === 2) { //Then Goto 04280
         terminal.println("GOOD WORK THE MONSTER FELL INTO A TRAP AND IS DEAD");
         K1 = -1;
-        monsterStats[currentMonster][6] = 0;
+        monsterStats[currentMonster][constants.monsterHp] = 0;
         dungeonMap[F1][F2] = 0; //bug - monster stayed on map
         //stateMode = 200; //bug - kept the food
     } else {
@@ -1592,21 +1592,28 @@ function kiteMonster() { //73
     gameStateMachine.stateMode = 74;
 }
 
+/***
+ * Use up the food being equipped after baiting a monster
+ */
 function consumeFood() { //74
-    for (M = 1; M <= inventoryCounter; M++) {
-        if (Z5 > 0) { //Then Goto 07000 // was Z5 = Q to handle pass through from spells
-            gameStateMachine.stateMode = 200;
-        } else if (inventory[M] === 15) {
-            inventory[M] = 0; //lose the food
-            currentWeapon = 0;
-            M = inventoryCounter + 1;
+    if (Z5 === 0) {
+        for (M = 1; M <= inventoryCounter; M++) {
+            if (inventory[M] === 15) {
+                inventory[M] = 0; //lose the food
+                currentWeapon = 0;
+                M = inventoryCounter + 1;
+            }
         }
     }
     gameStateMachine.stateMode = 200;
 }
 
+/***
+ * Display the surroundings of the player
+ * Obscure secret details
+ */
 function looking() { //75
-    var line, m, n;
+    var line, m, n, o;
     for (M = -5; M < 6; M++) {
         line = "";
         for (N = -5; N < 6; N++) {
@@ -1631,7 +1638,7 @@ function looking() { //75
                 }
             }
         }
-        terminal.println(line);
+        if (line != "") terminal.println(line);
     }
     gameStateMachine.stateMode = 200;
 }
@@ -1842,7 +1849,7 @@ function gotWizardSpell() { //87  //09320
             if ((F1 - mapY === 0) && (F2 - mapX === 0)) {
                 S = 0;
                 T = 0;
-                Z5 = 1;
+                Z5 = 1; // stop food being used at end of bait action
                 inputString = "";
             } else {
                 terminal.println("ARE YOU ABOVE,BELOW,RIGHT, OR LEFT OF IT");
