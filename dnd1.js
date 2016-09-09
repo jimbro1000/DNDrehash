@@ -1522,8 +1522,9 @@ function gotSilverCross() { //70
     }
 }
 
-function consumeWpn() { //71
-    if (inventory[currentWeapon] === 14) {
+function consumeWpn() { //71 //line 6300
+    if (currentWeapon === 14) { //silver cross
+    // if (inventory[currentWeapon] === 14) { //this really doesn't work...
         gameStateMachine.stateMode = 200;
     } else {
         for (M = 1; M <= inventoryCounter; M++) {
@@ -1532,7 +1533,7 @@ function consumeWpn() { //71
                 M = 101;
             }
         }
-        if (currentWeapon != 7) {
+        if (currentWeapon != 7) { //not arrows
             currentWeapon = 0;
         }
         if (R2 > 0) {

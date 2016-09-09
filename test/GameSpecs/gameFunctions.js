@@ -2045,5 +2045,53 @@ describe("Game Functions", function() {
                 expect(gameStateMachine.stateMode).toBe(74);
             });
         });
+
+        describe("Consume Weapon", function () {
+            it("checks if the current weapon is a silver cross, leaves it inventory, equipped and routes to monster loop", function() {
+                currentWeapon = 14;
+                inventory[1] = 14;
+                inventoryCounter = 1;
+                consumeWpn();
+                expect(inventory[1]).toBe(14);
+                expect(currentWeapon).toBe(14);
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+
+            it("checks for arrows and removes one arrow but retains the current weapon", function() {
+                currentWeapon = 7;
+                inventory[1] = 7;
+                inventoryCounter = 1;
+                consumeWpn();
+                expect(inventory[1]).toBe(0);
+                expect(currentWeapon).toBe(7);
+            });
+
+            it("removes the weapon from the players inventory and hands", function() {
+                currentWeapon = 8;
+                inventory[1] = 8;
+                inventoryCounter = 1;
+                consumeWpn();
+                expect(inventory[1]).toBe(0);
+                expect(currentWeapon).toBe(0);
+            });
+
+            it("tests R2 and routes to the main user loop if > 0", function() {
+                R2 = 1;
+                currentWeapon = 8;
+                inventory[1] = 8;
+                inventoryCounter = 1;
+                consumeWpn();
+                expect(gameStateMachine.stateMode).toBe(25);
+            });
+
+            it("tests R2 and routes to the monster loop if <= 0", function() {
+                R2 = 0;
+                currentWeapon = 8;
+                inventory[1] = 8;
+                inventoryCounter = 1;
+                consumeWpn();
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+        });
     });
 });
