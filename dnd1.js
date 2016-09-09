@@ -1543,14 +1543,17 @@ function consumeWpn() { //71
     }
 }
 
+/***
+ * Pelt the monster with food to damage it
+ */
 function peltMonster() { //72
     if (int(rnd(20)) + 1 === 20) {
         terminal.println("DIRECT HIT");
-        monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] / 6);
-    } else if (int(rnd(0) * 20) + 1 > monsterStats[currentMonster][2] - attributes[constants.playerDex] / 3) {
+        monsterStats[currentMonster][constants.monsterHp] -= int(attributes[constants.playerStr] / 6);
+    } else if (int(rnd(20)) + 1 > monsterStats[currentMonster][2] - attributes[constants.playerDex] / 3) {
         terminal.println("HIT");
-        monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] / 8);
-    } else if (int(rnd(0) * 20) + 1 > 10 - attributes[constants.playerDex] / 3) {
+        monsterStats[currentMonster][constants.monsterHp] -= int(attributes[constants.playerStr] / 8);
+    } else if (int(rnd(20)) + 1 > 10 - attributes[constants.playerDex] / 3) {
         terminal.println("YOU HIT HIM BUT NOT GOOD ENOUGH");
     } else {
         terminal.println("TOTAL MISS");
@@ -1558,6 +1561,9 @@ function peltMonster() { //72
     gameStateMachine.stateMode = 74;
 }
 
+/***
+ * Bait the monster with food to steer it
+ */
 function kiteMonster() { //73
     strQ = inputString.trim();
     if (strQ === "B") {

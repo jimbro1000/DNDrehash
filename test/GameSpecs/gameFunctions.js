@@ -1829,6 +1829,7 @@ describe("Game Functions", function() {
                 stateMode : 1,
                 waitTransition : false
             };
+            attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
             defaultMap();
             loadMonsters();
             spyOn(terminal,"println").and.callThrough();
@@ -1984,11 +1985,63 @@ describe("Game Functions", function() {
                 expect(terminal.println).toHaveBeenCalledWith("DIDN'T WORK");
             });
 
-            it("routes to action resolution", function() {
+            it("routes to consume food", function() {
                 F1 = 5;
                 F2 = 5;
                 inputString = "X";
                 kiteMonster();
+                expect(gameStateMachine.stateMode).toBe(74);
+            });
+        });
+
+        describe("Pelt monster", function() {
+            var randomResults = [];
+            var randomIndex = 0;
+            beforeEach(function(){
+                randomIndex = 0;
+                spyOn(window,"rnd").and.callFake(function() { console.log(randomResults[randomIndex]); return randomResults[randomIndex++]; })
+            });
+
+            it("checks for a perfect direct hit", function() {
+                randomResults = [19];
+                currentMonster = 1;
+                monsterStats[currentMonster][constants.monsterHp] = 20;
+                peltMonster();
+                expect(terminal.println).toHaveBeenCalledWith("DIRECT HIT");
+                expect(monsterStats[currentMonster][constants.monsterHp]).toBe(19);
+            });
+
+            it("checks for a damaging hit", function() {
+                randomResults = [18, 9];
+                currentMonster = 1;
+                monsterStats[currentMonster][constants.monsterHp] = 20;
+                peltMonster();
+                expect(terminal.println).toHaveBeenCalledWith("HIT");
+                expect(monsterStats[currentMonster][constants.monsterHp]).toBe(19);
+            });
+
+            it("checks for a non-damaging weak hit", function() {
+                randomResults = [18, 8, 19];
+                currentMonster = 1;
+                monsterStats[currentMonster][constants.monsterHp] = 20;
+                peltMonster();
+                expect(terminal.println).toHaveBeenCalledWith("YOU HIT HIM BUT NOT GOOD ENOUGH");
+                expect(monsterStats[currentMonster][constants.monsterHp]).toBe(20);
+            });
+
+            it("checks for a miss", function() {
+                randomResults = [18, 0, 0];
+                currentMonster = 1;
+                monsterStats[currentMonster][constants.monsterHp] = 20;
+                peltMonster();
+                expect(terminal.println).toHaveBeenCalledWith("TOTAL MISS");
+                expect(monsterStats[currentMonster][constants.monsterHp]).toBe(20);
+            });
+
+            it("routes to consume food", function() {
+                randomResults = [18, 1, 1];
+                currentMonster = 1;
+                peltMonster();
                 expect(gameStateMachine.stateMode).toBe(74);
             });
         });
