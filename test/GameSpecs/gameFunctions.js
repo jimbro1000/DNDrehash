@@ -1830,6 +1830,7 @@ describe("Game Functions", function() {
                 waitTransition : false
             };
             defaultMap();
+            loadMonsters();
             spyOn(terminal,"println").and.callThrough();
             spyOn(terminal,"print").and.callThrough();
             spyOn(window,"inBounds").and.callThrough();
@@ -1900,6 +1901,95 @@ describe("Game Functions", function() {
                 expect(inventory[1]).toBe(15);
                 expect(currentWeapon).toBe(1);
                 expect(gameStateMachine.stateMode).toBe(200);
+            });
+        });
+
+        describe("Bait monster", function() {
+            describe("accepts user input to determine the direction to bait in", function() {
+                it("accepts B to move up a row", function() {
+                    F1 = 5;
+                    F2 = 5;
+                    inputString = "B";
+                    kiteMonster();
+                    expect(S).toBe(-1);
+                    expect(T).toBe(0);
+                });
+
+                it("accepts A to move down a row", function() {
+                    F1 = 5;
+                    F2 = 5;
+                    inputString = "A";
+                    kiteMonster();
+                    expect(S).toBe(1);
+                    expect(T).toBe(0);
+                });
+
+                it("accepts L to move left a column", function() {
+                    F1 = 5;
+                    F2 = 5;
+                    inputString = "L";
+                    kiteMonster();
+                    expect(S).toBe(0);
+                    expect(T).toBe(-1);
+                });
+
+                it("accepts R to move right a column", function() {
+                    F1 = 5;
+                    F2 = 5;
+                    inputString = "R";
+                    kiteMonster();
+                    expect(S).toBe(0);
+                    expect(T).toBe(1);
+                });
+            });
+
+            it("checks to see if the target space is open", function() {
+                F1 = 5;
+                F2 = 5;
+                inputString = "A";
+                dungeonMap[F1][F2] = 5;
+                kiteMonster();
+                expect(F1).toBe(6);
+                expect(F2).toBe(5);
+                expect(dungeonMap[5][5]).toBe(0);
+                expect(dungeonMap[F1][F2]).toBe(5);
+                expect(terminal.println).toHaveBeenCalledWith("MONSTER MOVED BACK");
+            });
+
+            it("checks to see if the target space is a trap", function() {
+                F1 = 3;
+                F2 = 5;
+                dungeonMap[F1][F2] = 5;
+                inputString = "R";
+                currentMonster = 1;
+                kiteMonster();
+                expect(F1).toBe(3);
+                expect(F2).toBe(5);
+                expect(dungeonMap[F1][F2]).toBe(0);
+                expect(K1).toBe(-1);
+                expect(terminal.println).toHaveBeenCalledWith("GOOD WORK THE MONSTER FELL INTO A TRAP AND IS DEAD");
+                expect(monsterStats[currentMonster][constants.monsterHp]).toBe(0);
+            });
+
+            it("checks to see if the target space is blocked", function() {
+                F1 = 3;
+                F2 = 5;
+                dungeonMap[F1][F2] = 5;
+                inputString = "B";
+                currentMonster = 1;
+                kiteMonster();
+                expect(F1).toBe(3);
+                expect(F2).toBe(5);
+                expect(dungeonMap[F1][F2]).toBe(5);
+                expect(terminal.println).toHaveBeenCalledWith("DIDN'T WORK");
+            });
+
+            it("routes to action resolution", function() {
+                F1 = 5;
+                F2 = 5;
+                inputString = "X";
+                kiteMonster();
+                expect(gameStateMachine.stateMode).toBe(74);
             });
         });
     });
