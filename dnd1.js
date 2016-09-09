@@ -1522,9 +1522,11 @@ function gotSilverCross() { //70
     }
 }
 
+/***
+ * Uses up the player's weapon when used at range
+ */
 function consumeWpn() { //71 //line 6300
-    if (currentWeapon === 14) { //silver cross
-    // if (inventory[currentWeapon] === 14) { //this really doesn't work...
+    if (currentWeapon === 14) { //silver cross as sight
         gameStateMachine.stateMode = 200;
     } else {
         for (M = 1; M <= inventoryCounter; M++) {
