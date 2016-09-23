@@ -1473,22 +1473,20 @@ function resolveImprov() { //69
         switch (R2) {
             case 0:
                 terminal.println("MISS");
-                gameStateMachine.stateMode = 71;
                 break;
             case 1:
                 terminal.println("HIT BUT NO DAMAGE");
-                gameStateMachine.stateMode = 71;
                 break;
             case 2:
                 terminal.println("HIT");
                 monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * R4);
-                gameStateMachine.stateMode = 71;
                 break;
             default:
                 terminal.println("CRITICAL HIT");
                 monsterStats[currentMonster][3] -= int(attributes[constants.playerStr] * R5);
                 break;
         }
+        gameStateMachine.stateMode = 71;
     }
 }
 
@@ -1498,7 +1496,7 @@ function gotSilverCross() { //70
         if (range < 10) {
             terminal.println("THE MONSTER IS HURT");
             R5 = 1 / 6;
-            if (currentMonster == 2 || currentMonster == 10 || currentMonster == 4) {
+            if (currentMonster === 2 || currentMonster === 10 || currentMonster === 4) {
                 R2 = 3;
             } else {
                 R2 = 1;

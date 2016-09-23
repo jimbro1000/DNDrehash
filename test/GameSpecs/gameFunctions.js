@@ -2093,5 +2093,58 @@ describe("Game Functions", function() {
                 expect(gameStateMachine.stateMode).toBe(200);
             });
         });
+
+        describe("Got Silver Cross as Weapon", function() {
+            it("accepts user input 'SIGHT' and hurts monster if in range", function() {
+                inputString = "SIGHT";
+                currentWeapon = 14; // silver cross
+                currentMonster = 1;
+                range = 9;
+                R3 = 4;
+                gotSilverCross();
+                expect(terminal.println).toHaveBeenCalledWith("THE MONSTER IS HURT");
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R5).toBe(1/6);
+                expect(R2).toBe(1);
+                expect(range).toBe(3);
+            });
+
+            it("accepts user input 'SIGHT' and fails if out of range", function() {
+                inputString = "SIGHT";
+                currentWeapon = 14; // silver cross
+                currentMonster = 1;
+                range = 10;
+                gotSilverCross();
+                expect(terminal.println).toHaveBeenCalledWith("FAILED");
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+
+            it("damages skeletons", function() {
+                inputString = "SIGHT";
+                currentWeapon = 14; // silver cross
+                range = 9;
+                currentMonster = 4;
+                gotSilverCross();
+                expect(R2).toBe(3);
+            });
+
+            it("damages mummies", function() {
+                inputString = "SIGHT";
+                currentWeapon = 14; // silver cross
+                range = 9;
+                currentMonster = 10;
+                gotSilverCross();
+                expect(R2).toBe(3);
+            });
+
+            it("damages goblins", function() {
+                inputString = "SIGHT";
+                currentWeapon = 14; // silver cross
+                range = 9;
+                currentMonster = 2;
+                gotSilverCross();
+                expect(R2).toBe(3);
+            });
+        });
     });
 });
