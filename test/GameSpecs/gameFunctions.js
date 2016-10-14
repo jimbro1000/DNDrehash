@@ -2094,7 +2094,7 @@ describe("Game Functions", function() {
             });
         });
 
-        describe("Got Silver Cross as Weapon", function() {
+        describe("Got Silver Cross as Weapon", function() { //70
             it("accepts user input 'SIGHT' and hurts monster if in range", function() {
                 inputString = "SIGHT";
                 currentWeapon = 14; // silver cross
@@ -2144,6 +2144,105 @@ describe("Game Functions", function() {
                 currentMonster = 2;
                 gotSilverCross();
                 expect(R2).toBe(3);
+            });
+        });
+
+        describe("Resolve improvised attack", function() {
+            it("checks if the target is in striking distance", function() {
+                R3 = 2;
+                range = 3;
+                resolveImprov();
+                expect(gameStateMachine.stateMode).toBe(200);
+                expect(terminal.println).toHaveBeenCalledWith("HE IS OUT OF RANGE");
+            });
+
+            describe("reports the outcome if the target is in range", function () {
+                it("and recognises a miss", function() {
+                    R3 = 3;
+                    range = 2;
+                    R2 = 0;
+                    resolveImprov();
+                    expect(gameStateMachine.stateMode).toBe(71);
+                    expect(terminal.println).toHaveBeenCalledWith("MISS");
+                });
+
+                it("and recognises an ineffective hit", function() {
+                    R3 = 3;
+                    range = 2;
+                    R2 = 1;
+                    resolveImprov();
+                    expect(gameStateMachine.stateMode).toBe(71);
+                    expect(terminal.println).toHaveBeenCalledWith("HIT BUT NO DAMAGE");
+                });
+
+                it("and recognises a damaging hit", function() {
+                    R3 = 3;
+                    range = 2;
+                    R2 = 2;
+                    R4 = 1;
+                    currentMonster = 1;
+                    resolveImprov();
+                    expect(gameStateMachine.stateMode).toBe(71);
+                    expect(terminal.println).toHaveBeenCalledWith("HIT");
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(16);
+                });
+
+                it("and recognises a critical hit", function() {
+                    R3 = 3;
+                    range = 2;
+                    R2 = 3;
+                    R5 = 2;
+                    currentMonster = 1;
+                    resolveImprov();
+                    expect(gameStateMachine.stateMode).toBe(71);
+                    expect(terminal.println).toHaveBeenCalledWith("CRITICAL HIT");
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(6);
+                });
+            });
+        });
+
+        describe("knuckle head resolves an unarmed attack", function() {
+            it("and accepts user input YES to cancel the attack", function() {
+                inputString = "YES";
+                knucklehead();
+                expect(gameStateMachine.stateMode).toBe(25);
+                expect(terminal.println).not.toHaveBeenCalled();
+            });
+
+            it("and admires shadow boxing", function() {
+                inputString = "NO";
+                mapY = 1;
+                mapX = 1;
+                knucklehead();
+                expect(gameStateMachine.stateMode).toBe(25);
+                expect(terminal.println).toHaveBeenCalledWith("O.K. PUNCH BITE SCRATCH HIT ........");
+                expect(terminal.println).toHaveBeenCalledWith("NO GOOD ONE");
+            });
+
+            it("and checks for a miss if a monster is near", function() {
+                spyOn(window, "rnd").and.callFake(function() { return 0; });
+                inputString = "NO";
+                mapY = 1;
+                mapX = 1;
+                dungeonMap[1][2] = 5;
+                knucklehead();
+                expect(gameStateMachine.stateMode).toBe(200);
+                expect(terminal.println).toHaveBeenCalledWith("O.K. PUNCH BITE SCRATCH HIT ........");
+                expect(terminal.println).toHaveBeenCalledWith("TERRIBLE NO GOOD");
+            });
+
+            it("and checks for a hit if a monster is near", function() {
+                spyOn(window, "rnd").and.callFake(function() { return 0.999; });
+                inputString = "NO";
+                mapY = 1;
+                mapX = 1;
+                dungeonMap[1][2] = 5;
+                currentMonster = 1;
+                knucklehead();
+                expect(gameStateMachine.stateMode).toBe(25);
+                expect(terminal.println).toHaveBeenCalledWith("O.K. PUNCH BITE SCRATCH HIT ........");
+                expect(terminal.println).toHaveBeenCalledWith("GOOD A HIT");
+                expect(monsterStats[currentMonster][constants.monsterHp]).toBe(25);
             });
         });
     });

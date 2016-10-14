@@ -1439,8 +1439,8 @@ function knucklehead() { //68
         terminal.println("O.K. PUNCH BITE SCRATCH HIT ........");
         var m = 0;
         var n = 0;
-        for (M = -1; M < 1; M++) {
-            for (N = -1; N < 1; N++) {
+        for (M = -1; M <= 1; M++) {
+            for (N = -1; N <= 1; N++) {
                 if (dungeonMap[mapY + M][mapX + N] === 5) {
                     m = M;
                     M = 2;
