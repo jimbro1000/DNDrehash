@@ -1835,6 +1835,7 @@ describe("Game Functions", function() {
             spyOn(terminal,"println").and.callThrough();
             spyOn(terminal,"print").and.callThrough();
             spyOn(window,"inBounds").and.callThrough();
+            spyOn(window, "inputStr").and.stub();
         });
 
         describe("Looking", function() {
@@ -2243,6 +2244,36 @@ describe("Game Functions", function() {
                 expect(terminal.println).toHaveBeenCalledWith("O.K. PUNCH BITE SCRATCH HIT ........");
                 expect(terminal.println).toHaveBeenCalledWith("GOOD A HIT");
                 expect(monsterStats[currentMonster][constants.monsterHp]).toBe(25);
+            });
+        });
+
+        describe("throw food checks how the food is used as a weapon", function() { //67
+            it("and checks if the user wants to just hit with the food", function() {
+                inputString = "HIT";
+                throwFood();
+                expect(gameStateMachine.stateMode).toBe(72);
+            });
+
+            it("and asks where the food will be thrown", function() {
+                Z5 = 1;
+                inputString = "THROW";
+                throwFood();
+                expect(gameStateMachine.stateMode).toBe(73);
+                expect(Z5).toBe(0);
+                expect(terminal.print).toHaveBeenCalledWith("THROW A-ABOVE,B-BELOW,L-LEFT,OR R-RIGHT OF THE MONSTER");
+                expect(gameStateMachine.waitTransition).toBe(true);
+                expect(inputStr).toHaveBeenCalled();
+            });
+        });
+
+        describe("improvise routes the weapon choice", function() { //66
+            it("and makes sure the chosen weapon is held", function() {
+                inventory[1] = 15;
+                inventoryCounter = 1;
+                currentWeapon = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(25);
+                expect(terminal.println).toHaveBeenCalledWith("NO WEAPON FOUND");
             });
         });
     });
