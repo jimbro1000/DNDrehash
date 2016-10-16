@@ -1335,14 +1335,18 @@ function improvise() { //66
 				R3 = 15;
 				R4 = 3 / 7;
 				R5 = 5 / 11;
-				found = (getCurrentWeapon() === 7);
+                found = false;
+                var arrowIndex = -1;
+                for (var i=0;(i<=inventoryCounter && !found);i++) if (inventory[i]===7) {
+                    arrowIndex = i;
+                    found = true;
+                }
 				if (!found) {
 					terminal.println("MISS");
 					gameStateMachine.stateMode = 71;
 				} else {
-					inventory[currentWeaponIndex] = 0;
-					setCurrentWeapon(7); //Arrow
-					gameStateMachine.stateMode = 69;
+					inventory[arrowIndex] = 0;
+                    gameStateMachine.stateMode = 69;
 				}
 				break;
 			case 7:
@@ -1389,7 +1393,6 @@ function improvise() { //66
 				break;
 			default: //14
 				terminal.print("AS A CLUB OR SIGHT");
-				gameStateMachine.waitTransition = true;
 				gameStateMachine.stateMode = 70;
 				inputStr();
 				break;

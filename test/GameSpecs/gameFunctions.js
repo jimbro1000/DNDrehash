@@ -2285,6 +2285,161 @@ describe("Game Functions", function() {
                 expect(gameStateMachine.stateMode).toBe(25);
                 expect(terminal.println).toHaveBeenCalledWith("NO WEAPON FOUND");
             });
+
+            it("and configures for a spear", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[1] = 5;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(10);
+                expect(R4).toBe(3/7);
+                expect(R5).toBe(5/11);
+            });
+
+            it("and configures for a bow without any arrows", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[0] = 0;
+                inventory[1] = 6;
+                inventory[2] = 0;
+                inventoryCounter = 2;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(71);
+                expect(terminal.println).toHaveBeenCalledWith("MISS");
+                expect(R3).toBe(15);
+                expect(R4).toBe(3/7);
+                expect(R5).toBe(5/11);
+            });
+
+
+            it("and configures for a bow and arrow", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[0] = 7;
+                inventory[1] = 6;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(15);
+                expect(R4).toBe(3/7);
+                expect(R5).toBe(5/11);
+            });
+
+            it("and configures for just an arrow", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[1] = 7;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(1.5);
+                expect(R4).toBe(1/7);
+                expect(R5).toBe(1/5);
+            });
+
+            it("and configures for leather armour", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[1] = 8;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(4);
+                expect(R4).toBe(1/10);
+                expect(R5).toBe(1/8);
+            });
+
+            it("and configures for chain mail armour", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[1] = 9;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(4);
+                expect(R4).toBe(1/7);
+                expect(R5).toBe(1/6);
+            });
+
+            it("and configures for plate mail armour", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[1] = 10;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(3);
+                expect(R4).toBe(1/8);
+                expect(R5).toBe(1/5);
+            });
+
+            it("and configures for rope", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[1] = 11;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(5);
+                expect(R4).toBe(1/9);
+                expect(R5).toBe(1/6);
+            });
+
+            it("and configures for a spike", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[1] = 12;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(8);
+                expect(R4).toBe(1/9);
+                expect(R5).toBe(1/4);
+            });
+
+            it("and configures for a flask of oil", function() {
+                R3 = 0;
+                R4 = 0;
+                R5 = 0;
+                inventory[1] = 13;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(69);
+                expect(R3).toBe(6);
+                expect(R4).toBe(1/3);
+                expect(R5).toBe(2/3);
+            });
+
+            it("and asks how to use a silver cross", function() {
+                inventory[1] = 14;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                improvise();
+                expect(gameStateMachine.stateMode).toBe(70);
+                expect(terminal.print).toHaveBeenCalledWith("AS A CLUB OR SIGHT");
+                expect(inputStr).toHaveBeenCalled();
+            });
         });
     });
 });
