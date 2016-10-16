@@ -208,7 +208,7 @@ function setCurrentWeapon(item) {
 		currentWeaponIndex = -1;
 		return true;
 	}
-	for (var i=0;i<inventoryCounter;i++) if (inventory[i] === item) {
+	for (var i=0;i<=inventoryCounter;i++) if (inventory[i] === item) {
 		currentWeaponIndex = i;
 		return true;
 	}
@@ -1594,7 +1594,7 @@ function consumeFood() { //74
  * Obscure secret details
  */
 function looking() { //75
-	var line, m, n, o;
+	var line, m, n;
 	for (M = -5; M < 6; M++) {
 		line = "";
 		for (N = -5; N < 6; N++) {

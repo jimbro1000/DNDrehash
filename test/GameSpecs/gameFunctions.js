@@ -1886,11 +1886,11 @@ describe("Game Functions", function() {
             it("uses up food from the inventory and empties the hands of the player", function() {
                 inventory[1] = 15;
                 inventoryCounter = 1;
-                currentWeaponIndex = 15;
+                currentWeaponIndex = 1;
                 Z5 = 0;
                 consumeFood();
                 expect(inventory[1]).toBe(0);
-                expect(currentWeapon).toBe(0);
+                expect(getCurrentWeapon()).toBe(0);
                 expect(gameStateMachine.stateMode).toBe(200);
             });
 
@@ -1901,7 +1901,7 @@ describe("Game Functions", function() {
                 Z5 = 1;
                 consumeFood();
                 expect(inventory[1]).toBe(15);
-                expect(currentWeapon).toBe(1);
+                expect(getCurrentWeapon()).toBe(15);
                 expect(gameStateMachine.stateMode).toBe(200);
             });
         });
@@ -2049,36 +2049,37 @@ describe("Game Functions", function() {
 
         describe("Consume Weapon", function () {
             it("checks if the current weapon is a silver cross, leaves it inventory, equipped and routes to monster loop", function() {
-                currentWeaponIndex = 14;
+                currentWeaponIndex = 1;
                 inventory[1] = 14;
                 inventoryCounter = 1;
                 consumeWpn();
                 expect(inventory[1]).toBe(14);
-                expect(currentWeapon).toBe(14);
+                expect(getCurrentWeapon()).toBe(14);
                 expect(gameStateMachine.stateMode).toBe(200);
             });
 
             it("checks for arrows and removes one arrow but retains the current weapon", function() {
-                currentWeaponIndex = 7;
+                currentWeaponIndex = 1;
                 inventory[1] = 7;
-                inventoryCounter = 1;
+	            inventory[2] = 7;
+                inventoryCounter = 2;
                 consumeWpn();
                 expect(inventory[1]).toBe(0);
-                expect(currentWeapon).toBe(7);
+                expect(getCurrentWeapon()).toBe(7);
             });
 
             it("removes the weapon from the players inventory and hands", function() {
-                currentWeaponIndex = 8;
+                currentWeaponIndex = 1;
                 inventory[1] = 8;
                 inventoryCounter = 1;
                 consumeWpn();
                 expect(inventory[1]).toBe(0);
-                expect(currentWeapon).toBe(0);
+                expect(getCurrentWeapon()).toBe(0);
             });
 
             it("tests R2 and routes to the main user loop if > 0", function() {
                 R2 = 1;
-                currentWeaponIndex = 8;
+                currentWeaponIndex = 1;
                 inventory[1] = 8;
                 inventoryCounter = 1;
                 consumeWpn();
@@ -2098,7 +2099,9 @@ describe("Game Functions", function() {
         describe("Got Silver Cross as Weapon", function() { //70
             it("accepts user input 'SIGHT' and hurts monster if in range", function() {
                 inputString = "SIGHT";
-                currentWeaponIndex = 14; // silver cross
+	            inventory[1] = 14;
+	            inventoryCounter = 1;
+                currentWeaponIndex = 1; // silver cross
                 currentMonster = 1;
                 range = 9;
                 R3 = 4;
@@ -2112,7 +2115,9 @@ describe("Game Functions", function() {
 
             it("accepts user input 'SIGHT' and fails if out of range", function() {
                 inputString = "SIGHT";
-                currentWeaponIndex = 14; // silver cross
+	            inventory[1] = 14;
+	            inventoryCounter = 1;
+	            currentWeaponIndex = 1; // silver cross
                 currentMonster = 1;
                 range = 10;
                 gotSilverCross();
@@ -2122,7 +2127,9 @@ describe("Game Functions", function() {
 
             it("damages skeletons", function() {
                 inputString = "SIGHT";
-                currentWeaponIndex = 14; // silver cross
+	            inventory[1] = 14;
+	            inventoryCounter = 1;
+	            currentWeaponIndex = 1; // silver cross
                 range = 9;
                 currentMonster = 4;
                 gotSilverCross();
@@ -2131,7 +2138,9 @@ describe("Game Functions", function() {
 
             it("damages mummies", function() {
                 inputString = "SIGHT";
-                currentWeaponIndex = 14; // silver cross
+	            inventory[1] = 14;
+	            inventoryCounter = 1;
+	            currentWeaponIndex = 1; // silver cross
                 range = 9;
                 currentMonster = 10;
                 gotSilverCross();
@@ -2140,7 +2149,9 @@ describe("Game Functions", function() {
 
             it("damages goblins", function() {
                 inputString = "SIGHT";
-                currentWeaponIndex = 14; // silver cross
+	            inventory[1] = 14;
+	            inventoryCounter = 1;
+	            currentWeaponIndex = 1; // silver cross
                 range = 9;
                 currentMonster = 2;
                 gotSilverCross();
@@ -2261,7 +2272,6 @@ describe("Game Functions", function() {
                 expect(gameStateMachine.stateMode).toBe(73);
                 expect(Z5).toBe(0);
                 expect(terminal.print).toHaveBeenCalledWith("THROW A-ABOVE,B-BELOW,L-LEFT,OR R-RIGHT OF THE MONSTER");
-                expect(gameStateMachine.waitTransition).toBe(true);
                 expect(inputStr).toHaveBeenCalled();
             });
         });
@@ -2270,7 +2280,7 @@ describe("Game Functions", function() {
             it("and makes sure the chosen weapon is held", function() {
                 inventory[1] = 15;
                 inventoryCounter = 1;
-                currentWeaponIndex = 1;
+                currentWeaponIndex = -1;
                 improvise();
                 expect(gameStateMachine.stateMode).toBe(25);
                 expect(terminal.println).toHaveBeenCalledWith("NO WEAPON FOUND");
