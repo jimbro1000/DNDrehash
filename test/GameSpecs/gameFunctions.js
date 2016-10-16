@@ -1280,7 +1280,7 @@ describe("Game Functions", function() {
                 stateMode : 1,
                 waitTransition : false
             };
-            currentWeapon = 0;
+            currentWeaponIndex = 0;
             randomCounter = 0;
             spyOn(terminal,"println").and.callThrough();
             spyOn(terminal,"print").and.callThrough();
@@ -1293,7 +1293,7 @@ describe("Game Functions", function() {
 
         describe("Validate Casting Action Choice", function() {
             it("checks that a weapon isn't equipped", function() {
-                currentWeapon = 1;
+                currentWeaponIndex = 1;
                 casting();
                 expect(gameStateMachine.stateMode).toBe(200);
                 expect(terminal.println).toHaveBeenCalledWith("YOU CANT USE MAGIC WITH WEAPON IN HAND");
@@ -1886,7 +1886,7 @@ describe("Game Functions", function() {
             it("uses up food from the inventory and empties the hands of the player", function() {
                 inventory[1] = 15;
                 inventoryCounter = 1;
-                currentWeapon = 15;
+                currentWeaponIndex = 15;
                 Z5 = 0;
                 consumeFood();
                 expect(inventory[1]).toBe(0);
@@ -1897,7 +1897,7 @@ describe("Game Functions", function() {
             it("doesn't use food or empty the hands of the player if a spell was cast", function() {
                 inventory[1] = 15;
                 inventoryCounter = 1;
-                currentWeapon = 1;
+                currentWeaponIndex = 1;
                 Z5 = 1;
                 consumeFood();
                 expect(inventory[1]).toBe(15);
@@ -2049,7 +2049,7 @@ describe("Game Functions", function() {
 
         describe("Consume Weapon", function () {
             it("checks if the current weapon is a silver cross, leaves it inventory, equipped and routes to monster loop", function() {
-                currentWeapon = 14;
+                currentWeaponIndex = 14;
                 inventory[1] = 14;
                 inventoryCounter = 1;
                 consumeWpn();
@@ -2059,7 +2059,7 @@ describe("Game Functions", function() {
             });
 
             it("checks for arrows and removes one arrow but retains the current weapon", function() {
-                currentWeapon = 7;
+                currentWeaponIndex = 7;
                 inventory[1] = 7;
                 inventoryCounter = 1;
                 consumeWpn();
@@ -2068,7 +2068,7 @@ describe("Game Functions", function() {
             });
 
             it("removes the weapon from the players inventory and hands", function() {
-                currentWeapon = 8;
+                currentWeaponIndex = 8;
                 inventory[1] = 8;
                 inventoryCounter = 1;
                 consumeWpn();
@@ -2078,7 +2078,7 @@ describe("Game Functions", function() {
 
             it("tests R2 and routes to the main user loop if > 0", function() {
                 R2 = 1;
-                currentWeapon = 8;
+                currentWeaponIndex = 8;
                 inventory[1] = 8;
                 inventoryCounter = 1;
                 consumeWpn();
@@ -2087,7 +2087,7 @@ describe("Game Functions", function() {
 
             it("tests R2 and routes to the monster loop if <= 0", function() {
                 R2 = 0;
-                currentWeapon = 8;
+                currentWeaponIndex = 8;
                 inventory[1] = 8;
                 inventoryCounter = 1;
                 consumeWpn();
@@ -2098,7 +2098,7 @@ describe("Game Functions", function() {
         describe("Got Silver Cross as Weapon", function() { //70
             it("accepts user input 'SIGHT' and hurts monster if in range", function() {
                 inputString = "SIGHT";
-                currentWeapon = 14; // silver cross
+                currentWeaponIndex = 14; // silver cross
                 currentMonster = 1;
                 range = 9;
                 R3 = 4;
@@ -2112,7 +2112,7 @@ describe("Game Functions", function() {
 
             it("accepts user input 'SIGHT' and fails if out of range", function() {
                 inputString = "SIGHT";
-                currentWeapon = 14; // silver cross
+                currentWeaponIndex = 14; // silver cross
                 currentMonster = 1;
                 range = 10;
                 gotSilverCross();
@@ -2122,7 +2122,7 @@ describe("Game Functions", function() {
 
             it("damages skeletons", function() {
                 inputString = "SIGHT";
-                currentWeapon = 14; // silver cross
+                currentWeaponIndex = 14; // silver cross
                 range = 9;
                 currentMonster = 4;
                 gotSilverCross();
@@ -2131,7 +2131,7 @@ describe("Game Functions", function() {
 
             it("damages mummies", function() {
                 inputString = "SIGHT";
-                currentWeapon = 14; // silver cross
+                currentWeaponIndex = 14; // silver cross
                 range = 9;
                 currentMonster = 10;
                 gotSilverCross();
@@ -2140,7 +2140,7 @@ describe("Game Functions", function() {
 
             it("damages goblins", function() {
                 inputString = "SIGHT";
-                currentWeapon = 14; // silver cross
+                currentWeaponIndex = 14; // silver cross
                 range = 9;
                 currentMonster = 2;
                 gotSilverCross();
@@ -2270,7 +2270,7 @@ describe("Game Functions", function() {
             it("and makes sure the chosen weapon is held", function() {
                 inventory[1] = 15;
                 inventoryCounter = 1;
-                currentWeapon = 1;
+                currentWeaponIndex = 1;
                 improvise();
                 expect(gameStateMachine.stateMode).toBe(25);
                 expect(terminal.println).toHaveBeenCalledWith("NO WEAPON FOUND");
