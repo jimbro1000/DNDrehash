@@ -10,22 +10,22 @@ describe("Game Functions", function() {
 		});
 
 		it("returns dexterity + 6 if no armour carried", function() {
-			expect(calculatePlayerProtection() === (6 + attributes[2])).toBe(true);
+			expect(calculatePlayerProtection()).toBe(6 + attributes[2]);
 		});
 
 		it("returns dexterity + 8 if leather armour carried", function() {
 			inventory[1] = 8; inventoryCounter = 1;
-			expect(calculatePlayerProtection() === (8 + attributes[2])).toBe(true);
+			expect(calculatePlayerProtection()).toBe(8 + attributes[2]);
 		});
 
 		it("returns dexterity + 16 if chain armour carried", function() {
 			inventory[1] = 9; inventoryCounter = 1;
-			expect(calculatePlayerProtection() === (16 + attributes[2])).toBe(true);
+			expect(calculatePlayerProtection()).toBe(16 + attributes[2]);
 		});
 
 		it("returns dexterity + 20 if plate armour carried", function() {
 			inventory[1] = 10; inventoryCounter = 1;
-			expect(calculatePlayerProtection() === (20 + attributes[2])).toBe(true);
+			expect(calculatePlayerProtection()).toBe(20 + attributes[2]);
 		});
 	});
 

@@ -400,7 +400,6 @@ function loadScreen() { //1
     terminal.println("");
     terminal.print("DO YOU NEED INSTRUCTIONS ");
     gameStateMachine.stateMode = 2;
-    gameStateMachine.waitTransition = true;
     inputStr();
 }
 
@@ -412,7 +411,6 @@ function gotInstructionInput() { //2
     else {
         terminal.print("OLD OR NEW GAME ");
         gameStateMachine.stateMode = 3;
-        gameStateMachine.waitTransition = true;
         inputStr();
     }
 }
@@ -424,7 +422,6 @@ function gotLoadInput() { //3
     } else {
         terminal.print("DUNGEON # ");
         gameStateMachine.stateMode = 6;
-        gameStateMachine.waitTransition = true;
         input();
     }
 }
@@ -440,7 +437,6 @@ function gotDungeonInput() { //6
     Dn = Math.floor(Q);
     terminal.print("CONTINUES RESET 1=YES,2=NO ");
     gameStateMachine.stateMode = 8;
-    gameStateMachine.waitTransition = true;
     input();
 }
 
@@ -572,7 +568,6 @@ function gotResetInput() { //8
     J6 = Math.floor(inputString);
     terminal.print("PLATERS NME ");
     gameStateMachine.stateMode = 9;
-    gameStateMachine.waitTransition = true;
     inputStr();
 }
 
@@ -605,7 +600,6 @@ function pickClass() {
     terminal.println("WHICH DO YOU WANT TO BE");
     terminal.print("FIGHTER ,CLERIC ,OR WIZARD ");
     gameStateMachine.stateMode = 11;
-    gameStateMachine.waitTransition = true;
     inputStr();
 }
 
@@ -651,9 +645,8 @@ function gotWizard() {
 function shopTop() {
     terminal.println("BUYING WEAPONS");
     terminal.println("FAST OR NORM ");
-    gameStateMachine.waitTransition = true;
-    inputStr();
     gameStateMachine.stateMode = 16;
+    inputStr();
 }
 
 function gotShopFastNorm() {
@@ -675,7 +668,6 @@ function shopList() { //17
 }
 
 function shopping() { //18
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 19;
     input();
 }
@@ -720,7 +712,6 @@ function gotShoppingInput() {
 
 function showInvQuestion() {
     terminal.print("EQ LIST ");
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 20.5;
     inputStr();
 }
@@ -764,7 +755,6 @@ function welcome() {
     terminal.println("YOU ARE AT (" + mapY + "," + mapX + ")");
     terminal.println("");
     terminal.print("COMMANDS LIST" + vbTab);
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 23.5;
     inputStr();
 }
@@ -789,7 +779,6 @@ function showCommands() {
 
 function getCommand() { //25
     terminal.print("COMMAND=");
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 26;
     input();
 }
@@ -845,7 +834,6 @@ function gotCommand() {
 function getBASIC() { //30
     terminal.print(">");
     inputStr();
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 31;
 }
 
@@ -866,7 +854,6 @@ function startMove() { //45
     terminal.println("YOU ARE AT " + mapY + " , " + mapX);
     terminal.println("  DOWN  RIGHT  LEFT  OR  UP");
     inputStr();
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 46;
 }
 
@@ -1056,9 +1043,8 @@ function gold() {
 
 function openDoor() {
     terminal.println("DOOR LEFT RIGHT UP OR DOWN");
-    gameStateMachine.waitTransition = true;
-    inputStr();
     gameStateMachine.stateMode = 56;
+    inputStr();
 }
 
 function gotDoorMove() {
@@ -1123,7 +1109,6 @@ function searching() {
 
 function swapWeapon() { //58
     terminal.println("WHICH WEAPON WILL YOU HOLD, NUM OF WEAPON ");
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 59;
     input();
 }
@@ -1179,7 +1164,6 @@ function fight1() { //60
         if (currentWeapon === 15) {
             terminal.println("FOOD ???.... WELL O.K.");
             terminal.print("IS IT TO HIT OR DISTRACT");
-            gameStateMachine.waitTransition = true;
             gameStateMachine.stateMode = 67;
             inputStr();
         }
@@ -1189,7 +1173,6 @@ function fight1() { //60
 function knuckles() { //61
     terminal.println("DO YOU REALIZE YOU ARE BARE HANDED");
     terminal.print("DO YOU WANT TO MAKE ANOTHER CHOICE");
-    gameStateMachine.waitTransition = true;
     gameStateMachine.stateMode = 68;
     inputStr();
 }
@@ -1425,7 +1408,6 @@ function throwFood() { //67
     } else {
         terminal.print("THROW A-ABOVE,B-BELOW,L-LEFT,OR R-RIGHT OF THE MONSTER");
         Z5 = 0;
-        gameStateMachine.waitTransition = true;
         gameStateMachine.stateMode = 73;
         inputStr();
     }
