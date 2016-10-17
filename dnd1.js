@@ -51,7 +51,7 @@ var P0; //used but never modified - investigate
 var inputInt;
 var Z;
 var Z5; //only used once - investigate
-var range, R2, rangeRowOffset, rangeColumnOffset; //range and hit calculations
+var range, toHitRoll, rangeRowOffset, rangeColumnOffset; //range and hit calculations
 var R3, R4, R5; //combat calculations
 var terminal; // display terminal
 var Q; // numeric input
@@ -248,15 +248,15 @@ function findRange() {
 	rangeRowOffset = tempY;
 	rangeColumnOffset = tempX;
 	if (int(rnd(20) + 1) > 18) {
-		R2 = 3;
+		toHitRoll = 3;
 	} else {
 		if (rnd(20) > (monsterStats[currentMonster][2] - attributes[constants.playerDex] / 3)) {
-			R2 = 2;
+			toHitRoll = 2;
 		} else {
 			if (rnd(2) > 1.7) {
-				R2 = 1;
+				toHitRoll = 1;
 			} else {
-				R2 = 0;
+				toHitRoll = 0;
 			}
 		}
 	}
@@ -1194,7 +1194,7 @@ function swingASword() { //62
 		terminal.println("HE IS OUT OF RANGE");
 		gameStateMachine.stateMode = 200;
 	} else {
-		switch (R2) {
+		switch (toHitRoll) {
 			case 0:
 				terminal.println("MISSED TOTALY");
 				gameStateMachine.stateMode = 200;
@@ -1224,7 +1224,7 @@ function swingABigSword() { //63
 		terminal.println("HE IS OUT OF RANGE");
 		gameStateMachine.stateMode = 200;
 	} else {
-		switch (R2) {
+		switch (toHitRoll) {
 			case 0:
 				terminal.println("MISSED TOTALY");
 				gameStateMachine.stateMode = 200;
@@ -1262,7 +1262,7 @@ function pokeADagger() { //64
 		if (range > 5) { //Then Goto 04710 'OUT OF RANGE
 			terminal.println("HE IS OUT OF RANGE");
 		} else {
-			switch (R2) {
+			switch (toHitRoll) {
 				case 0:
 					terminal.println("MISSED TOTALLY");
 					break;
@@ -1294,7 +1294,7 @@ function swingAMace() { //65
 		terminal.println("HE IS OUT OF RANGE");
 		gameStateMachine.stateMode = 200;
 	} else {
-		switch (R2) {
+		switch (toHitRoll) {
 			case 0:
 				terminal.println("MISS");
 				gameStateMachine.stateMode = 200;
@@ -1451,7 +1451,7 @@ function resolveImprov() { //69
 		terminal.println("HE IS OUT OF RANGE");
 		gameStateMachine.stateMode = 200;
 	} else {
-		switch (R2) {
+		switch (toHitRoll) {
 			case 0:
 				terminal.println("MISS");
 				break;
@@ -1478,9 +1478,9 @@ function gotSilverCross() { //70
 			terminal.println("THE MONSTER IS HURT");
 			R5 = 1 / 6;
 			if (currentMonster === 2 || currentMonster === 10 || currentMonster === 4) {
-				R2 = 3;
+				toHitRoll = 3;
 			} else {
-				R2 = 1;
+				toHitRoll = 1;
 			}
 			range = R3 - 1;
 			gameStateMachine.stateMode = 69;
@@ -1515,7 +1515,7 @@ function consumeWpn() { //71 //line 6300
 		} else {
 			setCurrentWeapon(7);
 		}
-		if (R2 > 0) {
+		if (toHitRoll > 0) {
 			gameStateMachine.stateMode = 25;
 		} else {
 			gameStateMachine.stateMode = 200;

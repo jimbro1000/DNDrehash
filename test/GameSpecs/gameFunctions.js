@@ -2077,8 +2077,8 @@ describe("Game Functions", function() {
                 expect(getCurrentWeapon()).toBe(0);
             });
 
-            it("tests R2 and routes to the main user loop if > 0", function() {
-                R2 = 1;
+            it("tests toHitRoll and routes to the main user loop if > 0", function() {
+                toHitRoll = 1;
                 currentWeaponIndex = 1;
                 inventory[1] = 8;
                 inventoryCounter = 1;
@@ -2086,8 +2086,8 @@ describe("Game Functions", function() {
                 expect(gameStateMachine.stateMode).toBe(25);
             });
 
-            it("tests R2 and routes to the monster loop if <= 0", function() {
-                R2 = 0;
+            it("tests toHitRoll and routes to the monster loop if <= 0", function() {
+                toHitRoll = 0;
                 currentWeaponIndex = 8;
                 inventory[1] = 8;
                 inventoryCounter = 1;
@@ -2109,7 +2109,7 @@ describe("Game Functions", function() {
                 expect(terminal.println).toHaveBeenCalledWith("THE MONSTER IS HURT");
                 expect(gameStateMachine.stateMode).toBe(69);
                 expect(R5).toBe(1/6);
-                expect(R2).toBe(1);
+                expect(toHitRoll).toBe(1);
                 expect(range).toBe(3);
             });
 
@@ -2133,7 +2133,7 @@ describe("Game Functions", function() {
                 range = 9;
                 currentMonster = 4;
                 gotSilverCross();
-                expect(R2).toBe(3);
+                expect(toHitRoll).toBe(3);
             });
 
             it("damages mummies", function() {
@@ -2144,7 +2144,7 @@ describe("Game Functions", function() {
                 range = 9;
                 currentMonster = 10;
                 gotSilverCross();
-                expect(R2).toBe(3);
+                expect(toHitRoll).toBe(3);
             });
 
             it("damages goblins", function() {
@@ -2155,7 +2155,7 @@ describe("Game Functions", function() {
                 range = 9;
                 currentMonster = 2;
                 gotSilverCross();
-                expect(R2).toBe(3);
+                expect(toHitRoll).toBe(3);
             });
         });
 
@@ -2172,7 +2172,7 @@ describe("Game Functions", function() {
                 it("and recognises a miss", function() {
                     R3 = 3;
                     range = 2;
-                    R2 = 0;
+                    toHitRoll = 0;
                     resolveImprov();
                     expect(gameStateMachine.stateMode).toBe(71);
                     expect(terminal.println).toHaveBeenCalledWith("MISS");
@@ -2181,7 +2181,7 @@ describe("Game Functions", function() {
                 it("and recognises an ineffective hit", function() {
                     R3 = 3;
                     range = 2;
-                    R2 = 1;
+                    toHitRoll = 1;
                     resolveImprov();
                     expect(gameStateMachine.stateMode).toBe(71);
                     expect(terminal.println).toHaveBeenCalledWith("HIT BUT NO DAMAGE");
@@ -2190,7 +2190,7 @@ describe("Game Functions", function() {
                 it("and recognises a damaging hit", function() {
                     R3 = 3;
                     range = 2;
-                    R2 = 2;
+                    toHitRoll = 2;
                     R4 = 1;
                     currentMonster = 1;
                     resolveImprov();
@@ -2202,7 +2202,7 @@ describe("Game Functions", function() {
                 it("and recognises a critical hit", function() {
                     R3 = 3;
                     range = 2;
-                    R2 = 3;
+                    toHitRoll = 3;
                     R5 = 2;
                     currentMonster = 1;
                     resolveImprov();
