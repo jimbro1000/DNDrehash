@@ -138,7 +138,7 @@ function buildStateModel() {
 	gameStateMachine.addState(new StateModel(57, "search", searching));
 	gameStateMachine.addState(new StateModel(58, "change weapon", swapWeapon));
 	gameStateMachine.addState(new StateModel(59, "accept change weapon", gotSwap));
-	gameStateMachine.addState(new StateModel(60, "start player fight", fight1));
+	gameStateMachine.addState(new StateModel(60, "start player fight", resolveFight));
 	gameStateMachine.addState(new StateModel(61, "punch", knuckles));
 	gameStateMachine.addState(new StateModel(62, "attack with a sword", swingASword));
 	gameStateMachine.addState(new StateModel(63, "attack with a 2h-sword", swingABigSword));
@@ -1146,7 +1146,7 @@ function gotSwap() { //59
 	}
 }
 
-function fight1() { //60
+function resolveFight() { //60
 	terminal.println("YOUR WEAPON IS " + equipmentNames[getCurrentWeapon()]);
 	if (currentMonster = 0) {
 		gameStateMachine.stateMode = 25;

@@ -2442,7 +2442,7 @@ describe("Game Functions", function() {
             });
         });
 
-        describe("swingAMace resolves melee with a mace", function() {
+        describe("swingAMace resolves melee with a mace", function() { //65
             beforeEach(function() {
                 spyOn(window,"findRange").and.stub();
             });
@@ -2500,7 +2500,7 @@ describe("Game Functions", function() {
             });
         });
 
-        describe("pokeADagger resolves combat with a dagger", function() {
+        describe("pokeADagger resolves combat with a dagger", function() { //64
             beforeEach(function() {
                 spyOn(window,"findRange").and.stub();
             });
