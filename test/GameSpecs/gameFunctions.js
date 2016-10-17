@@ -2441,5 +2441,152 @@ describe("Game Functions", function() {
                 expect(inputStr).toHaveBeenCalled();
             });
         });
+
+        describe("swingAMace resolves melee with a mace", function() {
+            beforeEach(function() {
+                spyOn(window,"findRange").and.stub();
+            });
+
+            it("and calculates range first to make sure a hit is possible", function() {
+                range = 3;
+                swingAMace();
+                expect(terminal.println).toHaveBeenCalledWith("SWING");
+                expect(findRange).toHaveBeenCalled();
+            });
+
+            it("and tells the player if out of range", function() {
+                range = 2;
+                swingAMace();
+                expect(terminal.println).toHaveBeenCalledWith("HE IS OUT OF RANGE");
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+
+            describe("and in range checks the toHitRoll", function() {
+                it("0 is a miss", function() {
+                    range = 1;
+                    toHitRoll = 0;
+                    swingAMace();
+                    expect(terminal.println).toHaveBeenCalledWith("MISS");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("1 is a glancing blow", function() {
+                    range = 1;
+                    toHitRoll = 1;
+                    swingAMace();
+                    expect(terminal.println).toHaveBeenCalledWith("HIT BUT NO DAMAGE");
+                    expect(gameStateMachine.stateMode).toBe(25);
+                });
+
+                it("2 is a good hit and damages the target", function() {
+                    range = 1;
+                    toHitRoll = 2;
+                    currentMonster = 1;
+                    swingAMace();
+                    expect(terminal.println).toHaveBeenCalledWith("HIT");
+                    expect(gameStateMachine.stateMode).toBe(25);
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(26 - int(10 * 5 / 11));
+                });
+
+                it("3 is a critical hit and damages the target", function() {
+                    range = 1;
+                    toHitRoll = 3;
+                    currentMonster = 1;
+                    swingAMace();
+                    expect(terminal.println).toHaveBeenCalledWith("CRITICAL HIT");
+                    expect(gameStateMachine.stateMode).toBe(25);
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(26 - int(10 * 4 / 9));
+                });
+            });
+        });
+
+        describe("pokeADagger resolves combat with a dagger", function() {
+            beforeEach(function() {
+                spyOn(window,"findRange").and.stub();
+            });
+
+            it("checks to make sure a dagger is wielded", function() {
+                inventory[1] = 2;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                spyOn(window,"getCurrentWeapon").and.callThrough();
+                pokeADagger();
+                expect(getCurrentWeapon).toHaveBeenCalled();
+                expect(terminal.println).toHaveBeenCalledWith("YOU DONT HAVE A DAGGER");
+            });
+
+            it("and tells the player if out of range", function() {
+                inventory[1] = 3;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+                range = 6;
+                pokeADagger();
+                expect(terminal.println).toHaveBeenCalledWith("HE IS OUT OF RANGE");
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+
+            describe("and if in range checks the toHitRoll", function() {
+                it("0 is a miss", function() {
+                    inventory[1] = 3;
+                    inventoryCounter = 1;
+                    currentWeaponIndex = 1;
+                    range = 1;
+                    toHitRoll = 0;
+                    pokeADagger();
+                    expect(terminal.println).toHaveBeenCalledWith("MISSED TOTALLY");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("1 is a glancing blow", function() {
+                    inventory[1] = 3;
+                    inventoryCounter = 1;
+                    currentWeaponIndex = 1;
+                    range = 1;
+                    toHitRoll = 1;
+                    pokeADagger();
+                    expect(terminal.println).toHaveBeenCalledWith("HIT BUT NO DAMAGE");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("2 is a good hit and damages the target", function() {
+                    inventory[1] = 3;
+                    inventoryCounter = 1;
+                    currentWeaponIndex = 1;
+                    range = 1;
+                    toHitRoll = 2;
+                    currentMonster = 1;
+                    pokeADagger();
+                    expect(terminal.println).toHaveBeenCalledWith("HIT");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(26 - int(10 / 4));
+                });
+
+                it("3 is a critical hit and damages the target", function() {
+                    inventory[1] = 3;
+                    inventoryCounter = 1;
+                    currentWeaponIndex = 1;
+                    range = 1;
+                    toHitRoll = 3;
+                    currentMonster = 1;
+                    pokeADagger();
+                    expect(terminal.println).toHaveBeenCalledWith("CRITICAL HIT");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(26 - int(10 * 3 / 10));
+                });
+            });
+
+            it("and if the range is greater than 2 consume the dagger", function() {
+                inventory[1] = 3;
+                inventory[2] = 3;
+                inventoryCounter = 2;
+                currentWeaponIndex = 1;
+                range = 3;
+                toHitRoll = 0;
+                pokeADagger();
+                expect(inventory[1]).toBe(0);
+                expect(getCurrentWeapon()).toBe(3);
+            });
+        });
+
     });
 });

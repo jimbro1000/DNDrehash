@@ -1248,14 +1248,7 @@ function swingABigSword() { //63
 }
 
 function pokeADagger() { //64
-	var found = false;
-	for (M = 1; M <= inventoryCounter; M++) {
-		if (inventory[M] === 3) {
-			found = true;
-			M = inventoryCounter + 1;
-		}
-	}
-	if (!found) {
+	if (getCurrentWeapon() != 3) {
 		terminal.println("YOU DONT HAVE A DAGGER");
 	} else {
 		findRange();
@@ -1280,7 +1273,8 @@ function pokeADagger() { //64
 			}
 			if (range >= 2) {
 				inventory[currentWeaponIndex] = 0;
-				currentWeaponIndex = -1;
+                currentWeaponIndex = -1;
+                for (M=1;M<=inventoryCounter;M++) if (inventory[M] === 3) currentWeaponIndex = M;
 			}
 		}
 	}
