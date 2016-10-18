@@ -1148,7 +1148,7 @@ function gotSwap() { //59
 
 function resolveFight() { //60
 	terminal.println("YOUR WEAPON IS " + equipmentNames[getCurrentWeapon()]);
-	if (currentMonster = 0) {
+	if (currentMonster === 0) {
 		gameStateMachine.stateMode = 25;
 	} else {
 		terminal.println(monsterNames[currentMonster]);

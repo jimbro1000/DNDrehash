@@ -2714,6 +2714,14 @@ describe("Game Functions", function() {
             });
         });
 
-
+        describe("resolve fight routes outcome according to equipped weapon", function() { //60
+            equipmentNames = ["", "SWORD", "2-H-SWORD", "DAGGER", "MACE", "SPEAR", "BOW", "ARROWS", "LEATHER MAIL", "CHAIN MAIL", "PLATE MAIL", "ROPE", "SPIKES", "FLASK OF OIL", "SILVER CROSS", "SPARE FOOD"];
+            inventory[1] = 1;
+            inventoryCounter = 1;
+            currentWeaponIndex = 1;
+            currentMonster = 0;
+            resolveFight();
+            expect(terminal.println).toHaveBeenCalledWith("YOUR WEAPON IS SWORD");
+        });
     });
 });
