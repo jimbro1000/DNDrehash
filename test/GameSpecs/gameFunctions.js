@@ -2714,14 +2714,80 @@ describe("Game Functions", function() {
             });
         });
 
-        describe("resolve fight routes outcome according to equipped weapon", function() { //60
-            equipmentNames = ["", "SWORD", "2-H-SWORD", "DAGGER", "MACE", "SPEAR", "BOW", "ARROWS", "LEATHER MAIL", "CHAIN MAIL", "PLATE MAIL", "ROPE", "SPIKES", "FLASK OF OIL", "SILVER CROSS", "SPARE FOOD"];
-            inventory[1] = 1;
-            inventoryCounter = 1;
-            currentWeaponIndex = 1;
-            currentMonster = 0;
-            resolveFight();
-            expect(terminal.println).toHaveBeenCalledWith("YOUR WEAPON IS SWORD");
+        describe("resolveFight routes outcome according to equipped weapon", function() { //60
+            beforeEach(function() {
+                equipmentNames = ["", "SWORD", "2-H-SWORD", "DAGGER", "MACE", "SPEAR", "BOW", "ARROWS", "LEATHER MAIL", "CHAIN MAIL", "PLATE MAIL", "ROPE", "SPIKES", "FLASK OF OIL", "SILVER CROSS", "SPARE FOOD"];
+                inventory[1] = 1;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+            });
+
+            it("checks a weapon is equipped", function() {
+                currentMonster = 0;
+                resolveFight();
+                expect(terminal.println).toHaveBeenCalledWith("YOUR WEAPON IS SWORD");
+            });
+
+            it("stops the attack if there are no monsters around", function() {
+                currentMonster = 0;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(25);
+            });
+
+            it("notifies current target and health", function() {
+                currentMonster = 1;
+                resolveFight();
+                expect(terminal.println).toHaveBeenCalledWith(monsterNames[currentMonster]);
+                expect(terminal.println).toHaveBeenCalledWith("HP=" + monsterStats[currentMonster][3]);
+            });
+
+            it("handles bare hand attacks", function() {
+                currentMonster = 1;
+                currentWeaponIndex = -1;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(61);
+            });
+
+            it("handles attacks with a sword", function() {
+                currentMonster = 1;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(62);
+            });
+
+            it("handles attacks with a 2-h sword", function() {
+                currentMonster = 1;
+                inventory[1] = 2;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(63);
+            });
+
+            it("handles attacks with a dagger", function() {
+                currentMonster = 1;
+                inventory[1] = 3;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(64);
+            });
+
+            it("handles attacks with a mace", function() {
+                currentMonster = 1;
+                inventory[1] = 4;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(65);
+            });
+
+            it("handles attacks with food", function() {
+                currentMonster = 1;
+                inventory[1] = 15;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(67);
+            });
+
+            it("handles attacks with anything else", function() {
+                currentMonster = 1;
+                inventory[1] = 6;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(66);
+            });
         });
     });
 });
