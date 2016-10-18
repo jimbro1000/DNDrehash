@@ -2588,5 +2588,63 @@ describe("Game Functions", function() {
             });
         });
 
+        describe("swingABigSword resolves melee with a long sword", function() { //65
+            beforeEach(function() {
+                spyOn(window,"findRange").and.stub();
+            });
+
+            it("and calculates range first to make sure a hit is possible", function() {
+                range = 3;
+                swingABigSword();
+                expect(terminal.println).toHaveBeenCalledWith("SWING");
+                expect(findRange).toHaveBeenCalled();
+            });
+
+            it("and tells the player if out of range", function() {
+                range = 3;
+                swingABigSword();
+                expect(terminal.println).toHaveBeenCalledWith("HE IS OUT OF RANGE");
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+
+            describe("and in range checks the toHitRoll", function() {
+                it("0 is a miss", function() {
+                    range = 1;
+                    toHitRoll = 0;
+                    swingABigSword();
+                    expect(terminal.println).toHaveBeenCalledWith("MISSED TOTALY");
+                    expect(gameStateMachine.stateMode).toBe(200);
+                });
+
+                it("1 is a glancing blow", function() {
+                    range = 1;
+                    toHitRoll = 1;
+                    swingABigSword();
+                    expect(terminal.println).toHaveBeenCalledWith("HIT BUT NOT WELL ENOUGH");
+                    expect(gameStateMachine.stateMode).toBe(25);
+                });
+
+                it("2 is a good hit and damages the target", function() {
+                    range = 1;
+                    toHitRoll = 2;
+                    currentMonster = 1;
+                    swingABigSword();
+                    expect(terminal.println).toHaveBeenCalledWith("HIT");
+                    expect(gameStateMachine.stateMode).toBe(25);
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(26 - int(10 * 5 / 7));
+                });
+
+                it("3 is a critical hit and damages the target", function() {
+                    range = 1;
+                    toHitRoll = 3;
+                    currentMonster = 1;
+                    swingABigSword();
+                    expect(terminal.println).toHaveBeenCalledWith("CRITICAL HIT");
+                    expect(gameStateMachine.stateMode).toBe(25);
+                    expect(monsterStats[currentMonster][constants.monsterHp]).toBe(26 - 10);
+                });
+            });
+        });
+
     });
 });
