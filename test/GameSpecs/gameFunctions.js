@@ -2723,5 +2723,38 @@ describe("Game Functions", function() {
             resolveFight();
             expect(terminal.println).toHaveBeenCalledWith("YOUR WEAPON IS SWORD");
         });
+
+        describe("gotSwap handles user response to swapping weapons", function() {
+            beforeEach(function() {
+                inventoryCounter = 2;
+                inventory[1] = 1;
+                inventory[2] = 2;
+                currentWeaponIndex = 1;
+            });
+
+            it("accepts '0' to cancel the action", function() {
+                inputString = "0";
+                gotSwap();
+                expect(currentWeaponIndex).toBe(1);
+                expect(gameStateMachine.stateMode).toBe(200);
+                expect(terminal.println).not.toHaveBeenCalled();
+            });
+
+            it("checks that the desired weapon is carried and switches to it", function() {
+                inputString = "2";
+                gotSwap();
+                expect(currentWeaponIndex).toBe(2);
+                expect(gameStateMachine.stateMode).toBe(200);
+                expect(terminal.println).toHaveBeenCalledWith("O.K. YOU ARE NOW HOLDING A " + equipmentNames[2]);
+            });
+
+            it("retains the original weapon if the desired choice is not carried and routes to asking the question again", function() {
+                inputString = "3";
+                gotSwap();
+                expect(currentWeaponIndex).toBe(1);
+                expect(gameStateMachine.stateMode).toBe(58);
+                expect(terminal.println).toHaveBeenCalledWith("SORRY YOU DONT HAVE THAT ONE");
+            })
+        });
     });
 });
