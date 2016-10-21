@@ -2792,40 +2792,6 @@ describe("Game Functions", function() {
             });
         });
 
-        describe("gotSwap handles user input for changing weapon", function() {
-            beforeEach(function() {
-                inputString = "1";
-                currentWeaponIndex = -1;
-                inventory[1] = 1;
-                inventoryCounter = 1;
-            });
-
-            it("accepts user input to identify the chosen weapon", function() {
-                gotSwap();
-                expect(currentWeaponIndex).toBe(1);
-            });
-
-            it("confirms that the weapon is equipped", function() {
-                gotSwap();
-                expect(terminal.println).toHaveBeenCalledWith("O.K. YOU ARE NOW HOLDING A " + equipmentNames[1]);
-                expect(gameStateMachine.stateMode).toBe(200);
-            });
-
-            it("notifies if the chosen weapon isn't in the inventory", function() {
-                inputString = "2";
-                gotSwap();
-                expect(terminal.println).toHaveBeenCalledWith("SORRY YOU DONT HAVE THAT ONE");
-                expect(gameStateMachine.stateMode).toBe(58);
-            });
-
-            it("allows the user to cancel the action by selecting 0", function() {
-                inputString = "0";
-                gotSwap();
-                expect(currentWeaponIndex).toBe(-1);
-                expect(gameStateMachine.stateMode).toBe(200);
-            });
-        });
-
         describe("gotSwap handles user response to swapping weapons", function() {
             beforeEach(function() {
                 inventoryCounter = 2;
