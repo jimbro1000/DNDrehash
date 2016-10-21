@@ -2714,14 +2714,116 @@ describe("Game Functions", function() {
             });
         });
 
-        describe("resolve fight routes outcome according to equipped weapon", function() { //60
-            equipmentNames = ["", "SWORD", "2-H-SWORD", "DAGGER", "MACE", "SPEAR", "BOW", "ARROWS", "LEATHER MAIL", "CHAIN MAIL", "PLATE MAIL", "ROPE", "SPIKES", "FLASK OF OIL", "SILVER CROSS", "SPARE FOOD"];
-            inventory[1] = 1;
-            inventoryCounter = 1;
-            currentWeaponIndex = 1;
-            currentMonster = 0;
-            resolveFight();
-            expect(terminal.println).toHaveBeenCalledWith("YOUR WEAPON IS SWORD");
+        describe("resolveFight routes outcome according to equipped weapon", function() { //60
+            beforeEach(function() {
+                equipmentNames = ["", "SWORD", "2-H-SWORD", "DAGGER", "MACE", "SPEAR", "BOW", "ARROWS", "LEATHER MAIL", "CHAIN MAIL", "PLATE MAIL", "ROPE", "SPIKES", "FLASK OF OIL", "SILVER CROSS", "SPARE FOOD"];
+                inventory[1] = 1;
+                inventoryCounter = 1;
+                currentWeaponIndex = 1;
+            });
+
+            it("checks a weapon is equipped", function() {
+                currentMonster = 0;
+                resolveFight();
+                expect(terminal.println).toHaveBeenCalledWith("YOUR WEAPON IS SWORD");
+            });
+
+            it("stops the attack if there are no monsters around", function() {
+                currentMonster = 0;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(25);
+            });
+
+            it("notifies current target and health", function() {
+                currentMonster = 1;
+                resolveFight();
+                expect(terminal.println).toHaveBeenCalledWith(monsterNames[currentMonster]);
+                expect(terminal.println).toHaveBeenCalledWith("HP=" + monsterStats[currentMonster][3]);
+            });
+
+            it("handles bare hand attacks", function() {
+                currentMonster = 1;
+                currentWeaponIndex = -1;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(61);
+            });
+
+            it("handles attacks with a sword", function() {
+                currentMonster = 1;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(62);
+            });
+
+            it("handles attacks with a 2-h sword", function() {
+                currentMonster = 1;
+                inventory[1] = 2;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(63);
+            });
+
+            it("handles attacks with a dagger", function() {
+                currentMonster = 1;
+                inventory[1] = 3;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(64);
+            });
+
+            it("handles attacks with a mace", function() {
+                currentMonster = 1;
+                inventory[1] = 4;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(65);
+            });
+
+            it("handles attacks with food and asks if you really want to use it", function() {
+                currentMonster = 1;
+                inventory[1] = 15;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(67);
+                expect(terminal.println).toHaveBeenCalledWith("FOOD ???.... WELL O.K.");
+                expect(terminal.print).toHaveBeenCalledWith("IS IT TO HIT OR DISTRACT");
+            });
+
+            it("handles attacks with anything else", function() {
+                currentMonster = 1;
+                inventory[1] = 6;
+                resolveFight();
+                expect(gameStateMachine.stateMode).toBe(66);
+            });
+        });
+
+        describe("gotSwap handles user input for changing weapon", function() {
+            beforeEach(function() {
+                inputString = "1";
+                currentWeaponIndex = -1;
+                inventory[1] = 1;
+                inventoryCounter = 1;
+            });
+
+            it("accepts user input to identify the chosen weapon", function() {
+                gotSwap();
+                expect(currentWeaponIndex).toBe(1);
+            });
+
+            it("confirms that the weapon is equipped", function() {
+                gotSwap();
+                expect(terminal.println).toHaveBeenCalledWith("O.K. YOU ARE NOW HOLDING A " + equipmentNames[1]);
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
+
+            it("notifies if the chosen weapon isn't in the inventory", function() {
+                inputString = "2";
+                gotSwap();
+                expect(terminal.println).toHaveBeenCalledWith("SORRY YOU DONT HAVE THAT ONE");
+                expect(gameStateMachine.stateMode).toBe(58);
+            });
+
+            it("allows the user to cancel the action by selecting 0", function() {
+                inputString = "0";
+                gotSwap();
+                expect(currentWeaponIndex).toBe(-1);
+                expect(gameStateMachine.stateMode).toBe(200);
+            });
         });
 
         describe("gotSwap handles user response to swapping weapons", function() {
