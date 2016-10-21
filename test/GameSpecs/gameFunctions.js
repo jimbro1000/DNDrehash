@@ -1836,6 +1836,7 @@ describe("Game Functions", function() {
             spyOn(terminal,"print").and.callThrough();
             spyOn(window,"inBounds").and.callThrough();
             spyOn(window, "inputStr").and.stub();
+            spyOn(window, "input").and.stub();
         });
 
         describe("Looking", function() {
@@ -2823,6 +2824,15 @@ describe("Game Functions", function() {
                 expect(gameStateMachine.stateMode).toBe(58);
                 expect(terminal.println).toHaveBeenCalledWith("SORRY YOU DONT HAVE THAT ONE");
             })
+        });
+
+        describe("swapWeapon asks the user which weapon is desired", function() {
+            it("asks the question and routes to the response handler", function() {
+                swapWeapon();
+                expect(terminal.println).toHaveBeenCalledWith("WHICH WEAPON WILL YOU HOLD, NUM OF WEAPON ");
+                expect(gameStateMachine.stateMode).toBe(59);
+                expect(input).toHaveBeenCalled();
+            });
         });
     });
 });
