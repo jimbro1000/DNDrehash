@@ -1104,15 +1104,16 @@ function gotDoorMove() {
 
 function searching() {
     terminal.println("SEARCH.........SEARCH...........SEARCH...........");
+    Z = 0;
     if (int(rnd(40)) < attributes[constants.playerWis] + attributes[constants.playerInt]) {
         for (M = -1; M <= 1; M++) {
             for (N = -1; N <= 1; N++) {
-                if (dungeonMap[mapY + M][mapX + N] == 2) {
+                if (dungeonMap[mapY + M][mapX + N] === 2) {
                     terminal.println("YES THERE IS A TRAP");
                     terminal.println("IT IS " + M + "VERTICALY  " + N + "HORAZONTALY FROM YOU");
                     Z = 1;
                 }
-                if (dungeonMap[mapY + M][mapX + N] == 3) {
+                if (dungeonMap[mapY + M][mapX + N] === 3) {
                     terminal.println("YES ITS A DOOR");
                     terminal.println("IT IS " + M + "VERTICALLY  " + N + "HORAZONTALY");
                     Z = 1;
@@ -1120,7 +1121,7 @@ function searching() {
             }
         }
     }
-    terminal.println("NO NOT THAT YOU CAN TELL");
+    if (Z === 0) terminal.println("NO NOT THAT YOU CAN TELL");
     gameStateMachine.stateMode = 200;
 }
 

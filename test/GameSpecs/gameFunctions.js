@@ -2826,12 +2826,54 @@ describe("Game Functions", function() {
             })
         });
 
-        describe("swapWeapon asks the user which weapon is desired", function() {
+        describe("swapWeapon asks the user which weapon is desired", function() { //58
             it("asks the question and routes to the response handler", function() {
                 swapWeapon();
                 expect(terminal.println).toHaveBeenCalledWith("WHICH WEAPON WILL YOU HOLD, NUM OF WEAPON ");
                 expect(gameStateMachine.stateMode).toBe(59);
                 expect(input).toHaveBeenCalled();
+            });
+        });
+
+        describe("searching scans the surrounding area and identifies traps and hidden doors", function() {
+            var rndSequence = [];
+            var rndIndex;
+            beforeEach(function() {
+                spyOn(window, "rnd").and.callFake(function() { return rndSequence[rndIndex++]; });
+                rndIndex = 0;
+            });
+            it("informs the user that a search is taking place", function() {
+                rndSequence = [ 40 ];
+                searching();
+                expect(terminal.println).toHaveBeenCalledWith("SEARCH.........SEARCH...........SEARCH...........");
+                expect(terminal.println).toHaveBeenCalledWith("NO NOT THAT YOU CAN TELL");
+            });
+            //mapx, mapy, dungeonmap, attributes
+            it("identifies any traps or hidden doors within a grid square of the current location", function() {
+                rndSequence = [ 0 ];
+                mapX = 6;
+                mapY = 22;
+                searching();
+                expect(terminal.println).toHaveBeenCalledWith("SEARCH.........SEARCH...........SEARCH...........");
+                expect(terminal.println).toHaveBeenCalledWith("YES THERE IS A TRAP");
+                expect(terminal.println).toHaveBeenCalledWith("YES ITS A DOOR");
+            });
+            it("tests wisdom and intelligence against a random role to see if the search is unsuccessful", function() {
+                rndSequence = [ 20 ];
+                mapX = 6;
+                mapY = 22;
+                searching();
+                expect(terminal.println).toHaveBeenCalledWith("SEARCH.........SEARCH...........SEARCH...........");
+                expect(terminal.println).toHaveBeenCalledWith("NO NOT THAT YOU CAN TELL");
+            });
+            it("only finds doors and traps if the search is unsuccessful", function() {
+                rndSequence = [ 19 ];
+                mapX = 6;
+                mapY = 22;
+                searching();
+                expect(terminal.println).toHaveBeenCalledWith("SEARCH.........SEARCH...........SEARCH...........");
+                expect(terminal.println).toHaveBeenCalledWith("YES THERE IS A TRAP");
+                expect(terminal.println).toHaveBeenCalledWith("YES ITS A DOOR");
             });
         });
     });
