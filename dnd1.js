@@ -463,10 +463,10 @@ function fetchDungeonSave() { //7
     var m, n;
     console.info("loading saved dungeon");
     //use cookies
-    Dn = getCookie("dnd1file7.dungeonMap");
+    Dn = getCookie(document, "dnd1file7.dungeonMap");
     if (Dn != "") {
         Dn = parseInt(Dn);
-        stream = getCookie("dnd1file7.inventoryCounter");
+        stream = getCookie(document, "dnd1file7.inventoryCounter");
         elements = stream.split("|");
         inventoryCounter = parseInt(elements[0]);
         currentWeaponIndex = parseInt(elements[1]);
@@ -474,41 +474,41 @@ function fetchDungeonSave() { //7
         mapX = parseInt(elements[3]);
         currentMonster = parseInt(elements[4]);
         for (m = 0; m <= 25; m++) {
-            stream = getCookie("dnd1file7.dungeonMap." + m);
+            stream = getCookie(document, "dnd1file7.dungeonMap." + m);
             elements = stream.split("|");
             for (n = 0; n <= 25; n++) dungeonMap[m][n] = parseInt(elements[n]);
         }
-        stream = getCookie("dnd1file7.inventory");
+        stream = getCookie(document, "dnd1file7.inventory");
         elements = stream.split("|");
         for (m = 0; m <= inventoryCounter; m++) inventory[m] = parseInt(elements[m]);
-        stream = getCookie("dnd1file7.monsterStats$");
+        stream = getCookie(document, "dnd1file7.monsterStats$");
         elements = stream.split("|");
         for (m = 1; m <= 10; m++) {
             monsterNames[m] = elements[m - 1];
-            stream = getCookie("dnd1file7.monsterStats." + m);
+            stream = getCookie(document, "dnd1file7.monsterStats." + m);
             elements = stream.split("|");
             for (n = 1; n <= 6; n++) monsterStats[m][n] = parseInt(elements[n - 1]);
         }
-        stream = getCookie("dnd1file7.attributes");
+        stream = getCookie(document, "dnd1file7.attributes");
         elements = stream.split("|");
         for (m = 0; m <= 7; m++) {
             attributeNames[m] = elements[m * 2];
             attributes[m] = parseInt(elements[m * 2 + 1]);
         }
-        characterName = getCookie("dnd1file7.N$");
-        F1 = parseInt(getCookie("dnd1file7.F1"));
-        stream = getCookie("dnd1file7.I$");
+        characterName = getCookie(document, "dnd1file7.N$");
+        F1 = parseInt(getCookie(document, "dnd1file7.F1"));
+        stream = getCookie(document, "dnd1file7.I$");
         elements = stream.split("|");
         for (m = 1; m <= 15; m++) equipmentNames[m] = elements[m - 1];
-        wizardSpellCounter = parseInt(getCookie("dnd1file7.wizardSpellCounter"));
-        stream = getCookie("dnd1file7.wizardSpellbook");
+        wizardSpellCounter = parseInt(getCookie(document, "dnd1file7.wizardSpellCounter"));
+        stream = getCookie(document, "dnd1file7.wizardSpellbook");
         elements = stream.split("|");
         for (m = 1; m <= wizardSpellCounter; m++) wizardSpellbook[m] = parseInt(elements[m - 1]);
-        clericSpellCounter = parseInt(getCookie("dnd1file7.clericSpellCounter"));
-        stream = getCookie("dnd1file7.clericSpellbook");
+        clericSpellCounter = parseInt(getCookie(document, "dnd1file7.clericSpellCounter"));
+        stream = getCookie(document, "dnd1file7.clericSpellbook");
         elements = stream.split("|");
         for (m = 1; m <= clericSpellCounter; m++) clericSpellbook[m] = parseInt(elements[m - 1]);
-        F2 = parseInt(getCookie("dnd1file7.F2"));
+        F2 = parseInt(getCookie(document, "dnd1file7.F2"));
         gameStateMachine.stateMode = 23;
     } else {
         terminal.println("ERROR FILE #7 DOES NOT EXIST");
@@ -549,7 +549,7 @@ function defaultMap() {
 function readMapFromCookie(id) {
     var stream, elements;
     for (var m = 0; m <= 25; m++) {
-        stream = getCookie("dnd1file" + id + ".dungeonMap." + m);
+        stream = getCookie(document, "dnd1file" + id + ".dungeonMap." + m);
         elements = stream.split("|");
         for (var n = 0; n <= 25; n++) dungeonMap[m][n] = parseInt(elements[n]);
     }
@@ -558,7 +558,7 @@ function readMapFromCookie(id) {
 //load default dungeon where not locally saved
 function loadDungeon(d) {
     terminal.println("READING DUNGEON # " + d);
-    dungeonMap[0][0] = getCookie("dnd1file" + d + ".dungeonMap.0");
+    dungeonMap[0][0] = getCookie(document, "dnd1file" + d + ".dungeonMap.0");
     if (dungeonMap[0][0] === "") {
         defaultMap();
     } else {
@@ -566,7 +566,7 @@ function loadDungeon(d) {
     }
     for (var m = 0; m <= 25; m++) {
         for (var n = 0; n <= 25; n++) {
-            if (d != 0) {
+            if (d !== 0) {
                 console.info("M=" + m + " N=" + n);
                 if (dungeonMap[m][n] === 0) {
                     if (rnd(0) >= 0.97) {
@@ -1628,42 +1628,42 @@ function saveGame() { //76
     var stream;
     var m, n;
     //use cookies and save for a year
-    setCookie("dnd1file7.dungeonMap", Dn, cookieLifespan);
+    setCookie(document, "dnd1file7.dungeonMap", Dn, cookieLifespan);
     stream = inventoryCounter + "|" + currentWeaponIndex + "|" + mapY + "|" + mapX + "|" + currentMonster;
-    setCookie("dnd1file7.inventoryCounter", stream, cookieLifespan);
+    setCookie(document, "dnd1file7.inventoryCounter", stream, cookieLifespan);
     for (m = 0; m <= 25; m++) {
         stream = "";
         for (n = 0; n <= 25; n++) stream += dungeonMap[m][n] + "|";
-        setCookie("dnd1file7.dungeonMap." + m, stream, cookieLifespan);
+        setCookie(document, "dnd1file7.dungeonMap." + m, stream, cookieLifespan);
     }
     stream = "";
     for (m = 1; m <= inventoryCounter; m++) stream += inventory[m] + "|";
-    setCookie("dnd1file7.inventory", stream, cookieLifespan);
+    setCookie(document, "dnd1file7.inventory", stream, cookieLifespan);
     stream = "";
     for (m = 1; m <= 10; m++) stream += monsterNames[m] + "|";
-    setCookie("dnd1file7.monsterStats$", stream, cookieLifespan);
+    setCookie(document, "dnd1file7.monsterStats$", stream, cookieLifespan);
     for (m = 1; m <= 10; m++) {
         stream = "";
         for (n = 1; n <= 6; n++) stream += monsterStats[m][n] + "|";
-        setCookie("dnd1file7.monsterStats." + m, stream, cookieLifespan);
+        setCookie(document, "dnd1file7.monsterStats." + m, stream, cookieLifespan);
     }
     stream = "";
     for (m = 0; m <= 7; m++) stream += attributeNames[m] + "|" + attributes[m] + "|";
-    setCookie("dnd1file7.attributes", stream, cookieLifespan);
-    setCookie("dnd1file7.N$", characterName, cookieLifespan);
-    setCookie("dnd1file7.F1", F1, cookieLifespan);
+    setCookie(document, "dnd1file7.attributes", stream, cookieLifespan);
+    setCookie(document, "dnd1file7.N$", characterName, cookieLifespan);
+    setCookie(document, "dnd1file7.F1", F1, cookieLifespan);
     stream = "";
     for (m = 1; m <= 15; m++) stream += equipmentNames[m] + "|";
-    setCookie("dnd1file7.I$", stream, cookieLifespan);
-    setCookie("dnd1file7.wizardSpellCounter", wizardSpellCounter, cookieLifespan);
+    setCookie(document, "dnd1file7.I$", stream, cookieLifespan);
+    setCookie(document, "dnd1file7.wizardSpellCounter", wizardSpellCounter, cookieLifespan);
     stream = "";
     for (m = 1; m <= wizardSpellCounter; m++) stream += wizardSpellbook[m] + "|";
-    setCookie("dnd1file7.wizardSpellbook", stream, cookieLifespan);
-    setCookie("dnd1file7.clericSpellCounter", clericSpellCounter, cookieLifespan);
+    setCookie(document, "dnd1file7.wizardSpellbook", stream, cookieLifespan);
+    setCookie(document, "dnd1file7.clericSpellCounter", clericSpellCounter, cookieLifespan);
     stream = "";
     for (m = 1; m <= clericSpellCounter; m++) stream += clericSpellbook[m] + "|";
-    setCookie("dnd1file7.clericSpellbook", stream, cookieLifespan);
-    setCookie("dnd1file7.F2", F2, cookieLifespan);
+    setCookie(document, "dnd1file7.clericSpellbook", stream, cookieLifespan);
+    setCookie(document, "dnd1file7.F2", F2, cookieLifespan);
     gameStateMachine.stateMode = 25;
 }
 
