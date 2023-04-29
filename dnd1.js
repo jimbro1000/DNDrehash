@@ -235,7 +235,7 @@ function findRange() {
     for (m = -25; m <= 25; m++) {
         for (n = -25; n <= 25; n++) {
             if (inBounds(mapY + m, mapX + n)) {
-                if (dungeonMap[mapY + m][mapX + n] == 5) {
+                if (dungeonMap[mapY + m][mapX + n] === 5) {
                     tempY = m;
                     tempX = n;
                     range = Math.sqrt(tempY * tempY + tempX * tempX);
