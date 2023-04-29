@@ -20,6 +20,34 @@ class StateMachine {
         this.#maxState = 0;
     }
 
+    get xModel() {
+        return this.#xModel;
+    }
+
+    get stateMode() {
+        return this.#stateMode;
+    }
+
+    set stateMode(newMode) {
+        this.#stateMode = newMode;
+    }
+
+    get maxState() {
+        return this.#maxState;
+    }
+
+    get waitTransition() {
+        return this.#waitTransition;
+    }
+
+    setWait() {
+        this.#waitTransition = true;
+    }
+
+    clearWait() {
+        this.#waitTransition = false;
+    }
+
     /**
      * Add state model to machine.
      *
@@ -29,7 +57,7 @@ class StateMachine {
         if (state) {
             if (state.id && state.process) {
                 this.#xModel[this.#maxState++] = state;
-                if (this.stateMode === -1) this.stateMode = state.id;
+                if (this.stateMode === -1) this.#stateMode = state.id;
             } else console.println("Not a valid state");
         } else console.println("State is undefined");
     }
@@ -62,7 +90,7 @@ class StateMachine {
                     }
                 }
             }
-            if (!modeError && !actMode) {
+            if (!modeError && actMode) {
                 result = actMode.name;
                 actMode.execute();
             }

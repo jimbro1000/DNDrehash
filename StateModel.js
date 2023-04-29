@@ -1,32 +1,3 @@
-// /**
-//  * State machine model state
-//  * @param id
-//  * @param name
-//  * @param process
-//  * @constructor
-//  */
-// function StateModel(id, name, process) {
-//     this.id = id;
-//     this.name = name;
-//     this.process = process;
-// }
-//
-// /**
-//  * Execute machine model state
-//  * The process is responsible for determining the input token
-//  */
-// StateModel.prototype.execute = function() {
-//     if (this.process) {
-//         return this.process();
-//     } else {
-//         throw {
-//             error: "Missing state process",
-//             stateId: this.id,
-//             stateName: this.name
-//         };
-//     }
-// };
-
 /**
  * State machine model state.
  *

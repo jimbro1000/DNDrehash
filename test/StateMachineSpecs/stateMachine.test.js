@@ -54,13 +54,18 @@ describe("State Machine", () => {
         let waitState;
 
         beforeEach(() => {
+            // Prepare three state model
+            // 1 -> 2 -> 3
+            // 1 = execute
+            // 2 = execute and wait
+            // 4 = execute and halt
             initialState = new StateModel(1, "test", () => {
                 testObj.stateMode = 2;
             });
             testObj = new StateMachine();
             testObj.addState(initialState);
             waitState = new StateModel(2, "test 2", () => {
-                testObj.waitTransition = true;
+                testObj.setWait();
             });
             testObj.addState(waitState);
             let modelObj = new StateModel(3, "test 3", () => {
@@ -69,17 +74,21 @@ describe("State Machine", () => {
             testObj.addState(modelObj);
         });
 
+        afterEach(() => {
+            jest.resetAllMocks();
+        });
+
         it("Executes the current state model", () => {
-            spyOn(initialState, 'process').and.callThrough();
+            const spy = jest.spyOn(initialState, 'execute');
             testObj.modelEngine();
-            expect(initialState.process).toHaveBeenCalled();
+            expect(spy).toHaveBeenCalled();
             expect(testObj.stateMode === 2).toBe(true);
         });
 
         it("Executes states until a wait transition is set", () => {
-            spyOn(waitState, 'process').and.callThrough();
+            const spy = jest.spyOn(waitState, 'execute');
             testObj.modelEngine();
-            expect(waitState.process).toHaveBeenCalled();
+            expect(spy).toHaveBeenCalled();
             expect(testObj.waitTransition).toBe(true);
         });
 
