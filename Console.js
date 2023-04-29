@@ -9,6 +9,8 @@
  console.print('Printing in row 6, column 6');
 */
 
+import {int} from "./helper"
+
 function Console(elementId, rows, columns) {
 /// <summary>Creates a new Console in the HTML element with given ID, with the specified rows and columns, and optionally the URL to the PromptWindow if the input() function is used.</summary>
 
@@ -182,3 +184,5 @@ Console.prototype.setCursorPos = function (targetRow, targetColumn) {
     this.cursorPosition.row = targetRow;
     this.cursorPosition.column = targetColumn;
 };
+
+module.exports = Console;
