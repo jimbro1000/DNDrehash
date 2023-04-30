@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import GameState from '../../src/GameState'
 
 describe('GameState', () => {
@@ -6,7 +9,7 @@ describe('GameState', () => {
     game = new GameState();
   });
 
-  describe('Serialise', () => {
+  describe('Serialise to map', () => {
     let init;
     beforeEach(() => {
       init = game.serialise();
@@ -98,6 +101,33 @@ describe('GameState', () => {
           const spells = spellbook.split('|');
           expect(spells.length).toBe(init.get('clericSpellCounter') + 1);
         });
+      });
+    });
+  });
+  describe("Serialise to cookie", () => {
+    it("writes the game state to a named cookie", () => {
+      const client = jest.spyOn(document, 'cookie', 'set');
+      const mapper = jest.spyOn(game, 'serialise');
+      game.serialiseToCookie(document, 'prefix', 100);
+      expect(mapper).toHaveBeenCalled();
+      expect(client).toHaveBeenCalledTimes(164);
+    });
+  });
+  describe("deSerialise", () => {
+    describe('converts a map to game state', () => {
+      let gameMap;
+      let game;
+      beforeEach(() => {
+        game = new GameState();
+        gameMap = new Map();
+        gameMap.set('Dn', 10);
+        gameMap.set('inventoryCounter', 12);
+        gameMap.set('currentWeaponIndex', 2);
+        gameMap.set('monsterNames', "A|B|C|D|");
+      });
+      it("populates Dn from the map", () => {
+        game.deSerialise(gameMap);
+        expect(game.Dn).toBe(10);
       });
     });
   });

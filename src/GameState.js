@@ -287,7 +287,7 @@ export default class GameState {
     this.#Dn = map.get('Dn');
     this.#inventoryCounter = map.get('inventoryCounter');
     this.#currentWeaponIndex = map.get('currentWeaponIndex');
-    for (let row= 0; row < 24; ++row) {
+    for (let row= 0; row < this.#mapSize; ++row) {
       this.#deSerialiseMapRow(row, map.get('dungeonMap.' + row));
     }
     this.#deSerialiseMonsterNames(map.get('monsterNames'));
