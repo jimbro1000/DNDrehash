@@ -4,7 +4,7 @@
 describe("Serialise and deserialise", function() {
     describe("save game", function() {
         beforeEach(function() {
-            var gameConsole = {
+            let gameConsole = {
                 lastPrint: ""
             };
             gameConsole.println = function(value) { this.lastInput = value; };
