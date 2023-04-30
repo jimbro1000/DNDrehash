@@ -3,7 +3,7 @@
  © 1977-2014 Richard Garriott
  Ported by Julian Brown
  all rights to this port remain property of Richard Garriott
- Modified 30 Apr 2014
+ Modified 30 Apr 2023
  */
 import Console from "./Console";
 import GameState from "./GameState";
@@ -389,7 +389,7 @@ function loadScreen() { //1
     terminal.printc("PORTED BY JULIAN BROWN");
     terminal.printc("ALL RIGHTS TO THIS PORT REMAIN PROPERTY");
     terminal.printc("OF RICHARD GARRIOTT");
-    terminal.printc("******UPDATED 26 Aug 2016******");
+    terminal.printc("******UPDATED 30 APR 2023******");
     terminal.printc("");
     terminal.printc("WARNING! THIS SITE USES COOKIES");
     terminal.printc("IF YOU DON'T WANT TO STORE COOKIES");
