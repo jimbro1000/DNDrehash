@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import {rnd, int, isNumber, setCookie, getCookie} from "../../helper"
+import {rnd, int, isNumber, setCookie, getCookie} from "../../src/helper"
 /**
  * Created by Julian Brown on 27/08/2016.
  */

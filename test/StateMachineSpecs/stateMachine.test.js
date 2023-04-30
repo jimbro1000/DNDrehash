@@ -1,5 +1,5 @@
-import StateMachine from "../../StateMachine";
-import StateModel from "../../StateModel";
+import StateMachine from "../../src/StateMachine";
+import StateModel from "../../src/StateModel";
 
 describe("State Machine", () => {
     let testObj;

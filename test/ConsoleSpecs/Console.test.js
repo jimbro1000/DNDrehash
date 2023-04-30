@@ -1,8 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import Console from "../../Console";
-import {int} from "../../helper";
+import Console from "../../src/Console";
+import {int} from "../../src/helper";
 
 const padStringToColumns = (text, columns) => {
   let result = text;

@@ -65,10 +65,18 @@ function getCookie(client, cookieName) {
     return "";
 }
 
-module.exports = {
+export {
     rnd,
     int,
     isNumber,
     setCookie,
     getCookie
 }
+
+// module.exports = {
+//     rnd,
+//     int,
+//     isNumber,
+//     setCookie,
+//     getCookie
+// }

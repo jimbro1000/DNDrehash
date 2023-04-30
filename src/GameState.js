@@ -1,6 +1,6 @@
 import {setCookie} from './helper';
 
-class GameState {
+export default class GameState {
   #Dn = 1;
   #dungeonMap = [];
   #inventoryCounter = 0;
@@ -32,7 +32,7 @@ class GameState {
     for (let m = 0; m < this.#maxMonster; ++m) {
       this.#monsterNames[m] = '';
       this.#monsterStats[m] = [];
-      for (let n = 0; n < 6; ++n) {
+      for (let n = 0; n <= 6; ++n) {
         this.#monsterStats[m][n] = 0;
       }
     }
@@ -124,7 +124,7 @@ class GameState {
 
   #serialiseMapRow = (row) => {
     let result = "";
-    for (let col = 0; col <= this.#mapSize; col++) result += this.#dungeonMap[row][col] + "|";
+    for (let col = 0; col < this.#mapSize; col++) result += this.#dungeonMap[row][col] + "|";
     return result;
   }
 
@@ -137,7 +137,7 @@ class GameState {
 
   #serialiseMonsterNames = () => {
     let result = "";
-    for (let index= 1; index <= this.#maxMonster; index++)
+    for (let index= 1; index < this.#maxMonster; index++)
       result += this.#monsterNames[index] + "|";
     return result;
   }
@@ -151,7 +151,7 @@ class GameState {
 
   #serialiseAttributes = () => {
     let result = "";
-    for (let index = 0; index <= 7; index++)
+    for (let index = 1; index <= 7; index++)
       result += this.#attributes[index] + "|";
     return result;
   }
@@ -187,7 +187,7 @@ class GameState {
     }
     result.set('inventory', this.#serialiseInventory());
     result.set('monsterNames', this.#serialiseMonsterNames());
-    for (let monster = 1; monster <= this.#maxMonster; monster++) {
+    for (let monster = 1; monster < this.#maxMonster; monster++) {
      result.set('monsterStats.' + monster, this.#serialiseMonsterStats(monster));
     }
     result.set('attributes', this.#serialiseAttributes());
@@ -255,8 +255,8 @@ class GameState {
 
   #deSerialiseAttributes = (value) => {
     const values = this.#valueStringToArray(value);
-    for (let index = 0; index <= 7; index++) {
-      this.#attributes[index] = values[1 + index];
+    for (let index = 0; index < 7; index++) {
+      this.#attributes[1 + index] = values[index];
     }
   }
 
@@ -286,7 +286,7 @@ class GameState {
       this.#deSerialiseMapRow(row, map.get('dungeonMap.' + row));
     }
     this.#deSerialiseMonsterNames(map.get('monsterNames'));
-    for (let monster = 1; monster <= 10; monster++) {
+    for (let monster = 1; monster < this.#maxMonster; monster++) {
       this.#deSerialiseMonsterStats(monster, map.get('monsterStats.' + monster));
     }
     this.#deSerialiseAttributes(map.get('attributes'));
@@ -301,4 +301,4 @@ class GameState {
   }
 }
 
-module.exports = GameState;
+// module.exports = GameState;

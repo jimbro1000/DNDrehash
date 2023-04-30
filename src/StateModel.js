@@ -6,7 +6,7 @@
  * @param process
  * @constructor
  */
-class StateModel {
+export default class StateModel {
     #id;
     #name;
     #process;
@@ -46,4 +46,4 @@ class StateModel {
     }
 }
 
-module.exports = StateModel;
+// module.exports = StateModel;

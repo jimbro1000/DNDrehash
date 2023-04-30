@@ -1,4 +1,4 @@
-import StateModel from "../../StateModel"
+import StateModel from "../../src/StateModel"
 /**
  * Created by Julian on 27/08/2016.
  */

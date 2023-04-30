@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="">
 <head>
     <title>DnD #1</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
     <meta name="copyright" content="(c) 1977-2014 Richard Garriott">
-    <script src="Console.js" type="text/javascript"></script>
-    <script src="StateMachine.js" type="text/javascript"></script>
+    <script src="src/Console.js" type="text/javascript"></script>
+    <script src="src/StateMachine.js" type="text/javascript"></script>
+    <script src="src/StateModel.js" type="text/javascript"></script>
     <script src="jquery-3.1.0.min.js" type="text/javascript"></script>
-    <script src="helper.js" type="text/javascript"></script>
-    <script src="dnd1.js" type="text/javascript"></script>
-    <style type="text/css">
+    <script src="src/helper.js" type="text/javascript"></script>
+    <script src="src/GameState.js" type="text/javascript"></script>
+    <script src="src/dnd1.js" type="text/javascript"></script>
+    <style>
         body {
             font-family: "Courier New", Courier, "sans-serif";
             background-color: #F4E7AE;
@@ -28,7 +30,7 @@
 <div id="mainConsole" class="mainConsole">
 </div>
 <script>
-    $(document).ready(function() {
+    $(function() {
         initialiseGame();
     });
 </script>

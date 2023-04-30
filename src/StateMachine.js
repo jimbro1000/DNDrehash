@@ -7,7 +7,7 @@
  *
  * @constructor
  */
-class StateMachine {
+export default class StateMachine {
     #xModel;
     #stateMode;
     #waitTransition;
@@ -99,4 +99,4 @@ class StateMachine {
     }
 }
 
-module.exports = StateMachine;
+// module.exports = StateMachine;
