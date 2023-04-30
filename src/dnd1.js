@@ -10,6 +10,8 @@ import GameState from "./GameState";
 import {getCookie, rnd, int, isNumber, setCookie} from "./helper";
 import StateMachine from "./StateMachine";
 import StateModel from "./StateModel";
+import $ from "jquery";
+
 /*
  ToDo:
  Create maps
@@ -302,7 +304,7 @@ function partial() {
 }
 
 function input() {
-    gameStateMachine.waitTransition = true;
+    gameStateMachine.setWait();
     inputFilter = 1;
     inputString = "";
     inputsCount = 0;
@@ -317,7 +319,7 @@ function input() {
 }
 
 function inputStr() {
-    gameStateMachine.waitTransition = true;
+    gameStateMachine.setWait();
     inputFilter = 0;
     inputString = "";
     inputsCount = 0;
@@ -332,7 +334,7 @@ function inputStr() {
 }
 
 function inputX(items) {
-    gameStateMachine.waitTransition = true;
+    gameStateMachine.setWait();
     inputsCount = items;
     inputFilter = 1;
     inputString = "";
@@ -512,7 +514,7 @@ function loadDungeon(d) {
 
 function gotResetInput() { //8
     J6 = Math.floor(inputString);
-    terminal.print("PLATERS NME ");
+    terminal.print("PLAYERS NAME ");
     gameStateMachine.stateMode = 9;
     inputStr();
 }
@@ -872,7 +874,7 @@ function thud() {
 
 function itsATrap() {
     let m;
-    terminal.println("OOOOPS A TRAP AND YOU FELL IN");
+    terminal.println("OOPS A TRAP AND YOU FELL IN");
     if ((rnd(2)) < 2) {
         terminal.println("AND HIT POINTS LOOSE 1");
         attributes[constants.playerHp] -= 1;
@@ -921,7 +923,7 @@ function itsATrap() {
             }
         }
     } else {
-        terminal.println("NO SPIKES AH THATS TOO BAD CAUSE YOUR DEAD");
+        terminal.println("NO SPIKES AH THAT'S TOO BAD 'CAUSE YOU'RE DEAD");
         terminal.println("[STOP]");
         gameStateMachine.stateMode = 30;
     }
@@ -1902,7 +1904,7 @@ function wizardSpellChoices() { //96
         terminal.println("3-FIND TRAPS-200  8-MAG. MISS. #3-300");
         terminal.println("4-TELEPORT-750  9-FIND S.DOORS-200");
         terminal.println("5-CHANGE 1+0-600  10-CHANGE 0+1-600");
-        terminal.print("#OF ONE OU WANT  NEG.NUM.TO STOP");
+        terminal.print("#OF ONE YOU WANT  NEG.NUM.TO STOP");
     }
     input();
     gameStateMachine.stateMode = 98;
@@ -2433,3 +2435,7 @@ function initialiseGame() {
         }
     });
 }
+
+$(function() {
+    initialiseGame();
+});

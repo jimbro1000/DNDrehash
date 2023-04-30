@@ -106,6 +106,10 @@ export default class GameState {
     return this.#equipmentNames;
   }
 
+  set equipmentNames(items) {
+    this.#equipmentNames = items;
+  }
+
   get clericSpellCounter() {
     return this.#clericSpellCounter;
   }
