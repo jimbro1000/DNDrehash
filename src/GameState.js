@@ -155,8 +155,9 @@ export default class GameState {
 
   #serialiseAttributes = () => {
     let result = "";
-    for (let index = 1; index <= 7; index++)
+    for (let index = 1; index < 7; index++)
       result += this.#attributes[index] + "|";
+    result += this.#attributes[7];
     return result;
   }
 
@@ -191,7 +192,7 @@ export default class GameState {
     }
     result.set('inventory', this.#serialiseInventory());
     result.set('monsterNames', this.#serialiseMonsterNames());
-    for (let monster = 1; monster < this.#maxMonster; monster++) {
+    for (let monster = 0; monster < this.#maxMonster; monster++) {
      result.set('monsterStats.' + monster, this.#serialiseMonsterStats(monster));
     }
     result.set('attributes', this.#serialiseAttributes());
