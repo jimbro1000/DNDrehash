@@ -51,7 +51,7 @@ export default class Console {
     }
   }
 
-  cls = () => {
+  cls () {
 /// <summary>Clears all the characters from the console and sets the cursor to 0,0.</summary>
     // go through each row
     for (let row = 0; row < this.rows; row++) {
@@ -67,7 +67,7 @@ export default class Console {
     this.setCursorPos(0, 0);
   };
 
-  printAt = (row, column, str, cycle) => {
+  printAt (row, column, str, cycle) {
     /// <summary>Prints a string at the given row and column, and optionally wraps the text if needed.</summary>
     if (row >= this.rows || row < 0 || column < 0 || !str) {
       // nothing to print
@@ -114,7 +114,7 @@ export default class Console {
     this.charGrid[row].data = newRow;
   };
 
-  print = (str) => {
+  print(str) {
     /// <summary>Prints the given string at the current cursor position, wrapping text where necessary.</summary>
     // get new location of cursor after text added
     const newColumnPos = this.cursorPosition.column + str.length;
@@ -133,7 +133,7 @@ export default class Console {
     }
   };
 
-  println = (str) => {
+  println(str) {
     /// <summary>Prints the given string at the current cursor position, wrapping text where necessary, and appends a line break.</summary>
     if (!str) {
       str = '';
@@ -148,7 +148,7 @@ export default class Console {
     this.print(s2);
   };
 
-  printc = (str) => {
+  printc(str) {
     /// centres the text in the line if possible
     if (!str) this.println(str);
     let lineLength = str.length;
@@ -174,7 +174,7 @@ export default class Console {
    * @param targetRow
    * @param targetColumn
    */
-  setCursorPos = (targetRow, targetColumn) => {
+  setCursorPos(targetRow, targetColumn) {
     /// <summary>Sets the cursor position to the given row and column.</summary>
     this.cursorPosition.row = targetRow;
     this.cursorPosition.column = targetColumn;

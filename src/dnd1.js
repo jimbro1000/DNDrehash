@@ -337,15 +337,14 @@ export default class dnd1 {
 
     findRange = () => {
         //range and hit check
-        let m, n;
         let tempY, tempX;
         this.range = 1000;
         tempY = 26;
         tempX = 26;
-        for (m = -25; m <= 25; m++) {
-            for (n = -25; n <= 25; n++) {
-                if (this.inBounds(mapY + m, mapX + n)) {
-                    if (this.gameState.dungeonMap[mapY + m][mapX + n] === 5) {
+        for (let m = -25; m <= 25; m++) {
+            for (let n = -25; n <= 25; n++) {
+                if (this.inBounds(this.mapY + m, this.mapX + n)) {
+                    if (this.gameState.dungeonMap[this.mapY + m][this.mapX + n] === 5) {
                         tempY = m;
                         tempX = n;
                         this.range = Math.sqrt(tempY * tempY + tempX * tempX);
@@ -3168,9 +3167,9 @@ export default class dnd1 {
             this.difficultyFactor += 1; //up difficultly level
             for (let m = 1; m <= this.maxMonsterIndex; m++) {
                 this.gameState.monsterStats[m][3] = this.gameState.monsterStats[m][4] *
-                    difficultyFactor;
+                    this.difficultyFactor;
                 this.gameState.monsterStats[m][this.constants.monsterHp] = this.gameState.monsterStats[m][this.constants.monsterStartHp] *
-                    difficultyFactor;
+                    this.difficultyFactor;
             }
             this.gameState.attributes[this.constants.playerHp] += 5;
             this.gameStateMachine.stateMode = 25;
