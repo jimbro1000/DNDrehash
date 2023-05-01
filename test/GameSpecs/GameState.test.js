@@ -121,14 +121,114 @@ describe('GameState', () => {
         game = new GameState();
         gameMap = new Map();
         gameMap.set('Dn', 10);
+        for (let i=0;i<50;++i) {
+          let map = "";
+          for (let j=i;j<i+50;++j) {
+            map += j + '|';
+          }
+          gameMap.set('dungeonMap.'+i, map);
+        }
         gameMap.set('inventoryCounter', 12);
+        let inv="";
+        for (let i=0;i<12;++i) {
+          inv += i + '|';
+        }
+        gameMap.set('inventory', inv);
         gameMap.set('currentWeaponIndex', 2);
-        gameMap.set('monsterNames', "A|B|C|D|");
-      });
-      it("populates Dn from the map", () => {
+        let names = '';
+        for (let i=1;i<100;++i) {
+          names += genName(i) + '|';
+        }
+        gameMap.set('monsterNames', names);
+        for (let i=1;i<100;++i) {
+          gameMap.set('monsterStats.'+i, '0|1|2|3|4|5|6');
+        }
+        gameMap.set('F1', 99);
+        gameMap.set('F2', 98);
+        gameMap.set('attributes', "1|2|3|4|5|6|7");
+        gameMap.set('characterName', 'SAVEMAN');
+        gameMap.set('equipment', "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15");
+        gameMap.set('wizardSpellCounter', 1);
+        gameMap.set('wizardSpellbook', 'A|');
+        gameMap.set('clericSpellCounter', 2);
+        gameMap.set('clericSpellbook', 'B|C|');
         game.deSerialise(gameMap);
+      });
+      it("populates Dn from the deserialise map", () => {
         expect(game.Dn).toBe(10);
+      });
+      it('populates dungeonMap from the deserialise map', () => {
+        const map = game.dungeonMap;
+        for (let i=0;i<50;++i) {
+          for (let j=0;j<50;++j) {
+            expect(map[i][j]).toBe(i+j);
+          }
+        }
+      });
+      it('populates inventory counter from the deserialise map', () => {
+        expect(game.inventoryCounter).toBe(12);
+      });
+      it('populates inventory from the deserialise map', () => {
+        const inv = game.inventory;
+        for (let i=0;i<12;++i) {
+          expect(inv[i]).toEqual(''+i);
+        }
+      });
+      it('populates equipment from the deserialise map', () => {
+        const equip = game.equipmentNames;
+        for (let i=1;i<16;++i) {
+          expect(equip[i]).toEqual(''+i);
+        }
+      });
+      it('populates attributes from the deserialise map', () => {
+        const stats = game.attributes;
+        for (let i=1;i<=7;++i) {
+          expect(stats[i]).toBe(i);
+        }
+      });
+      it('populates characterName from the deserialise map', () => {
+        expect(game.characterName).toBe('SAVEMAN');
+      });
+      it('populates the current monster position', () => {
+        expect(game.F1).toBe(99);
+        expect(game.F2).toBe(98);
+      });
+      it('populates monster names', () => {
+        const names = game.monsterNames;
+        for (let i=1;i<100;++i) {
+          expect(names[i]).toBe(genName(i));
+        }
+      });
+      it('populates monster stats', () => {
+        const stats = game.monsterStats;
+        for (let i=1;i<100;++i) {
+          for (let j=0;j<7;++j) {
+            expect(stats[i][j]).toBe(j);
+          }
+        }
+      });
+      it('populates wizard spell counter', () => {
+        expect(game.wizardSpellCounter).toBe(1);
+      });
+      it('populates wizard spell book', () => {
+        expect(game.wizardSpellbook[1]).toBe('A');
+      });
+      it('populates cleric spell counter', () => {
+        expect(game.clericSpellCounter).toBe(2);
+      });
+      it('populates cleric spell book', () => {
+        expect(game.clericSpellbook[1]).toBe('B');
+        expect(game.clericSpellbook[2]).toBe('C');
       });
     });
   });
 });
+
+const genName = (i) => {
+  let result = "";
+  let c1 = i % 26;
+  let c2 = (i - c1) / 26;
+  if (c2 > 0)
+    result += String.fromCharCode(64 + c2);
+  return result + String.fromCharCode(65 + c1);
+}

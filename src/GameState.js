@@ -226,14 +226,14 @@ export default class GameState {
     });
   }
 
-  #valueStringToArray = (string) => {
-    return string.split('|');
+  #valueStringToArray = (valueString) => {
+    return valueString.split('|');
   }
 
   #deSerialiseMapRow = (row, value) => {
     const values = this.#valueStringToArray(value);
-    for (let col = 0; col < 24; ++col) {
-      this.#dungeonMap[row][col] = values[col];
+    for (let col = 0; col < this.#mapSize; ++col) {
+      this.#dungeonMap[row][col] = parseInt(values[col]);
     }
   }
 
@@ -253,15 +253,15 @@ export default class GameState {
 
   #deSerialiseMonsterStats = (monster, value) => {
     const values = this.#valueStringToArray(value);
-    for (let index= 0; index < 6; ++index) {
-      this.#monsterStats[monster][index + 1] = values[index];
+    for (let index= 0; index <= 6; ++index) {
+      this.#monsterStats[monster][index] = parseInt(values[index]);
     }
   }
 
   #deSerialiseAttributes = (value) => {
     const values = this.#valueStringToArray(value);
     for (let index = 0; index < 7; index++) {
-      this.#attributes[1 + index] = values[index];
+      this.#attributes[1 + index] = parseInt(values[index]);
     }
   }
 
@@ -286,6 +286,7 @@ export default class GameState {
   deSerialise = (map) => {
     this.#Dn = map.get('Dn');
     this.#inventoryCounter = map.get('inventoryCounter');
+    this.#deSerialiseInventory(map.get('inventory'));
     this.#currentWeaponIndex = map.get('currentWeaponIndex');
     for (let row= 0; row < this.#mapSize; ++row) {
       this.#deSerialiseMapRow(row, map.get('dungeonMap.' + row));
