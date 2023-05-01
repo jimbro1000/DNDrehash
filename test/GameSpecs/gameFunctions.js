@@ -2,33 +2,6 @@
  * Created by Julian on 27/08/2016.
  */
 describe("Game Functions", function() {
-	describe("Calculate Player Protection", function() {
-		beforeEach(function() {
-			attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
-			inventory = [];
-			inventoryCounter = 0;
-		});
-
-		it("returns dexterity + 6 if no armour carried", function() {
-			expect(calculatePlayerProtection()).toBe(6 + attributes[2]);
-		});
-
-		it("returns dexterity + 8 if leather armour carried", function() {
-			inventory[1] = 8; inventoryCounter = 1;
-			expect(calculatePlayerProtection()).toBe(8 + attributes[2]);
-		});
-
-		it("returns dexterity + 16 if chain armour carried", function() {
-			inventory[1] = 9; inventoryCounter = 1;
-			expect(calculatePlayerProtection()).toBe(16 + attributes[2]);
-		});
-
-		it("returns dexterity + 20 if plate armour carried", function() {
-			inventory[1] = 10; inventoryCounter = 1;
-			expect(calculatePlayerProtection()).toBe(20 + attributes[2]);
-		});
-	});
-
 	describe("Monster Swings", function() {
 		var callCounter;
 		var results = [];

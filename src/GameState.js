@@ -70,8 +70,16 @@ export default class GameState {
     return this.#inventory;
   }
 
+  set inventory(values) {
+    this.#inventory = values;
+  }
+
   get attributes() {
     return this.#attributes;
+  }
+
+  set attributes(values) {
+    this.#attributes = values;
   }
 
   get characterName() {

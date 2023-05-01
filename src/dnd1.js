@@ -12,2424 +12,3375 @@ import StateMachine from "./StateMachine";
 import StateModel from "./StateModel";
 import $ from "jquery";
 
-/*
+export default class dnd1 {
+    #debug; //global debug flag to enable logging
+    difficultyFactor;
+    J6; //only used once - investigate
+    K1;
+// var J9; //random seed
+    attributeNames;
+// var D2; // target map for modification actions, currently redundant
+    equipmentPrice;
+    maxMonsterIndex;
+// var E = []; // (100)
+// var F = []; // (100)
+    clericSpellPrices; //(100) cleric spell prices
+    wizardSpellPrices; // (100) wizard spell prices
+    mapY; // map y
+    mapX; // map x
+    R; // only appears to be used once - investigate
+    S; // move delta
+    T; // turn input / move delta
+    M; // general purpose loop counter - dangerous reuse observed for other calculations
+    N; // general purpose loop counter
+    P0; //used but never modified - investigate
+    inputInt;
+    Z;
+    Z5; //only used once - investigate
+    range;
+    toHitRoll;
+    rangeRowOffset;
+    rangeColumnOffset; //range and hit calculations
+    R3;
+    R4;
+    R5; //combat calculations
+    terminal; // display terminal
+    Q; // numeric input
+    strQ; //string input
+    vbTab; // tab character
+
+    gameState;
+
+    reading; // block key press event when true
+    inputString;
+    inputStrings;
+    inputsCount;
+    inputFilter;
+
+    gameStateMachine;
+
+    inputRow;
+    inputColumn;
+
+    cookieLifespan;
+
+    constants = {
+        playerHp: 0,
+        playerStr: 1,
+        playerDex: 2,
+        playerCon: 3,
+        playerCha: 4,
+        playerWis: 5,
+        playerInt: 6,
+        playerGold: 7,
+        playerClass: 0,
+        monsterLevel: 1,
+        monsterStrength: 2,
+        monsterHp: 3,
+        monsterStartHp: 4,
+        monsterStartGold: 5,
+        monsterGold: 6
+    };
+
+    /*
  ToDo:
  Create maps
  Test Case Scripts
  */
-const debug = false; //global debug flag to enable logging
-let difficultyFactor = 0;
-let J6; //only used once - investigate
-let K1 = 0;
-// var J9 = 0; //random seed
-let attributeNames = [];
-// var D2 = 1; // target map for modification actions, currently redundant
-let equipmentPrice = [];
-let maxMonsterIndex = 0;
-// var E = []; // (100)
-// var F = []; // (100)
-let clericSpellPrices = []; //(100) cleric spell prices
-let wizardSpellPrices = []; // (100) wizard spell prices
-let mapY; // map y
-let mapX; // map x
-let R; // only appears to be used once - investigate
-let S; // move delta
-let T; // turn input / move delta
-let M; // general purpose loop counter - dangerous reuse observed for other calculations
-let N; // general purpose loop counter
-let P0; //used but never modified - investigate
-let inputInt;
-let Z;
-let Z5; //only used once - investigate
-let range, toHitRoll, rangeRowOffset, rangeColumnOffset; //range and hit calculations
-let R3, R4, R5; //combat calculations
-let terminal; // display terminal
-let Q; // numeric input
-let strQ; //string input
-let characterName; // player name
-let vbTab; // tab character
-
-let gameState;
-
-let reading; // block key press event when true
-let inputString;
-let inputStrings = [];
-let inputsCount;
-let inputFilter;
-
-let gameStateMachine;
-
-let inputRow;
-let inputColumn;
-
-let cookieLifespan;
-
-const constants = {
-    playerHp: 0,
-    playerStr: 1,
-    playerDex: 2,
-    playerCon: 3,
-    playerCha: 4,
-    playerWis: 5,
-    playerInt: 6,
-    playerGold: 7,
-    playerClass: 0,
-    monsterLevel: 1,
-    monsterStrength: 2,
-    monsterHp: 3,
-    monsterStartHp: 4,
-    monsterStartGold: 5,
-    monsterGold: 6
-};
-
-function buildStateModel() {
-    gameStateMachine = new StateMachine();
-    gameStateMachine.addState(new StateModel(1, "loading", loadScreen));
-    gameStateMachine.addState(new StateModel(2, "accept instructions input", gotInstructionInput));
-    gameStateMachine.addState(new StateModel(3, "old or new game", gotLoadInput));
-    gameStateMachine.addState(new StateModel(4, "cheeky instructions", showInstructions));
-    gameStateMachine.addState(new StateModel(5, "accept old or new input", gotLoadInput));
-    gameStateMachine.addState(new StateModel(6, "accept dungeon # input", gotDungeonInput));
-    gameStateMachine.addState(new StateModel(7, "load old dungeon", fetchDungeonSave));
-    gameStateMachine.addState(new StateModel(8, "continues reset", gotResetInput));
-    gameStateMachine.addState(new StateModel(9, "accept player name", gotNameInput));
-    gameStateMachine.addState(new StateModel(10, "roll", rollNew));
-    gameStateMachine.addState(new StateModel(10.5, "pick class", pickClass));
-    gameStateMachine.addState(new StateModel(11, "accept class input", gotClassInput));
-    gameStateMachine.addState(new StateModel(12, "picked fighter", gotFighter));
-    gameStateMachine.addState(new StateModel(13, "picked cleric", gotCleric));
-    gameStateMachine.addState(new StateModel(14, "picked wizard", gotWizard));
-    gameStateMachine.addState(new StateModel(15, "go shopping", shopTop));
-    gameStateMachine.addState(new StateModel(16, "accept fast-norm shop", gotShopFastNorm));
-    gameStateMachine.addState(new StateModel(17, "shopping list", shopList));
-    gameStateMachine.addState(new StateModel(18, "buy goods", shopping));
-    gameStateMachine.addState(new StateModel(19, "buying goods", gotShoppingInput));
-    gameStateMachine.addState(new StateModel(20, "finished buying", showInvQuestion));
-    gameStateMachine.addState(new StateModel(20.5, "accept show inv", gotInvQuestion));
-    gameStateMachine.addState(new StateModel(21, "show inv", showInventory));
-    gameStateMachine.addState(new StateModel(22, "show stats", showStats));
-    gameStateMachine.addState(new StateModel(23, "main game", welcome));
-    gameStateMachine.addState(new StateModel(23.5, "accept show commands", gotCommandsQuestion));
-    gameStateMachine.addState(new StateModel(24, "show commands", showCommands));
-    gameStateMachine.addState(new StateModel(25, "get command", getCommand));
-    gameStateMachine.addState(new StateModel(26, "route command", gotCommand));
-    gameStateMachine.addState(new StateModel(30, "get pretend basic interpreter input", getBASIC));
-    gameStateMachine.addState(new StateModel(31, "got pretend basic interpreter input", gotBASIC));
-    gameStateMachine.addState(new StateModel(45, "make a move", startMove));
-    gameStateMachine.addState(new StateModel(46, "accept a move", gotMove));
-    gameStateMachine.addState(new StateModel(47, "finish move", completeMove));
-    gameStateMachine.addState(new StateModel(48, "into a wall", thud));
-    gameStateMachine.addState(new StateModel(49, "into a trap", itsATrap));
-    gameStateMachine.addState(new StateModel(50, "secret door", hush));
-    gameStateMachine.addState(new StateModel(51, "boost str", boost1));
-    gameStateMachine.addState(new StateModel(52, "boost con", boost2));
-    gameStateMachine.addState(new StateModel(53, "into a bod", surprise));
-    gameStateMachine.addState(new StateModel(54, "gold", gold));
-    gameStateMachine.addState(new StateModel(55, "open door", openDoor));
-    gameStateMachine.addState(new StateModel(56, "accept door move", gotDoorMove));
-    gameStateMachine.addState(new StateModel(57, "search", searching));
-    gameStateMachine.addState(new StateModel(58, "change weapon", swapWeapon));
-    gameStateMachine.addState(new StateModel(59, "accept change weapon", gotSwap));
-    gameStateMachine.addState(new StateModel(60, "start player fight", resolveFight));
-    gameStateMachine.addState(new StateModel(61, "punch", knuckles));
-    gameStateMachine.addState(new StateModel(62, "attack with a sword", swingASword));
-    gameStateMachine.addState(new StateModel(63, "attack with a 2h-sword", swingABigSword));
-    gameStateMachine.addState(new StateModel(64, "attack with a dagger", pokeADagger));
-    gameStateMachine.addState(new StateModel(65, "attack with a mace", swingAMace));
-    gameStateMachine.addState(new StateModel(66, "attack with something", improvise));
-    gameStateMachine.addState(new StateModel(67, "throw food", throwFood));
-    gameStateMachine.addState(new StateModel(68, "really punch", knucklehead));
-    gameStateMachine.addState(new StateModel(69, "resolve improvised attack", resolveImprov));
-    gameStateMachine.addState(new StateModel(70, "accept club-sight", gotSilverCross));
-    gameStateMachine.addState(new StateModel(71, "remove used weapon or ammo", consumeWpn));
-    gameStateMachine.addState(new StateModel(72, "hit monster with food", peltMonster));
-    gameStateMachine.addState(new StateModel(73, "distract monster with food", kiteMonster));
-    gameStateMachine.addState(new StateModel(74, "loose thrown food", consumeFood));
-    gameStateMachine.addState(new StateModel(75, "look command", looking));
-    gameStateMachine.addState(new StateModel(76, "save", saveGame));
-    gameStateMachine.addState(new StateModel(77, "cast a spell", casting));
-    gameStateMachine.addState(new StateModel(78, "cast a cleric spell", gotClericSpell));
-    gameStateMachine.addState(new StateModel(79, "cast cleric spell 1 (kill)", clericSpellKill));
-    gameStateMachine.addState(new StateModel(80, "cast cleric spell 2 (magic missile #2)", clericSpellMagicMissileAdvanced));
-    gameStateMachine.addState(new StateModel(81, "cast cleric spell 3 (cure light wounds #1)", clericSpellCureLight));
-    gameStateMachine.addState(new StateModel(82, "cast cleric spell 4/8 (find all traps/s.doors)", clericSpellFindTraps));
-    gameStateMachine.addState(new StateModel(83, "cast cleric spell 5 (magic missile #1)", clericSpellMagicMissile));
-    gameStateMachine.addState(new StateModel(84, "cast cleric spell 6 (magic missile #3)", clericSpellMagicMissileUltimate));
-    gameStateMachine.addState(new StateModel(85, "cast cleric spell 7 (cure light wounds #2)", clericSpellCureLightAdvanced));
-    gameStateMachine.addState(new StateModel(86, "cast cleric spell 9 (cheat - push)", clericSpell9));
-    gameStateMachine.addState(new StateModel(87, "cast a wizard spell", gotWizardSpell));
-    gameStateMachine.addState(new StateModel(88, "cast wizard spell 2", wizardSpellKill));
-    gameStateMachine.addState(new StateModel(89, "cast wizard spell 3", wizardSpellFindTrap));
-    gameStateMachine.addState(new StateModel(90, "cast wizard spell 4", wizardSpellTeleport));
-    gameStateMachine.addState(new StateModel(91, "accept wizard spell 4", gotTeleportCoordinates));
-    gameStateMachine.addState(new StateModel(91.5, "cast wizard spell CHANGE 5 and 10", gotSpellChange));
-    gameStateMachine.addState(new StateModel(91.6, "accept wizard spell CHANGE coordinates", gotChangeCoordinates));
-    gameStateMachine.addState(new StateModel(92, "buy spells", buyMagic));
-    gameStateMachine.addState(new StateModel(93, "cleric spell choice question", askACleric));
-    gameStateMachine.addState(new StateModel(94, "wizard spell choice question", askAWizard));
-    gameStateMachine.addState(new StateModel(95, "cleric spell list", clericSpellChoices));
-    gameStateMachine.addState(new StateModel(96, "wizard spell list", wizardSpellChoices));
-    gameStateMachine.addState(new StateModel(97, "cleric spell transaction", clericSpellPurchase));
-    gameStateMachine.addState(new StateModel(98, "wizard spell transaction", wizardSpellPurchase));
-    gameStateMachine.addState(new StateModel(99, "cheat: show map", showCheatMap));
-    gameStateMachine.addState(new StateModel(100, "gold into sauce", buyHP));
-    gameStateMachine.addState(new StateModel(101, "got gold get sauce", addHP));
-    gameStateMachine.addState(new StateModel(102, "start edit map", modifyMap));
-    gameStateMachine.addState(new StateModel(102.5, "got map number", modifyGotMap));
-    gameStateMachine.addState(new StateModel(103, "get map pos", modifyMapPos));
-    gameStateMachine.addState(new StateModel(104, "update map pos", modifyMapDone));
-    gameStateMachine.addState(new StateModel(105, "save map changes", modifyMapSave));
-    gameStateMachine.addState(new StateModel(200, "route post-player actions", routeGameMove));
-    gameStateMachine.addState(new StateModel(201, "got answer to more equipment", gotMoreEquipment));
-    gameStateMachine.addState(new StateModel(202, "check if map is cleared", monsterMove));
-    gameStateMachine.addState(new StateModel(203, "report kill", confirmedKill));
-    gameStateMachine.addState(new StateModel(204, "make a monster (spawn)", makeAMonster));
-    gameStateMachine.addState(new StateModel(205, "got reset answer", resetAfterClear));
-    gameStateMachine.addState(new StateModel(206, "make a monster move small step", monsterAction));
-    gameStateMachine.addState(new StateModel(207, "monster attacks player", monsterSwings));
-    gameStateMachine.stateMode = 1;
-}
-
-function getCurrentWeapon() {
-    if (gameState.currentWeaponIndex === -1) return 0;
-    return gameState.inventory[currentWeaponIndex];
-}
-
-function setCurrentWeapon(item) {
-    if (item === -1) {
-        gameState.currentWeaponIndex = -1;
-        return true;
+    constructor() {
+        this.#debug = false; //global debug flag to enable logging
+        this.cookieLifespan = 365; //1 year :D
+        this.vbTab = String.fromCharCode(9);
+        this.P0 = 0;
+        this.difficultyFactor = 0;
+        this.K1 = 0;
+        this.attributeNames = [];
+        this.equipmentPrice = [];
+        this.maxMonsterIndex = 0;
+        this.clericSpellPrices = []; //(100) cleric spell prices
+        this.wizardSpellPrices = []; // (100) wizard spell prices
+        this.inputStrings = [];
     }
-    for (let i = 0; i <= gameState.inventoryCounter; i++)
-        if (gameState.inventory[i] === item) {
-            gameState.currentWeaponIndex = i;
+
+    get debug() {
+        return this.#debug;
+    }
+
+    buildStateModel = () => {
+        this.gameStateMachine = new StateMachine();
+        this.gameStateMachine.addState(new StateModel(1, "loading", this.loadScreen));
+        this.gameStateMachine.addState(new StateModel(2, "accept instructions input",
+            this.gotInstructionInput));
+        this.gameStateMachine.addState(
+            new StateModel(3, "old or new game", this.gotLoadInput));
+        this.gameStateMachine.addState(
+            new StateModel(4, "cheeky instructions", this.showInstructions));
+        this.gameStateMachine.addState(
+            new StateModel(5, "accept old or new input", this.gotLoadInput));
+        this.gameStateMachine.addState(
+            new StateModel(6, "accept dungeon # input", this.gotDungeonInput));
+        this.gameStateMachine.addState(
+            new StateModel(7, "load old dungeon", this.fetchDungeonSave));
+        this.gameStateMachine.addState(
+            new StateModel(8, "continues reset", this.gotResetInput));
+        this.gameStateMachine.addState(
+            new StateModel(9, "accept player name", this.gotNameInput));
+        this.gameStateMachine.addState(new StateModel(10, "roll", this.rollNew));
+        this.gameStateMachine.addState(
+            new StateModel(10.5, "pick class", this.pickClass));
+        this.gameStateMachine.addState(
+            new StateModel(11, "accept class input", this.gotClassInput));
+        this.gameStateMachine.addState(
+            new StateModel(12, "picked fighter", this.gotFighter));
+        this.gameStateMachine.addState(
+            new StateModel(13, "picked cleric", this.gotCleric));
+        this.gameStateMachine.addState(
+            new StateModel(14, "picked wizard", this.gotWizard));
+        this.gameStateMachine.addState(new StateModel(15, "go shopping", this.shopTop));
+        this.gameStateMachine.addState(
+            new StateModel(16, "accept fast-norm shop", this.gotShopFastNorm));
+        this.gameStateMachine.addState(
+            new StateModel(17, "shopping list", this.shopList));
+        this.gameStateMachine.addState(new StateModel(18, "buy goods", this.shopping));
+        this.gameStateMachine.addState(
+            new StateModel(19, "buying goods", this.gotShoppingInput));
+        this.gameStateMachine.addState(
+            new StateModel(20, "finished buying", this.showInvQuestion));
+        this.gameStateMachine.addState(
+            new StateModel(20.5, "accept show inv", this.gotInvQuestion));
+        this.gameStateMachine.addState(
+            new StateModel(21, "show inv", this.showInventory));
+        this.gameStateMachine.addState(new StateModel(22, "show stats", this.showStats));
+        this.gameStateMachine.addState(new StateModel(23, "main game", this.welcome));
+        this.gameStateMachine.addState(
+            new StateModel(23.5, "accept show commands", this.gotCommandsQuestion));
+        this.gameStateMachine.addState(
+            new StateModel(24, "show commands", this.showCommands));
+        this.gameStateMachine.addState(
+            new StateModel(25, "get command", this.getCommand));
+        this.gameStateMachine.addState(
+            new StateModel(26, "route command", this.gotCommand));
+        this.gameStateMachine.addState(
+            new StateModel(30, "get pretend basic interpreter input",
+                this.getBASIC));
+        this.gameStateMachine.addState(
+            new StateModel(31, "got pretend basic interpreter input",
+                this.gotBASIC));
+        this.gameStateMachine.addState(new StateModel(45, "make a move", this.startMove));
+        this.gameStateMachine.addState(new StateModel(46, "accept a move", this.gotMove));
+        this.gameStateMachine.addState(
+            new StateModel(47, "finish move", this.completeMove));
+        this.gameStateMachine.addState(new StateModel(48, "into a wall", this.thud));
+        this.gameStateMachine.addState(new StateModel(49, "into a trap", this.itsATrap));
+        this.gameStateMachine.addState(new StateModel(50, "secret door", this.hush));
+        this.gameStateMachine.addState(new StateModel(51, "boost str", this.boost1));
+        this.gameStateMachine.addState(new StateModel(52, "boost con", this.boost2));
+        this.gameStateMachine.addState(new StateModel(53, "into a bod", this.surprise));
+        this.gameStateMachine.addState(new StateModel(54, "gold", this.gold));
+        this.gameStateMachine.addState(new StateModel(55, "open door", this.openDoor));
+        this.gameStateMachine.addState(
+            new StateModel(56, "accept door move", this.gotDoorMove));
+        this.gameStateMachine.addState(new StateModel(57, "search", this.searching));
+        this.gameStateMachine.addState(
+            new StateModel(58, "change weapon", this.swapWeapon));
+        this.gameStateMachine.addState(
+            new StateModel(59, "accept change weapon", this.gotSwap));
+        this.gameStateMachine.addState(
+            new StateModel(60, "start player fight", this.resolveFight));
+        this.gameStateMachine.addState(new StateModel(61, "punch", this.knuckles));
+        this.gameStateMachine.addState(
+            new StateModel(62, "attack with a sword", this.swingASword));
+        this.gameStateMachine.addState(
+            new StateModel(63, "attack with a 2h-sword", this.swingABigSword));
+        this.gameStateMachine.addState(
+            new StateModel(64, "attack with a dagger", this.pokeADagger));
+        this.gameStateMachine.addState(
+            new StateModel(65, "attack with a mace", this.swingAMace));
+        this.gameStateMachine.addState(
+            new StateModel(66, "attack with something", this.improvise));
+        this.gameStateMachine.addState(new StateModel(67, "throw food", this.throwFood));
+        this.gameStateMachine.addState(
+            new StateModel(68, "really punch", this.knucklehead));
+        this.gameStateMachine.addState(
+            new StateModel(69, "resolve improvised attack", this.resolveImprov));
+        this.gameStateMachine.addState(
+            new StateModel(70, "accept club-sight", this.gotSilverCross));
+        this.gameStateMachine.addState(
+            new StateModel(71, "remove used weapon or ammo", this.consumeWpn));
+        this.gameStateMachine.addState(
+            new StateModel(72, "hit monster with food", this.peltMonster));
+        this.gameStateMachine.addState(
+            new StateModel(73, "distract monster with food", this.kiteMonster));
+        this.gameStateMachine.addState(
+            new StateModel(74, "loose thrown food", this.consumeFood));
+        this.gameStateMachine.addState(new StateModel(75, "look command", this.looking));
+        this.gameStateMachine.addState(new StateModel(76, "save", this.saveGame));
+        this.gameStateMachine.addState(new StateModel(77, "cast a spell", this.casting));
+        this.gameStateMachine.addState(
+            new StateModel(78, "cast a cleric spell", this.gotClericSpell));
+        this.gameStateMachine.addState(
+            new StateModel(79, "cast cleric spell 1 (kill)", this.clericSpellKill));
+        this.gameStateMachine.addState(
+            new StateModel(80, "cast cleric spell 2 (magic missile #2)",
+                this.clericSpellMagicMissileAdvanced));
+        this.gameStateMachine.addState(
+            new StateModel(81, "cast cleric spell 3 (cure light wounds #1)",
+                this.clericSpellCureLight));
+        this.gameStateMachine.addState(
+            new StateModel(82, "cast cleric spell 4/8 (find all traps/s.doors)",
+                this.clericSpellFindTraps));
+        this.gameStateMachine.addState(
+            new StateModel(83, "cast cleric spell 5 (magic missile #1)",
+                this.clericSpellMagicMissile));
+        this.gameStateMachine.addState(
+            new StateModel(84, "cast cleric spell 6 (magic missile #3)",
+                this.clericSpellMagicMissileUltimate));
+        this.gameStateMachine.addState(
+            new StateModel(85, "cast cleric spell 7 (cure light wounds #2)",
+                this.clericSpellCureLightAdvanced));
+        this.gameStateMachine.addState(
+            new StateModel(86, "cast cleric spell 9 (cheat - push)",
+                this.clericSpell9));
+        this.gameStateMachine.addState(
+            new StateModel(87, "cast a wizard spell", this.gotWizardSpell));
+        this.gameStateMachine.addState(
+            new StateModel(88, "cast wizard spell 2", this.wizardSpellKill));
+        this.gameStateMachine.addState(
+            new StateModel(89, "cast wizard spell 3", this.wizardSpellFindTrap));
+        this.gameStateMachine.addState(
+            new StateModel(90, "cast wizard spell 4", this.wizardSpellTeleport));
+        this.gameStateMachine.addState(new StateModel(91, "accept wizard spell 4",
+            this.gotTeleportCoordinates));
+        this.gameStateMachine.addState(
+            new StateModel(91.5, "cast wizard spell CHANGE 5 and 10",
+                this.gotSpellChange));
+        this.gameStateMachine.addState(
+            new StateModel(91.6, "accept wizard spell CHANGE coordinates",
+                this.gotChangeCoordinates));
+        this.gameStateMachine.addState(new StateModel(92, "buy spells", this.buyMagic));
+        this.gameStateMachine.addState(
+            new StateModel(93, "cleric spell choice question", this.askACleric));
+        this.gameStateMachine.addState(
+            new StateModel(94, "wizard spell choice question", this.askAWizard));
+        this.gameStateMachine.addState(
+            new StateModel(95, "cleric spell list", this.clericSpellChoices));
+        this.gameStateMachine.addState(
+            new StateModel(96, "wizard spell list", this.wizardSpellChoices));
+        this.gameStateMachine.addState(new StateModel(97, "cleric spell transaction",
+            this.clericSpellPurchase));
+        this.gameStateMachine.addState(new StateModel(98, "wizard spell transaction",
+            this.wizardSpellPurchase));
+        this.gameStateMachine.addState(
+            new StateModel(99, "cheat: show map", this.showCheatMap));
+        this.gameStateMachine.addState(
+            new StateModel(100, "gold into sauce", this.buyHP));
+        this.gameStateMachine.addState(
+            new StateModel(101, "got gold get sauce", this.addHP));
+        this.gameStateMachine.addState(
+            new StateModel(102, "start edit map", this.modifyMap));
+        this.gameStateMachine.addState(
+            new StateModel(102.5, "got map number", this.modifyGotMap));
+        this.gameStateMachine.addState(
+            new StateModel(103, "get map pos", this.modifyMapPos));
+        this.gameStateMachine.addState(
+            new StateModel(104, "update map pos", this.modifyMapDone));
+        this.gameStateMachine.addState(
+            new StateModel(105, "save map changes", this.modifyMapSave));
+        this.gameStateMachine.addState(
+            new StateModel(200, "route post-player actions", this.routeGameMove));
+        this.gameStateMachine.addState(
+            new StateModel(201, "got answer to more equipment",
+                this.gotMoreEquipment));
+        this.gameStateMachine.addState(
+            new StateModel(202, "check if map is cleared", this.monsterMove));
+        this.gameStateMachine.addState(
+            new StateModel(203, "report kill", this.confirmedKill));
+        this.gameStateMachine.addState(
+            new StateModel(204, "make a monster (spawn)", this.makeAMonster));
+        this.gameStateMachine.addState(
+            new StateModel(205, "got reset answer", this.resetAfterClear));
+        this.gameStateMachine.addState(
+            new StateModel(206, "make a monster move small step",
+                this.monsterAction));
+        this.gameStateMachine.addState(
+            new StateModel(207, "monster attacks player", this.monsterSwings));
+        this.gameStateMachine.stateMode = 1;
+    }
+
+    getCurrentWeapon = () => {
+        if (this.gameState.currentWeaponIndex === -1) return 0;
+        return this.gameState.inventory[currentWeaponIndex];
+    }
+
+    setCurrentWeapon = (item) => {
+        if (item === -1) {
+            this.gameState.currentWeaponIndex = -1;
             return true;
         }
-    return false;
-}
+        for (let i = 0; i <= this.gameState.inventoryCounter; i++)
+            if (this.gameState.inventory[i] === item) {
+                this.gameState.currentWeaponIndex = i;
+                return true;
+            }
+        return false;
+    }
 
-/***
- * Check if given coordinates are inside map bounds
- * @param row
- * @param column
- * @returns {boolean} true if inside map limits
- */
-function inBounds(row, column) {
-    return (row >= 0) && (row <= 25) && (column >= 0) && (column <= 25);
-}
+    /***
+     * Check if given coordinates are inside map bounds
+     * @param row
+     * @param column
+     * @returns {boolean} true if inside map limits
+     */
+    inBounds = (row, column) => {
+        return (row >= 0) && (row <= 25) && (column >= 0) && (column <= 25);
+    }
 
-function findRange() {
-    //range and hit check
-    let m, n;
-    let tempY, tempX;
-    range = 1000;
-    tempY = 26;
-    tempX = 26;
-    for (m = -25; m <= 25; m++) {
-        for (n = -25; n <= 25; n++) {
-            if (inBounds(mapY + m, mapX + n)) {
-                if (gameState.dungeonMap[mapY + m][mapX + n] === 5) {
-                    tempY = m;
-                    tempX = n;
-                    range = Math.sqrt(tempY * tempY + tempX * tempX);
-                    m = 26;
-                    n = 26;
+    findRange = () => {
+        //range and hit check
+        let m, n;
+        let tempY, tempX;
+        this.range = 1000;
+        tempY = 26;
+        tempX = 26;
+        for (m = -25; m <= 25; m++) {
+            for (n = -25; n <= 25; n++) {
+                if (this.inBounds(mapY + m, mapX + n)) {
+                    if (this.gameState.dungeonMap[mapY + m][mapX + n] === 5) {
+                        tempY = m;
+                        tempX = n;
+                        this.range = Math.sqrt(tempY * tempY + tempX * tempX);
+                        m = 26;
+                        n = 26;
+                    }
+                }
+            }
+        }
+        this.rangeRowOffset = tempY;
+        this.rangeColumnOffset = tempX;
+        if (int(rnd(20) + 1) > 18) {
+            this.toHitRoll = 3;
+        } else {
+            if (rnd(20) > (
+                this.gameState.monsterStats[this.gameState.currentMonster][2] -
+                this.gameState.attributes[this.constants.playerDex] / 3)
+            ) {
+                this.toHitRoll = 2;
+            } else {
+                if (rnd(2) > 1.7) {
+                    this.toHitRoll = 1;
+                } else {
+                    this.toHitRoll = 0;
                 }
             }
         }
     }
-    rangeRowOffset = tempY;
-    rangeColumnOffset = tempX;
-    if (int(rnd(20) + 1) > 18) {
-        toHitRoll = 3;
-    } else {
-        if (rnd(20) > (gameState.monsterStats[gameState.currentMonster][2] - gameState.attributes[constants.playerDex] / 3)) {
-            toHitRoll = 2;
-        } else {
-            if (rnd(2) > 1.7) {
-                toHitRoll = 1;
+
+    initialiseGlobals = (gameConsole) => {
+        this.mapY = 1; //int(rnd(24) + 2);
+        this.mapX = 12; //int(rnd(24) + 2);
+        this.reading = false;
+        this.inputString = "";
+        this.vbTab = String.fromCharCode(9);
+        this.gameState = new GameState();
+        this.terminal = gameConsole;
+
+        this.gameState.equipmentNames = [
+            "",
+            "SWORD",
+            "2-H-SWORD",
+            "DAGGER",
+            "MACE",
+            "SPEAR",
+            "BOW",
+            "ARROWS",
+            "LEATHER MAIL",
+            "CHAIN MAIL",
+            "PLATE MAIL",
+            "ROPE",
+            "SPIKES",
+            "FLASK OF OIL",
+            "SILVER CROSS",
+            "SPARE FOOD"];
+        this.equipmentPrice = [
+            0,
+            10,
+            15,
+            3,
+            5,
+            2,
+            25,
+            2,
+            15,
+            30,
+            50,
+            1,
+            1,
+            2,
+            25,
+            5];
+        this.attributeNames = [
+            "",
+            "STR",
+            "DEX",
+            "CON",
+            "CHAR",
+            "WIS",
+            "INT",
+            "GOLD"];
+        this.clericSpellPrices = [0, 500, 200, 200, 200, 100, 300, 1000, 200];
+        this.wizardSpellPrices = [
+            0,
+            75,
+            500,
+            200,
+            750,
+            600,
+            100,
+            200,
+            300,
+            200,
+            600];
+
+        this.buildStateModel();
+    }
+
+    loadMonster = (index, name, stats) => {
+        this.gameState.monsterNames[index] = name;
+        for(let i=0; i<7; ++i) {
+            this.gameState.monsterStats[index][i] = stats[i];
+        }
+        this.gameState.monsterStats[index][4] = this.gameState.monsterStats[index][3];
+        this.gameState.monsterStats[index][5] = this.gameState.monsterStats[index][6];
+        this.gameState.monsterStats[index][1] = 1; //not sure why this is meant to happen...
+    }
+
+    loadMonsters = () => {
+        let index = 0;
+        this.loadMonster(index++, "", []);
+        this.loadMonster(index++, "MAN", [0, 1, 13, 26, 1, 1, 500]);
+        this.loadMonster(index++, "GOBLIN", [0, 2, 13, 24, 1, 1, 600]);
+        this.loadMonster(index++, "TROLL", [0, 3, 15, 35, 1, 1, 1000]);
+        this.loadMonster(index++, "SKELETON", [0, 4, 22, 12, 1, 1, 50]);
+        this.loadMonster(index++, "BALROG", [0, 5, 18, 110, 1, 1, 5000]);
+        this.loadMonster(index++, "OCHRE JELLY", [0, 6, 11, 20, 1, 1, 0]);
+        this.loadMonster(index++, "GREY OOZE", [0, 7, 11, 13, 1, 1, 0]);
+        this.loadMonster(index++, "GNOME", [0, 8, 13, 30, 1, 1, 100]);
+        this.loadMonster(index++, "KOBOLD", [0, 9, 15, 16, 1, 1, 500]);
+        this.loadMonster(index++, "MUMMY", [0, 10, 16, 30, 1, 1, 100]);
+        this.maxMonsterIndex = index;
+    }
+
+    partial = () => {
+        this.terminal.printAt(this.inputRow, this.inputColumn,
+            inputString.toUpperCase() + "_ ");
+    }
+
+    input = () => {
+        this.gameStateMachine.setWait();
+        this.inputFilter = 1;
+        this.inputString = "";
+        this.inputsCount = 0;
+        this.reading = true;
+        // wait for enter to be pressed (reading is cleared)
+        // use gotInput to capture event
+        this.inputRow = terminal.cursorPosition.row;
+        this.inputColumn = terminal.cursorPosition.column;
+        if ((typeof (this.terminal) != "undefined") &&
+            (typeof (this.inputRow) != "undefined"))
+            terminal.printAt(this.inputRow, this.inputColumn, "_");
+        console.info("waiting for input");
+    }
+
+    inputStr = () => {
+        this.gameStateMachine.setWait();
+        this.inputFilter = 0;
+        this.inputString = "";
+        this.inputsCount = 0;
+        this.reading = true;
+        // wait for enter to be pressed (reading is cleared)
+        // use gotInput to capture event
+        this.inputRow = terminal.cursorPosition.row;
+        this.inputColumn = terminal.cursorPosition.column;
+        if ((typeof (this.terminal) != "undefined") &&
+            (typeof (this.inputRow) != "undefined"))
+            this.terminal.printAt(this.inputRow, this.inputColumn, "_");
+        console.info("waiting for input");
+    }
+
+    inputX = (items) => {
+        this.gameStateMachine.setWait();
+        this.inputsCount = items;
+        this.inputFilter = 1;
+        this.inputString = "";
+        this.reading = true;
+        this.inputRow = terminal.cursorPosition.row;
+        this.inputColumn = terminal.cursorPosition.column;
+        if ((typeof (this.terminal) != "undefined") &&
+            (typeof (this.inputRow) != "undefined"))
+            this.terminal.printAt(this.inputRow, this.inputColumn, "_");
+        console.info("waiting for input");
+    }
+
+    gotInput = () => {
+        this.reading = false;
+        let value = this.inputString.toUpperCase();
+        this.terminal.setCursorPos(this.inputRow, this.inputColumn);
+        this.terminal.print(value);
+        this.inputString = value;
+        if (this.inputsCount > 0) {
+            this.inputStrings[this.inputsCount - 1] = inputString.trim();
+            this.inputString = "";
+            this.inputsCount--;
+            if (this.inputsCount > 0) {
+                terminal.print(",");
+                this.reading = true;
+                this.inputRow = terminal.cursorPosition.row;
+                this.inputColumn = terminal.cursorPosition.column;
+                if ((typeof (this.terminal) != "undefined") &&
+                    (typeof (this.inputRow) != "undefined")) {
+                    this.terminal.printAt(this.inputRow, this.inputColumn, "_");
+                }
+                console.info("waiting for input");
             } else {
-                toHitRoll = 0;
+                this.terminal.println("");
+                this.gameStateMachine.modelEngine();
             }
-        }
-    }
-}
-
-function initialiseGlobals(gameConsole) {
-    cookieLifespan = 365; //cookie lifespan
-    mapY = 1; //int(rnd(24) + 2);
-    mapX = 12; //int(rnd(24) + 2);
-    terminal = gameConsole;
-    reading = false;
-    inputString = "";
-    vbTab = String.fromCharCode(9);
-    gameState = new GameState();
-    P0 = 0;
-
-    gameState.equipmentNames = ["", "SWORD", "2-H-SWORD", "DAGGER", "MACE", "SPEAR", "BOW", "ARROWS", "LEATHER MAIL", "CHAIN MAIL", "PLATE MAIL", "ROPE", "SPIKES", "FLASK OF OIL", "SILVER CROSS", "SPARE FOOD"];
-    equipmentPrice = [0, 10, 15, 3, 5, 2, 25, 2, 15, 30, 50, 1, 1, 2, 25, 5];
-    attributeNames = ["", "STR", "DEX", "CON", "CHAR", "WIS", "INT", "GOLD"];
-    clericSpellPrices = [0, 500, 200, 200, 200, 100, 300, 1000, 200];
-    wizardSpellPrices = [0, 75, 500, 200, 750, 600, 100, 200, 300, 200, 600];
-
-    buildStateModel();
-}
-
-function loadMonster(index, name, stats) {
-    gameState.monsterNames[index] = name;
-    gameState.monsterStats[index] = stats;
-    gameState.monsterStats[index][4] = gameState.monsterStats[index][3];
-    gameState.monsterStats[index][5] = gameState.monsterStats[index][6];
-    gameState.monsterStats[index][1] = 1;
-}
-
-function loadMonsters() {
-    let index = 0;
-    loadMonster(index++, "", []);
-    loadMonster(index++, "MAN", [0, 1, 13, 26, 1, 1, 500]);
-    loadMonster(index++, "GOBLIN", [0, 2, 13, 24, 1, 1, 600]);
-    loadMonster(index++, "TROLL", [0, 3, 15, 35, 1, 1, 1000]);
-    loadMonster(index++, "SKELETON", [0, 4, 22, 12, 1, 1, 50]);
-    loadMonster(index++, "BALROG", [0, 5, 18, 110, 1, 1, 5000]);
-    loadMonster(index++, "OCHRE JELLY", [0, 6, 11, 20, 1, 1, 0]);
-    loadMonster(index++, "GREY OOZE", [0, 7, 11, 13, 1, 1, 0]);
-    loadMonster(index++, "GNOME", [0, 8, 13, 30, 1, 1, 100]);
-    loadMonster(index++, "KOBOLD", [0, 9, 15, 16, 1, 1, 500]);
-    loadMonster(index++, "MUMMY", [0, 10, 16, 30, 1, 1, 100]);
-    maxMonsterIndex = index;
-}
-
-function partial() {
-    terminal.printAt(inputRow, inputColumn, inputString.toUpperCase() + "_ ");
-}
-
-function input() {
-    gameStateMachine.setWait();
-    inputFilter = 1;
-    inputString = "";
-    inputsCount = 0;
-    reading = true;
-    // wait for enter to be pressed (reading is cleared)
-    // use gotInput to capture event
-    inputRow = terminal.cursorPosition.row;
-    inputColumn = terminal.cursorPosition.column;
-    if ((typeof(terminal) != "undefined") && (typeof(inputRow) != "undefined"))
-        terminal.printAt(inputRow, inputColumn, "_");
-    console.info("waiting for input");
-}
-
-function inputStr() {
-    gameStateMachine.setWait();
-    inputFilter = 0;
-    inputString = "";
-    inputsCount = 0;
-    reading = true;
-    // wait for enter to be pressed (reading is cleared)
-    // use gotInput to capture event
-    inputRow = terminal.cursorPosition.row;
-    inputColumn = terminal.cursorPosition.column;
-    if ((typeof(terminal) != "undefined") && (typeof(inputRow) != "undefined"))
-        terminal.printAt(inputRow, inputColumn, "_");
-    console.info("waiting for input");
-}
-
-function inputX(items) {
-    gameStateMachine.setWait();
-    inputsCount = items;
-    inputFilter = 1;
-    inputString = "";
-    reading = true;
-    inputRow = terminal.cursorPosition.row;
-    inputColumn = terminal.cursorPosition.column;
-    if ((typeof(terminal) != "undefined") && (typeof(inputRow) != "undefined"))
-        terminal.printAt(inputRow, inputColumn, "_");
-    console.info("waiting for input");
-}
-
-function gotInput() {
-    reading = false;
-    let value = inputString.toUpperCase();
-    terminal.setCursorPos(inputRow, inputColumn);
-    terminal.print(value);
-    inputString = value;
-    if (inputsCount > 0) {
-        inputStrings[inputsCount - 1] = inputString.trim();
-        inputString = "";
-        inputsCount--;
-        if (inputsCount > 0) {
-            terminal.print(",");
-            reading = true;
-            inputRow = terminal.cursorPosition.row;
-            inputColumn = terminal.cursorPosition.column;
-            if ((typeof(terminal) != "undefined") && (typeof(inputRow) != "undefined")) {
-                terminal.printAt(inputRow, inputColumn, "_");
-            }
-            console.info("waiting for input");
         } else {
-            terminal.println("");
-            gameStateMachine.modelEngine();
+            this.terminal.println("");
+            this.gameStateMachine.modelEngine();
         }
-    } else {
-        terminal.println("");
-        gameStateMachine.modelEngine();
     }
-}
 
-function main(terminal) {
-    //main loop
-    initialiseGlobals(terminal);
-    gameStateMachine.modelEngine();
-}
-
-/* main game code starts here - each function (unless stated otherwise) represents a game state */
-
-function loadScreen() { //1
-    terminal.printc("DUNGEONS AND DRAGONS #1");
-    terminal.printc("(C) 1977-2014 RICHARD GARRIOTT");
-    terminal.printc("PORTED BY JULIAN BROWN");
-    terminal.printc("ALL RIGHTS TO THIS PORT REMAIN PROPERTY");
-    terminal.printc("OF RICHARD GARRIOTT");
-    terminal.printc("******UPDATED 30 APR 2023******");
-    terminal.printc("");
-    terminal.printc("WARNING! THIS SITE USES COOKIES");
-    terminal.printc("IF YOU DON'T WANT TO STORE COOKIES");
-    terminal.printc("PLEASE STOP NOW");
-    terminal.println("");
-    terminal.print("DO YOU NEED INSTRUCTIONS ");
-    gameStateMachine.stateMode = 2;
-    inputStr();
-}
-
-function gotInstructionInput() { //2
-    let strQ = inputString.trim();
-    if (strQ === "YES" || strQ === "Y") {
-        gameStateMachine.stateMode = 4;
+    main = (terminal) => {
+        //main loop
+        this.initialiseGlobals(terminal);
+        this.gameStateMachine.modelEngine();
     }
-    else {
-        terminal.print("OLD OR NEW GAME ");
-        gameStateMachine.stateMode = 3;
-        inputStr();
+
+    /* main game code starts here - each function (unless stated otherwise) represents a game state */
+    loadScreen = () => { //1
+        this.terminal.printc("DUNGEONS AND DRAGONS #1");
+        this.terminal.printc("(C) 1977-2014 RICHARD GARRIOTT");
+        this.terminal.printc("PORTED BY JULIAN BROWN");
+        this.terminal.printc("ALL RIGHTS TO THIS PORT REMAIN PROPERTY");
+        this.terminal.printc("OF RICHARD GARRIOTT");
+        this.terminal.printc("******UPDATED 30 APR 2023******");
+        this.terminal.printc("");
+        this.terminal.printc("WARNING! THIS SITE USES COOKIES");
+        this.terminal.printc("IF YOU DON'T WANT TO STORE COOKIES");
+        this.terminal.printc("PLEASE STOP NOW");
+        this.terminal.println("");
+        this.terminal.print("DO YOU NEED INSTRUCTIONS ");
+        this.gameStateMachine.stateMode = 2;
+        this.inputStr();
     }
-}
 
-function gotLoadInput() { //3
-    let strQ = inputString.trim();
-    if (strQ === "OLD") {
-        gameStateMachine.stateMode = 7;
-    } else {
-        terminal.print("DUNGEON # ");
-        gameStateMachine.stateMode = 6;
-        input();
+    gotInstructionInput = () => { //2
+        let strQ = this.inputString.trim();
+        if (strQ === "YES" || strQ === "Y") {
+            this.gameStateMachine.stateMode = 4;
+        } else {
+            this.terminal.print("OLD OR NEW GAME ");
+            this.gameStateMachine.stateMode = 3;
+            this.inputStr();
+        }
     }
-}
 
-function showInstructions() { //4
-    terminal.println("WHO SAID YOU COULD PLAY");
-    terminal.println("[STOP]");
-    gameStateMachine.stateMode = 30;
-}
-
-function gotDungeonInput() { //6
-    let Q = parseInt(inputString.trim());
-    gameState.Dn = Math.floor(Q);
-    terminal.print("CONTINUES RESET 1=YES,2=NO ");
-    gameStateMachine.stateMode = 8;
-    input();
-}
-
-function fetchDungeonSave() { //7
-    if (getCookie(Document, 'dnd1file7.' + Dn) !== '') {
-        gameState.deSerialiseFromCookie(Document, 'dnd1file7');
-        gameStateMachine.stateMode = 23;
-    } else {
-        terminal.println("ERROR FILE #7 DOES NOT EXIST");
-        terminal.println("[STOP]");
-        gameStateMachine.stateMode = 30;
+    gotLoadInput() { //3
+        let strQ = this.inputString.trim();
+        if (strQ === "OLD") {
+            this.gameStateMachine.stateMode = 7;
+        } else {
+            this.terminal.print("DUNGEON # ");
+            this.gameStateMachine.stateMode = 6;
+            this.input();
+        }
     }
-}
 
-function defaultMap() {
-    gameState.dungeonMap[0] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-    gameState.dungeonMap[1] = [1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 1, 6, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-    gameState.dungeonMap[2] = [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 2, 1, 0, 1, 0, 1, 1, 0, 1];
-    gameState.dungeonMap[3] = [1, 0, 0, 0, 1, 0, 2, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 3, 0, 1, 0, 0, 1, 0, 1];
-    gameState.dungeonMap[4] = [1, 1, 1, 3, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 4, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1];
-    gameState.dungeonMap[5] = [1, 0, 0, 6, 1, 0, 0, 6, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 6, 1, 0, 0, 1, 0, 1];
-    gameState.dungeonMap[6] = [1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1];
-    gameState.dungeonMap[7] = [1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 6, 0, 1, 1, 1, 0, 1];
-    gameState.dungeonMap[8] = [1, 1, 1, 1, 3, 1, 1, 1, 1, 0, 0, 0, 1, 4, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1];
-    gameState.dungeonMap[9] = [1, 0, 6, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1];
-    gameState.dungeonMap[10] = [1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0, 1, 0, 1, 0, 1];
-    gameState.dungeonMap[11] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1];
-    gameState.dungeonMap[12] = [1, 1, 1, 1, 0, 1, 1, 4, 1, 1, 1, 6, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1];
-    gameState.dungeonMap[13] = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1];
-    gameState.dungeonMap[14] = [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1];
-    gameState.dungeonMap[15] = [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1];
-    gameState.dungeonMap[16] = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1];
-    gameState.dungeonMap[17] = [1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1];
-    gameState.dungeonMap[18] = [1, 0, 1, 0, 0, 0, 1, 0, 1, 3, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1];
-    gameState.dungeonMap[19] = [1, 0, 1, 0, 1, 1, 1, 0, 3, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1];
-    gameState.dungeonMap[20] = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1];
-    gameState.dungeonMap[21] = [1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1];
-    gameState.dungeonMap[22] = [1, 6, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 4, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1];
-    gameState.dungeonMap[23] = [1, 1, 1, 0, 0, 0, 2, 4, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1];
-    gameState.dungeonMap[24] = [1, 6, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1];
-    gameState.dungeonMap[25] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-}
-
-function readMapFromCookie(id) {
-    let stream, elements;
-    for (let m = 0; m <= 25; m++) {
-        stream = getCookie(document, "dnd1file" + id + ".dungeonMap." + m);
-        elements = stream.split("|");
-        for (let n = 0; n <= 25; n++) gameState.dungeonMap[m][n] = parseInt(elements[n]);
+    showInstructions() { //4
+        this.terminal.println("WHO SAID YOU COULD PLAY");
+        this.terminal.println("[STOP]");
+        this.gameStateMachine.stateMode = 30;
     }
-}
+
+    gotDungeonInput() { //6
+        let Q = parseInt(inputString.trim());
+        this.gameState.Dn = Math.floor(Q);
+        this.terminal.print("CONTINUES RESET 1=YES,2=NO ");
+        this.gameStateMachine.stateMode = 8;
+        this.input();
+    }
+
+    fetchDungeonSave() { //7
+        if (getCookie(Document, 'dnd1file7.' + Dn) !== '') {
+            this.gameState.deSerialiseFromCookie(Document, 'dnd1file7');
+            this.gameStateMachine.stateMode = 23;
+        } else {
+            this.terminal.println("ERROR FILE #7 DOES NOT EXIST");
+            this.terminal.println("[STOP]");
+            this.gameStateMachine.stateMode = 30;
+        }
+    }
+
+    defaultMap() {
+        this.gameState.dungeonMap[0] = [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1];
+        this.gameState.dungeonMap[1] = [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            3,
+            0,
+            1,
+            6,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1];
+        this.gameState.dungeonMap[2] = [
+            1,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            2,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[3] = [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            2,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            3,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[4] = [
+            1,
+            1,
+            1,
+            3,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            4,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[5] = [
+            1,
+            0,
+            0,
+            6,
+            1,
+            0,
+            0,
+            6,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            6,
+            1,
+            0,
+            0,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[6] = [
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[7] = [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            6,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[8] = [
+            1,
+            1,
+            1,
+            1,
+            3,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            4,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1];
+        this.gameState.dungeonMap[9] = [
+            1,
+            0,
+            6,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1];
+        this.gameState.dungeonMap[10] = [
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            3,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[11] = [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[12] = [
+            1,
+            1,
+            1,
+            1,
+            0,
+            1,
+            1,
+            4,
+            1,
+            1,
+            1,
+            6,
+            0,
+            0,
+            0,
+            4,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[13] = [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1];
+        this.gameState.dungeonMap[14] = [
+            1,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1];
+        this.gameState.dungeonMap[15] = [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1];
+        this.gameState.dungeonMap[16] = [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[17] = [
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[18] = [
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            3,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1];
+        this.gameState.dungeonMap[19] = [
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1,
+            0,
+            3,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1];
+        this.gameState.dungeonMap[20] = [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1];
+        this.gameState.dungeonMap[21] = [
+            1,
+            1,
+            1,
+            1,
+            1,
+            3,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            1];
+        this.gameState.dungeonMap[22] = [
+            1,
+            6,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            4,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1];
+        this.gameState.dungeonMap[23] = [
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            2,
+            4,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1];
+        this.gameState.dungeonMap[24] = [
+            1,
+            6,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1];
+        this.gameState.dungeonMap[25] = [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1];
+    }
+
+    readMapFromCookie = (id) => {
+        let stream, elements;
+        for (let m = 0; m <= 25; m++) {
+            stream = getCookie(document, "dnd1file" + id + ".dungeonMap." + m);
+            elements = stream.split("|");
+            for (let n = 0; n <= 25; n++)
+                this.gameState.dungeonMap[m][n] = parseInt(elements[n]);
+        }
+    }
 
 //load default dungeon where not locally saved
-function loadDungeon(d) {
-    terminal.println("READING DUNGEON # " + d);
-    gameState.dungeonMap[0][0] = getCookie(document, "dnd1file" + d + ".dungeonMap.0");
-    if (gameState.dungeonMap[0][0] === "") {
-        defaultMap();
-    } else {
-        readMapFromCookie(d);
-    }
-    for (let m = 0; m <= 25; m++) {
-        for (let n = 0; n <= 25; n++) {
-            if (d !== 0) {
-                console.info("M=" + m + " N=" + n);
-                if (gameState.dungeonMap[m][n] === 0) {
-                    if (rnd(0) >= 0.97) {
-                        gameState.dungeonMap[m][n] = 7;
-                    } else if (rnd(0) >= 0.97) {
-                        gameState.dungeonMap[m][n] = 8;
-                    }
-                }
-            }
-        }
-    }
-    loadMonsters();
-}
-
-function gotResetInput() { //8
-    J6 = Math.floor(inputString);
-    terminal.print("PLAYERS NAME ");
-    gameStateMachine.stateMode = 9;
-    inputStr();
-}
-
-function gotNameInput() {
-    characterName = inputString.trim();
-    if (characterName === "SHAVS") {
-        gameStateMachine.stateMode = 10;
-    } else {
-        gameStateMachine.stateMode = 4;
-    }
-}
-
-function rollNew() {
-    for (let M = 1; M <= 7; M++) {
-        for (let N = 1; N <= 3; N++) {
-            let R = int(rnd(6) + 1);
-            gameState.attributes[M] = gameState.attributes[M] + R;
-        }
-        if (M === 7) {
-            gameState.attributes[M] = gameState.attributes[M] * 15;
-        }
-        terminal.println(attributeNames[M] + "=" + gameState.attributes[M]);
-    }
-    gameStateMachine.stateMode = 10.5;
-}
-
-function pickClass() {
-    terminal.println("");
-    terminal.println("CLASSIFICATION");
-    terminal.println("WHICH DO YOU WANT TO BE");
-    terminal.print("FIGHTER ,CLERIC ,OR WIZARD ");
-    gameStateMachine.stateMode = 11;
-    inputStr();
-}
-
-function gotClassInput() {
-    attributeNames[constants.playerHp] = inputString.trim();
-    if (attributeNames[0] === "NONE") {
-        for (let M = 0; M <= 7; M++) {
-            gameState.attributes[M] = 0;
-        }
-        gameStateMachine.stateMode = 10;
-    } else {
-        switch (attributeNames[constants.playerClass]) {
-            case "FIGHTER":
-                gameStateMachine.stateMode = 12;
-                break;
-            case "CLERIC":
-                gameStateMachine.stateMode = 13;
-                break;
-            case "WIZARD":
-                gameStateMachine.stateMode = 14;
-                break;
-            default:
-                gameStateMachine.stateMode = 10.5;
-        }
-    }
-}
-
-function gotFighter() {
-    gameState.attributes[constants.playerHp] = int(rnd(8) + 1);
-    gameStateMachine.stateMode = 15;
-}
-
-function gotCleric() {
-    gameState.attributes[constants.playerHp] = int(rnd(6) + 1);
-    gameStateMachine.stateMode = 15;
-}
-
-function gotWizard() {
-    gameState.attributes[constants.playerHp] = int(rnd(4) + 1);
-    gameStateMachine.stateMode = 15;
-}
-
-function shopTop() {
-    terminal.println("BUYING WEAPONS");
-    terminal.println("FAST OR NORM ");
-    gameStateMachine.stateMode = 16;
-    inputStr();
-}
-
-function gotShopFastNorm() {
-    strQ = inputString.trim();
-    if (strQ === "FAST") {
-        gameStateMachine.stateMode = 18;
-    } else {
-        gameStateMachine.stateMode = 17;
-    }
-    terminal.println("NUMBER" + vbTab + "ITEM" + vbTab + "PRICE");
-    terminal.println("-1-STOP");
-}
-
-function shopList() { //17
-    for (let M = 1; M <= 15; M++) {
-        terminal.println(M + vbTab + gameState.equipmentNames[M] + vbTab + equipmentPrice[M]);
-    }
-    gameStateMachine.stateMode = 18;
-}
-
-function shopping() { //18
-    gameStateMachine.stateMode = 19;
-    input();
-}
-
-function buyItem(item) {
-    gameState.inventoryCounter++;
-    gameState.attributes[constants.playerGold] -= equipmentPrice[item];
-    terminal.println("GP= " + gameState.attributes[constants.playerGold]);
-    gameState.inventory[gameState.inventoryCounter] = item;
-}
-
-function gotShoppingInput() {
-    let inputInt = Math.floor(inputString);
-    if (inputInt < 0 || inputInt > 15) {
-        gameStateMachine.stateMode = 20; //stop shopping
-    } else {
-        if (gameState.attributes[constants.playerGold] < equipmentPrice[inputInt]) {
-            terminal.println("COSTS TOO MUCH");
-            terminal.println("TRY AGAIN ");
+    loadDungeon = (d) => {
+        this.terminal.println("READING DUNGEON # " + d);
+        this.gameState.dungeonMap[0][0] = getCookie(document,
+            "dnd1file" + d + ".dungeonMap.0");
+        if (this.gameState.dungeonMap[0][0] === "") {
+            this.defaultMap();
         } else {
-            if (attributeNames[constants.playerClass] === "CLERIC") {
-                if (inputInt === 4 || inputInt === 8 || inputInt === 9 || inputInt > 10) {
-                    buyItem(inputInt);
-                }
-                else {
-                    terminal.println("YOUR A CLERIC YOU CANT USE THAT ");
-                }
-            } else if (attributeNames[constants.playerClass] === "WIZARD") {
-                if (inputInt === 3 || inputInt === 8 || inputInt > 10) {
-                    buyItem(inputInt);
-                }
-                else {
-                    terminal.println("YOUR A WIZARD YOU CANT USE THAT ");
-                }
-            } else {
-                buyItem(inputInt);
-            }
+            this.readMapFromCookie(d);
         }
-        gameStateMachine.stateMode = 18;
-    }
-}
-
-function showInvQuestion() {
-    terminal.print("EQ LIST ");
-    gameStateMachine.stateMode = 20.5;
-    inputStr();
-}
-
-function gotInvQuestion() {
-    strQ = inputString.trim();
-    if (strQ === "NO") {
-        gameStateMachine.stateMode = 22;
-    } else {
-        gameStateMachine.stateMode = 21;
-    }
-}
-
-function showInventory() {
-    for (let m = 1; m <= gameState.inventoryCounter; m++) {
-        if (gameState.inventory[m] !== 0) {
-            terminal.println(gameState.inventory[m] + vbTab + gameState.equipmentNames[gameState.inventory[m]]);
-        }
-    }
-    gameStateMachine.stateMode = 22;
-}
-
-function showStats() {
-    terminal.println("YOUR CHARACTERISTICS ARE:");
-    terminal.println(attributeNames[constants.playerClass]);
-    if (gameState.attributes[constants.playerHp] === 1) {
-        gameState.attributes[constants.playerHp] = 2;
-    }
-    terminal.println("HIT POINTS" + vbTab + gameState.attributes[constants.playerHp]);
-    terminal.println("");
-    terminal.println("");
-    gameStateMachine.stateMode = 23;
-}
-
-function welcome() {
-    loadDungeon(gameState.Dn);
-    terminal.println("");
-    terminal.println("");
-    terminal.println("");
-    terminal.println("WELCOME TO DUNGEON #" + gameState.Dn);
-    terminal.println("YOU ARE AT (" + mapY + "," + mapX + ")");
-    terminal.println("");
-    terminal.print("COMMANDS LIST" + vbTab);
-    gameStateMachine.stateMode = 23.5;
-    inputStr();
-}
-
-function gotCommandsQuestion() {
-    strQ = inputString.trim();
-    if (strQ === "YES") {
-        gameStateMachine.stateMode = 24;
-    } else {
-        gameStateMachine.stateMode = 25;
-    }
-}
-
-function showCommands() {
-    terminal.println("");
-    terminal.println("1=MOVE  2=OPEN DOOR  3=SEARCH FOR TRAPS AND SECRET DOORS");
-    terminal.println("4=SWITCH WEAPON HN HAND  5=FIGHT");
-    terminal.println("6=LOOK AROUND  7=SAVE GAME  8=USER MAGIC  9=BUY MAGIC");
-    terminal.println("0=PASS  11=BUY H.P.");
-    gameStateMachine.stateMode = 25;
-}
-
-function getCommand() { //25
-    terminal.print("COMMAND=");
-    gameStateMachine.stateMode = 26;
-    input();
-}
-
-function gotCommand() {
-    switch (parseInt(inputString.trim())) {
-        case 1: // move
-            gameStateMachine.stateMode = 45;
-            break;
-        case 2: // open door
-            gameStateMachine.stateMode = 55;
-            break;
-        case 3: // search
-            gameStateMachine.stateMode = 57;
-            break;
-        case 4: // change weapon
-            gameStateMachine.stateMode = 58;
-            break;
-        case 5: // fight
-            gameStateMachine.stateMode = 60;
-            break;
-        case 6: // look around
-            gameStateMachine.stateMode = 75;
-            break;
-        case 7: // save game
-            gameStateMachine.stateMode = 76;
-            break;
-        case 8: // use magic
-            gameStateMachine.stateMode = 77;
-            break;
-        case 9: // buy magic
-            gameStateMachine.stateMode = 92;
-            break;
-        case 10: // cheat show map
-            gameStateMachine.stateMode = 99;
-            break;
-        case 11: // buy hp
-            gameStateMachine.stateMode = 100;
-            break;
-        case 12: // cheat modify map
-            gameStateMachine.stateMode = 102;
-            break;
-        case 0: //pass
-            gameStateMachine.stateMode = 200;
-            break;
-        default:
-            terminal.println("COME ON ");
-            gameStateMachine.stateMode = 25;
-            break;
-    }
-}
-
-function getBASIC() { //30
-    terminal.print(">");
-    inputStr();
-    gameStateMachine.stateMode = 31;
-}
-
-function gotBASIC() { //31
-    strQ = inputString.trim();
-    if (strQ === "RUN") {
-        gameStateMachine.stateMode = 1;
-    } else if (strQ === "CLS") {
-        terminal.cls();
-        gameStateMachine.stateMode = 30;
-    } else {
-        terminal.println("SYNTAX ERROR");
-        gameStateMachine.stateMode = 30;
-    }
-}
-
-function startMove() { //45
-    terminal.println("YOU ARE AT " + mapY + " , " + mapX);
-    terminal.println("  DOWN  RIGHT  LEFT  OR  UP");
-    inputStr();
-    gameStateMachine.stateMode = 46;
-}
-
-function gotMove() {
-    strQ = inputString.trim();
-    S = 0;
-    T = 0;
-    if (strQ === "RIGHT" || strQ === "R") {
-        T = 1;
-    }
-    if (strQ === "LEFT" || strQ === "L") {
-        T = -1;
-    }
-    if (strQ === "UP" || strQ === "U") {
-        S = -1;
-    }
-    if (strQ === "DOWN" || strQ === "n") {
-        S = 1;
-    }
-    if (S === 0 && T === 0) {
-        gameStateMachine.stateMode = 45;
-    } else {
-        let look = gameState.dungeonMap[mapY + S][mapX + T];
-        switch (look) {
-            case 0:
-                gameStateMachine.stateMode = 47; // space
-                break;
-            case 2:
-                gameStateMachine.stateMode = 49; // trap
-                break;
-            case 3:
-                gameStateMachine.stateMode = 50; // secret door
-                break;
-            case 7:
-                gameStateMachine.stateMode = 51; // inc str
-                break;
-            case 8:
-                gameStateMachine.stateMode = 52; // inc con
-                break;
-            case 5:
-                gameStateMachine.stateMode = 53; // monster
-                break;
-            case 6:
-                gameStateMachine.stateMode = 54; // gold
-                break;
-            default:
-                gameStateMachine.stateMode = 48; // wall
-                break;
-        }
-    }
-}
-
-function completeMove() {
-    mapY += S;
-    mapX += T;
-    terminal.println("DONE");
-    gameStateMachine.stateMode = 200;
-}
-
-function thud() {
-    terminal.println("YOU RAN INTO A WALL");
-    if ((rnd(12) + 1) > 9) {
-        terminal.println("AND LOOSE 1 HIT POINT");
-        attributes[constants.playerHp] -= 1;
-    } else {
-        terminal.println("BUT NO DAMAGE WAS INFLICTED");
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-function itsATrap() {
-    let m;
-    terminal.println("OOPS A TRAP AND YOU FELL IN");
-    if ((rnd(2)) < 2) {
-        terminal.println("AND HIT POINTS LOOSE 1");
-        attributes[constants.playerHp] -= 1;
-    }
-    terminal.println("I HOPE YOU HAVE SOME SPIKES AND PREFERABLY ROPE");
-    terminal.println("LET ME SEE");
-    let found1 = false;
-    let found2 = false;
-    for (m = 1; m <= inventoryCounter; m++) {
-        if (inventory[m] === 12) {
-            inventory[m] = 0;
-            m = inventoryCounter + 1;
-            found1 = true;
-        }
-    }
-    if (found1) {
-        for (m = 1; m <= inventoryCounter; m++) {
-            if (inventory[m] === 11) {
-                inventory[m] = 0;
-                m = inventoryCounter + 1;
-                found2 = true;
-            }
-        }
-        if (found2) {
-            terminal.println("GOOD BOTH");
-            terminal.println("YOU MANAGE TO GET OUT EASY");
-            terminal.println("YOUR STANDING NEXT TO THE EDGE THOUGH I'D MOVE");
-            gameStateMachine.stateMode = 45;
-        } else {
-            terminal.println("NO ROPE BUT AT LEAST SPIKES");
-            let loop = true;
-            while (loop) {
-                if (int(rnd(3)) + 1 !== 2) {
-                    terminal.println("YOU MANAGE TO GET OUT EASY");
-                    terminal.println("YOUR STANDING NEXT TO THE EDGE THOUGH I'D MOVE");
-                    gameStateMachine.stateMode = 45;
-                    loop = false;
-                } else {
-                    terminal.println("YOU FALL HALFWAY UP");
-                    if (int(rnd(6)) > attributes[constants.playerStr] / 3) {
-                        terminal.println("OOPS mapX.equipmentPrice. LOOSE 1");
-                        attributes[0] -= 1;
-                    }
-                    terminal.println("TRY AGAIN ");
-                }
-            }
-        }
-    } else {
-        terminal.println("NO SPIKES AH THAT'S TOO BAD 'CAUSE YOU'RE DEAD");
-        terminal.println("[STOP]");
-        gameStateMachine.stateMode = 30;
-    }
-}
-
-function hush() {
-    if (int(rnd(6)) < 1) { //check original code - only partial logic present
-        terminal.println("YOU JUST RAN INTO A SECRET DOOR");
-        terminal.println("AND OPENED IT");
-        mapY += S;
-        mapX += T;
-        gameStateMachine.stateMode = 200;
-    } else {
-        gameStateMachine.stateMode = 48;
-    }
-}
-
-function boost1() {
-    gameState.attributes[constants.playerStr] += 1;
-    gameState.dungeonMap[mapY + S][mapX + T] = 0;
-    if (rnd(0) <= 0.2) {
-        terminal.println("       POISON      ");
-        gameState.attributes[constants.playerHp] -= int(rnd(4) + 1);
-        terminal.println("HP= " + gameState.attributes[constants.playerHp]);
-    }
-    gameStateMachine.stateMode = 47;
-}
-
-function boost2() {
-    gameState.attributes[constants.playerCon] += 1;
-    gameState.dungeonMap[mapY + S][mapX + T] = 0;
-    if (rnd(0) <= 0.2) {
-        terminal.println("       POISON      ");
-        gameState.attributes[0] -= int(rnd(0) * 4 + 1);
-        terminal.println("HP= " + gameState.attributes[constants.playerHp]);
-    }
-    gameStateMachine.stateMode = 47;
-}
-
-function surprise() {
-    terminal.println("YOU RAN INTO THE MONSTER");
-    terminal.println("HE SHOVES YOU BACK");
-    terminal.println("");
-    if (int(rnd(2)) + 1 !== 2) {
-        terminal.println("YOU LOOSE 6 HIT POINT ");
-        gameState.attributes[constants.playerHp] -= 6
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-function gold() {
-    terminal.println("AH......GOLD......");
-    let goldFind = int(rnd(500) + 10);
-    terminal.println(goldFind + "PIECES");
-    gameState.attributes[constants.playerGold] += goldFind;
-    terminal.println("GP= " + gameState.attributes[constants.playerGold]);
-    gameState.dungeonMap[mapY + S][mapX + T] = 0;
-    if (rnd(0) <= 0.2) {
-        terminal.printc("POISON");
-        gameState.attributes[constants.playerHp] -= int(rnd(4) + 1);
-        terminal.println("HP= " + gameState.attributes[constants.playerHp]);
-    }
-    gameStateMachine.stateMode = 47;
-}
-
-function openDoor() {
-    terminal.println("DOOR LEFT RIGHT UP OR DOWN");
-    gameStateMachine.stateMode = 56;
-    inputStr();
-}
-
-function gotDoorMove() {
-    strQ = inputString.trim();
-    S = 0;
-    T = 0;
-    if (strQ === "RIGHT" || strQ === "R") {
-        T = 1;
-    }
-    if (strQ === "LEFT" || strQ === "L") {
-        T = -1;
-    }
-    if (strQ === "UP" || strQ === "U") {
-        S = -1;
-    }
-    if (strQ === "DOWN" || strQ === "D") {
-        S = 1;
-    }
-    if (S === 0 && T === 0) {
-        gameStateMachine.stateMode = 55;
-    } else {
-        let look = gameState.dungeonMap[mapY + S][mapX + T];
-        if (look === 3 || look === 4) {
-            terminal.println("PUSH");
-            if (int(rnd(20)) + 1 >= gameState.attributes[constants.playerStr]) {
-                terminal.println("DIDNT BUDGE");
-                gameStateMachine.stateMode = 200;
-            } else {
-                terminal.println("ITS OPEN");
-                mapY += S;
-                mapX += T;
-                gameStateMachine.stateMode = 47;
-            }
-        } else {
-            terminal.println("THERE IS NOT A DOOR THERE");
-            gameStateMachine.stateMode = 25;
-        }
-    }
-}
-
-function searching() {
-    terminal.println("SEARCH.........SEARCH...........SEARCH...........");
-    Z = 0;
-    if (int(rnd(40)) < gameState.attributes[constants.playerWis] + gameState.attributes[constants.playerInt]) {
-        for (M = -1; M <= 1; M++) {
-            for (N = -1; N <= 1; N++) {
-                if (gameState.dungeonMap[mapY + M][mapX + N] === 2) {
-                    terminal.println("YES THERE IS A TRAP");
-                    terminal.println("IT IS " + M + "VERTICALLY  " + N + "HORIZONTALLY FROM YOU");
-                    Z = 1;
-                }
-                if (gameState.dungeonMap[mapY + M][mapX + N] === 3) {
-                    terminal.println("YES ITS A DOOR");
-                    terminal.println("IT IS " + M + "VERTICALLY  " + N + "HORIZONTALLY");
-                    Z = 1;
-                }
-            }
-        }
-    }
-    if (Z === 0) terminal.println("NO NOT THAT YOU CAN TELL");
-    gameStateMachine.stateMode = 200;
-}
-
-function swapWeapon() { //58
-    terminal.println("WHICH WEAPON WILL YOU HOLD, NUM OF WEAPON ");
-    gameStateMachine.stateMode = 59;
-    input();
-}
-
-function gotSwap() { //59
-    inputInt = parseInt(inputString.trim());
-    if (inputInt !== 0) {
-        let originalChoice = gameState.currentWeaponIndex;
-        let found = setCurrentWeapon(inputInt);
-        if (found) {
-            terminal.println("O.K. YOU ARE NOW HOLDING A " + gameState.equipmentNames[inputInt]);
-            gameStateMachine.stateMode = 200;
-        } else {
-            gameState.currentWeaponIndex = originalChoice;
-            terminal.println("SORRY YOU DONT HAVE THAT ONE");
-            gameStateMachine.stateMode = 58;
-        }
-    } else {
-        gameStateMachine.stateMode = 200;
-    }
-}
-
-function resolveFight() { //60
-    terminal.println("YOUR WEAPON IS " + gameState.equipmentNames[getCurrentWeapon()]);
-    if (gameState.currentMonster === 0) {
-        gameStateMachine.stateMode = 25;
-    } else {
-        terminal.println(gameState.monsterNames[gameState.currentMonster]);
-        terminal.println("HP=" + gameState.monsterStats[gameState.currentMonster][3]);
-        if (getCurrentWeapon() === 0) {
-            gameStateMachine.stateMode = 61;
-        }
-        if (getCurrentWeapon() === 1) {
-            gameStateMachine.stateMode = 62;
-        }
-        if (getCurrentWeapon() === 2) {
-            gameStateMachine.stateMode = 63;
-        }
-        if (getCurrentWeapon() === 3) {
-            gameStateMachine.stateMode = 64;
-        }
-        if (getCurrentWeapon() === 4) {
-            gameStateMachine.stateMode = 65;
-        }
-        if (getCurrentWeapon() > 4 && getCurrentWeapon() < 15) { //no weapon
-            gameStateMachine.stateMode = 66;
-        }
-        if (getCurrentWeapon() === 15) {
-            terminal.println("FOOD ???.... WELL O.K.");
-            terminal.print("IS IT TO HIT OR DISTRACT");
-            gameStateMachine.stateMode = 67;
-            inputStr();
-        }
-    }
-}
-
-function knuckles() { //61
-    terminal.println("DO YOU REALIZE YOU ARE BARE HANDED");
-    terminal.print("DO YOU WANT TO MAKE ANOTHER CHOICE");
-    gameStateMachine.stateMode = 68;
-    inputStr();
-}
-
-function swingASword() { //62
-    terminal.println("SWING");
-    findRange();
-    if (range >= 2) {
-        terminal.println("HE IS OUT OF RANGE");
-        gameStateMachine.stateMode = 200;
-    } else {
-        switch (toHitRoll) {
-            case 0:
-                terminal.println("MISSED TOTALLY");
-                gameStateMachine.stateMode = 200;
-                break;
-            case 1:
-                terminal.println("NOT GOOD ENOUGH");
-                gameStateMachine.stateMode = 25;
-                break;
-            case 2:
-                terminal.println("GOOD HIT");
-                gameState.monsterStats[currentMonster][3] -= int(gameState.attributes[constants.playerStr] * 4 / 5);
-                gameStateMachine.stateMode = 25;
-                break;
-            default:
-                terminal.println("CRITICAL HIT");
-                gameState.monsterStats[currentMonster][3] -= int(gameState.attributes[constants.playerStr] / 2);
-                gameStateMachine.stateMode = 25;
-                break;
-        }
-    }
-}
-
-function swingABigSword() { //63
-    terminal.println("SWING");
-    findRange();
-    if (range > 2) {
-        terminal.println("HE IS OUT OF RANGE");
-        gameStateMachine.stateMode = 200;
-    } else {
-        switch (toHitRoll) {
-            case 0:
-                terminal.println("MISSED TOTALLY");
-                gameStateMachine.stateMode = 200;
-                break;
-            case 1:
-                terminal.println("HIT BUT NOT WELL ENOUGH");
-                gameStateMachine.stateMode = 25;
-                break;
-            case 2:
-                terminal.println("HIT");
-                gameState.monsterStats[currentMonster][3] -= int(gameState.attributes[constants.playerStr] * 5 / 7);
-                gameStateMachine.stateMode = 25;
-                break;
-            default:
-                terminal.println("CRITICAL HIT");
-                gameState.monsterStats[currentMonster][3] -= gameState.attributes[constants.playerStr];
-                gameStateMachine.stateMode = 25;
-                break;
-        }
-    }
-}
-
-function pokeADagger() { //64
-    if (getCurrentWeapon() !== 3) {
-        terminal.println("YOU DONT HAVE A DAGGER");
-    } else {
-        findRange();
-        if (range > 5) { //Then Goto 04710 'OUT OF RANGE
-            terminal.println("HE IS OUT OF RANGE");
-        } else {
-            switch (toHitRoll) {
-                case 0:
-                    terminal.println("MISSED TOTALLY");
-                    break;
-                case 1:
-                    terminal.println("HIT BUT NO DAMAGE");
-                    break;
-                case 2:
-                    terminal.println("HIT");
-                    gameState.monsterStats[gameState.currentMonster][3] -= int(gameState.attributes[constants.playerStr] / 4);
-                    break;
-                default:
-                    terminal.println("CRITICAL HIT");
-                    gameState.monsterStats[gameState.currentMonster][3] -= int(gameState.attributes[constants.playerStr] * 3 / 10);
-                    break;
-            }
-            if (range >= 2) {
-                gameState.inventory[gameState.currentWeaponIndex] = 0;
-                gameState.currentWeaponIndex = -1;
-                for (M = 1; M <= gameState.inventoryCounter; M++)
-                    if (gameState.inventory[M] === 3)
-                        gameState.currentWeaponIndex = M;
-            }
-        }
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-function swingAMace() { //65
-    terminal.println("SWING");
-    findRange();
-    if (range >= 2) {
-        terminal.println("HE IS OUT OF RANGE");
-        gameStateMachine.stateMode = 200;
-    } else {
-        switch (toHitRoll) {
-            case 0:
-                terminal.println("MISS");
-                gameStateMachine.stateMode = 200;
-                break;
-            case 1:
-                terminal.println("HIT BUT NO DAMAGE");
-                gameStateMachine.stateMode = 25;
-                break;
-            case 2:
-                terminal.println("HIT");
-                gameState.monsterStats[gameState.currentMonster][3] -= int(gameState.attributes[constants.playerStr] * 5 / 11);
-                gameStateMachine.stateMode = 25;
-                break;
-            default:
-                terminal.println("CRITICAL HIT");
-                gameState.monsterStats[gameState.currentMonster][3] -= int(gameState.attributes[constants.playerStr] * 4 / 9);
-                gameStateMachine.stateMode = 25;
-                break;
-        }
-    }
-}
-
-function improvise() { //66
-    let found = (getCurrentWeapon() > 0);
-    if (!found) {
-        terminal.println("NO WEAPON FOUND");
-        gameStateMachine.stateMode = 25;
-    } else {
-        findRange();
-        switch (getCurrentWeapon()) {
-            case 5:
-                R3 = 10;
-                R4 = 3 / 7;
-                R5 = 5 / 11;
-                gameStateMachine.stateMode = 69;
-                break;
-            case 6:
-                R3 = 15;
-                R4 = 3 / 7;
-                R5 = 5 / 11;
-                found = false;
-                let arrowIndex = -1;
-                for (let i = 0; (i <= gameState.inventoryCounter && !found); i++)
-                    if (gameState.inventory[i] === 7) {
-                        arrowIndex = i;
-                        found = true;
-                    }
-                if (!found) {
-                    terminal.println("MISS");
-                    gameStateMachine.stateMode = 71;
-                } else {
-                    gameState.inventory[arrowIndex] = 0;
-                    gameStateMachine.stateMode = 69;
-                }
-                break;
-            case 7:
-                R3 = 1.5;
-                R4 = 1 / 7;
-                R5 = 1 / 5;
-                gameStateMachine.stateMode = 69;
-                break;
-            case 8:
-                R3 = 4;
-                R4 = 1 / 10;
-                R5 = 1 / 8;
-                gameStateMachine.stateMode = 69;
-                break;
-            case 9:
-                R3 = 4;
-                R4 = 1 / 7;
-                R5 = 1 / 6;
-                gameStateMachine.stateMode = 69;
-                break;
-            case 10:
-                R3 = 3;
-                R4 = 1 / 8;
-                R5 = 1 / 5;
-                gameStateMachine.stateMode = 69;
-                break;
-            case 11:
-                R3 = 5;
-                R4 = 1 / 9;
-                R5 = 1 / 6;
-                gameStateMachine.stateMode = 69;
-                break;
-            case 12:
-                R3 = 8;
-                R4 = 1 / 9;
-                R5 = 1 / 4;
-                gameStateMachine.stateMode = 69;
-                break;
-            case 13:
-                R3 = 6;
-                R4 = 1 / 3;
-                R5 = 2 / 3;
-                gameStateMachine.stateMode = 69;
-                break;
-            default: //14
-                terminal.print("AS A CLUB OR SIGHT");
-                gameStateMachine.stateMode = 70;
-                inputStr();
-                break;
-        }
-    }
-}
-
-function throwFood() { //67
-    strQ = inputString.trim();
-    if (strQ === "HIT") {
-        gameStateMachine.stateMode = 72;
-    } else {
-        terminal.print("THROW A-ABOVE,B-BELOW,L-LEFT,OR R-RIGHT OF THE MONSTER");
-        Z5 = 0;
-        gameStateMachine.stateMode = 73;
-        inputStr();
-    }
-}
-
-function knucklehead() { //68
-    strQ = inputString.trim();
-    if (strQ !== "NO") {
-        gameStateMachine.stateMode = 25;
-    } else {
-        terminal.println("O.K. PUNCH BITE SCRATCH HIT ........");
-        let m = 0;
-        let n = 0;
-        for (M = -1; M <= 1; M++) {
-            for (N = -1; N <= 1; N++) {
-                if (gameState.dungeonMap[mapY + M][mapX + N] === 5) {
-                    m = M;
-                    M = 2;
-                    n = N;
-                    N = 2;
-                }
-            }
-        }
-        if (m === 0 && n === 0) {
-            terminal.println("NO GOOD ONE");
-            gameStateMachine.stateMode = 25;
-        } else {
-            if (int(rnd(0) * 20) + 1 > gameState.monsterStats[gameState.currentMonster][2]) {
-                terminal.println("GOOD A HIT");
-                gameState.monsterStats[gameState.currentMonster][3] -= int(gameState.attributes[constants.playerStr] / 6);
-                gameStateMachine.stateMode = 25;
-            } else {
-                terminal.println("TERRIBLE NO GOOD");
-                gameStateMachine.stateMode = 200;
-            }
-        }
-    }
-}
-
-function resolveImprov() { //69
-    if (range > R3) {
-        terminal.println("HE IS OUT OF RANGE");
-        gameStateMachine.stateMode = 200;
-    } else {
-        switch (toHitRoll) {
-            case 0:
-                terminal.println("MISS");
-                break;
-            case 1:
-                terminal.println("HIT BUT NO DAMAGE");
-                break;
-            case 2:
-                terminal.println("HIT");
-                gameState.monsterStats[gameState.currentMonster][3] -= int(gameState.attributes[constants.playerStr] * R4);
-                break;
-            default:
-                terminal.println("CRITICAL HIT");
-                gameState.monsterStats[gameState.currentMonster][3] -= int(gameState.attributes[constants.playerStr] * R5);
-                break;
-        }
-        gameStateMachine.stateMode = 71;
-    }
-}
-
-function gotSilverCross() { //70
-    strQ = inputString.trim();
-    if (strQ === "SIGHT") {
-        if (range < 10) {
-            terminal.println("THE MONSTER IS HURT");
-            R5 = 1 / 6;
-            if (gameState.currentMonster === 2 || gameState.currentMonster === 10 || gameState.currentMonster === 4) {
-                toHitRoll = 3;
-            } else {
-                toHitRoll = 1;
-            }
-            range = R3 - 1;
-            gameStateMachine.stateMode = 69;
-        } else {
-            terminal.println("FAILED");
-            gameStateMachine.stateMode = 200;
-        }
-    } else {
-        if (getCurrentWeapon() === 14) {
-            R3 = 1.5;
-            R4 = 1 / 3;
-            R5 = 1 / 2;
-            gameStateMachine.stateMode = 69;
-        } else {
-            terminal.println("NO WEAPON FOUND");
-            gameStateMachine.stateMode = 25;
-        }
-    }
-}
-
-/***
- * Uses up the player's weapon when used at range
- */
-function consumeWpn() { //71 //line 6300
-    if (getCurrentWeapon() === 14) { //silver cross as sight
-        gameStateMachine.stateMode = 200;
-    } else {
-        let weapon = getCurrentWeapon();
-        gameState.inventory[gameState.currentWeaponIndex] = 0;
-        if (weapon !== 7) { //not arrows
-            setCurrentWeapon(0);
-        } else {
-            setCurrentWeapon(7);
-        }
-        if (toHitRoll > 0) {
-            gameStateMachine.stateMode = 25;
-        } else {
-            gameStateMachine.stateMode = 200;
-        }
-    }
-}
-
-/***
- * Pelt the monster with food to damage it
- */
-function peltMonster() { //72
-    if (int(rnd(20)) + 1 === 20) {
-        terminal.println("DIRECT HIT");
-        gameState.monsterStats[gameState.currentMonster][constants.monsterHp] -= int(gameState.attributes[constants.playerStr] / 6);
-    } else if (int(rnd(20)) + 1 > gameState.monsterStats[gameState.currentMonster][2] - gameState.attributes[constants.playerDex] / 3) {
-        terminal.println("HIT");
-        gameState.monsterStats[gameState.currentMonster][constants.monsterHp] -= int(gameState.attributes[constants.playerStr] / 8);
-    } else if (int(rnd(20)) + 1 > 10 - gameState.attributes[constants.playerDex] / 3) {
-        terminal.println("YOU HIT HIM BUT NOT GOOD ENOUGH");
-    } else {
-        terminal.println("TOTAL MISS");
-    }
-    gameStateMachine.stateMode = 74;
-}
-
-/***
- * Bait the monster with food to steer it
- */
-function kiteMonster() { //73
-    strQ = inputString.trim();
-    if (strQ === "B") {
-        S = -1;
-        T = 0;
-    } else if (strQ === "A") {
-        S = 1;
-        T = 0;
-    } else if (strQ === "L") {
-        S = 0;
-        T = -1;
-    } else if (strQ === "R") {
-        S = 0;
-        T = 1;
-    }
-    let look = gameState.dungeonMap[gameState.F1 + S][gameState.F2 + T];
-    if (look === 0) {
-        terminal.println("MONSTER MOVED BACK");
-        gameState.dungeonMap[gameState.F1][gameState.F2] = 0;
-        gameState.F1 += S;
-        gameState.F2 += T;
-        gameState.dungeonMap[gameState.F1][gameState.F2] = 5;
-    } else if (look === 2) { //Then Goto 04280
-        terminal.println("GOOD WORK THE MONSTER FELL INTO A TRAP AND IS DEAD");
-        K1 = -1;
-        gameState.monsterStats[gameState.currentMonster][constants.monsterHp] = 0;
-        gameState.dungeonMap[gameState.F1][gameState.F2] = 0; //bug - monster stayed on map
-        //stateMode = 200; //bug - kept the food
-    } else {
-        terminal.println("DIDN'T WORK");
-    }
-    gameStateMachine.stateMode = 74;
-}
-
-/***
- * Use up the food being equipped after baiting a monster
- */
-function consumeFood() { //74
-    if (Z5 === 0) {
-        for (M = 1; M <= gameState.inventoryCounter; M++) {
-            let weapon = getCurrentWeapon();
-            gameState.inventory[gameState.currentWeaponIndex] = 0;
-            setCurrentWeapon(weapon);
-        }
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-/***
- * Display the surroundings of the player
- * Obscure secret details
- */
-function looking() { //75
-    let line, m, n;
-    for (M = -5; M < 6; M++) {
-        line = "";
-        for (N = -5; N < 6; N++) {
-            m = M + mapY;
-            n = N + mapX;
-            if (inBounds(m, n)) {
-                if ((M === 0) && (N === 0)) {
-                    line += "9";
-                } else {
-                    switch (gameState.dungeonMap[m][n]) {
-                        case 3:
-                            line += "1";
-                            break;
-                        case 2:
-                        case 7:
-                        case 8:
-                            line += "0";
-                            break;
-                        default:
-                            line += gameState.dungeonMap[m][n];
-                    }
-                }
-            }
-        }
-        if (line !== "") terminal.println(line);
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-function saveGame() { //76
-    gameState.serialiseToCookie(Document, 'dnd1file7', cookieLifespan);
-    gameStateMachine.stateMode = 25;
-}
-
-function casting() { //77
-    terminal.println("MAGIC");
-    if (getCurrentWeapon() !== 0) { //Then Goto 08740
-        terminal.println("YOU CANT USE MAGIC WITH WEAPON IN HAND");
-        gameStateMachine.stateMode = 200;
-    } else if (attributeNames[constants.playerClass] === "CLERIC") {
-        terminal.print("CLERICAL SPELL #");
-        gameStateMachine.stateMode = 78;
-        input();
-    } else if (attributeNames[constants.playerClass] === "WIZARD") {
-        terminal.print("SPELL #");
-        gameStateMachine.stateMode = 87;
-        input();
-    } else {
-        terminal.println("YOU CANT USE MAGIC YOUR NOT A M.U.");
-        gameStateMachine.stateMode = 200;
-    }
-}
-
-function gotClericSpell() { //78
-    Q = parseInt(inputString.trim());
-    let found = false;
-    let spellChoice;
-    for (let m = 1; m <= gameState.clericSpellCounter; m++) {
-        if (Q === gameState.clericSpellbook[m]) {
-            M = m;
-            found = true;
-            m = gameState.clericSpellCounter + 1;
-        }
-    }
-    if (!found) {
-        terminal.println("YOU DONT HAVE THAT SPELL");
-        gameStateMachine.stateMode = 200;
-    } else {
-        spellChoice = gameState.clericSpellbook[M];
-        gameState.clericSpellbook[M] = 0;
-        //route clerical spell choice
-        if (spellChoice > 3) {
-            Q = 2;
-        } //bug fix - find all spell uses Q to match floor tile types, not Q2 or Q3
-        if (spellChoice > 4) {
-            Q = 3;
-        }
-        switch (spellChoice) {
-            case 1:
-                gameStateMachine.stateMode = 79;
-                break;
-            case 2:
-                gameStateMachine.stateMode = 80;
-                break;
-            case 3:
-                gameStateMachine.stateMode = 81;
-                break;
-            case 4:
-                gameStateMachine.stateMode = 82;
-                break;
-            case 5:
-                gameStateMachine.stateMode = 83;
-                break;
-            case 6:
-                gameStateMachine.stateMode = 84;
-                break;
-            case 7:
-                gameStateMachine.stateMode = 85;
-                break;
-            case 8:
-                gameStateMachine.stateMode = 82;
-                break;
-            case 9: //cheat - there is no spell #9 for clerics, this is the push spell
-                gameStateMachine.stateMode = 86;
-                break;
-            default:
-                terminal.println("YOU DONT HAVE THAT SPELL");
-                gameStateMachine.stateMode = 200;
-                break;
-        }
-    }
-}
-
-function clericSpellKill() { //79
-    if (rnd(3) > 1) {
-        terminal.println("FAILED");
-    } else {
-        terminal.println("DONE");
-        K1 = -1;
-    }
-    gameState.clericSpellbook[M] = 0;
-    gameStateMachine.stateMode = 200;
-}
-
-function clericSpellMagicMissileAdvanced() { //80
-    terminal.println("DONE");
-    gameState.monsterStats[currentMonster][constants.monsterHp] -= 4;
-    gameState.clericSpellbook[M] = 0;
-    gameStateMachine.stateMode = 200;
-}
-
-function clericSpellCureLight() { //81
-    gameState.attributes[constants.playerCon] += 3;
-    gameState.clericSpellbook[M] = 0;
-    gameStateMachine.stateMode = 200;
-}
-
-function clericSpellFindTraps() { //82
-    gameState.clericSpellbook[M] = 0;
-    for (M = -3; M < 4; M++) {
-        for (N = -3; N < 4; N++) {
-            if (!((mapY + M < 0) || (mapY + M > 25) || (mapX + N < 0) || (mapX + N > 25))) {
-                if (gameState.dungeonMap[mapY + M][mapX + N] === Q)
-                    terminal.println("THERE IS ONE AT " + (mapY + M) + "LAT." + (mapX + N) + "LONG.");
-            }
-        }
-    }
-    terminal.println("NO MORE");
-    gameStateMachine.stateMode = 200;
-}
-
-function clericSpellMagicMissile() { //83
-    terminal.println("DONE");
-    gameState.clericSpellbook[M] = 0;
-    gameState.monsterStats[currentMonster][constants.monsterHp] -= 2;
-    gameStateMachine.stateMode = 200;
-}
-
-function clericSpellMagicMissileUltimate() { //84
-    terminal.println("DONE");
-    gameState.clericSpellbook[M] = 0;
-    gameState.monsterStats[currentMonster][constants.monsterHp] -= 6;
-    gameStateMachine.stateMode = 200;
-}
-
-function clericSpellCureLightAdvanced() { //85
-    terminal.println("DONE");
-    gameState.attributes[constants.playerCon] += 3;
-    gameStateMachine.stateMode = 200;
-}
-
-function clericSpell9() { //86
-    if (gameState.currentMonster === 4 || gameState.currentMonster === 10) {
-        terminal.println("DONE");
-        terminal.println("YOU DONT HAVE THAT ONE");
-        gameStateMachine.stateMode = 25;
-    } else {
-        terminal.println("FAILED");
-        gameStateMachine.stateMode = 200;
-    }
-}
-
-function gotWizardSpell() { //87  //09320
-    Q = parseInt(inputString.trim());
-    let found = false;
-    for (let m = 1; m <= gameState.wizardSpellCounter; m++) {
-        if (Q === gameState.wizardSpellbook[m]) {
-            found = true;
-            M = m;
-            m = gameState.wizardSpellCounter + 1;
-        }
-    }
-    if (found) {  //09380
-        if (gameState.wizardSpellbook[M] === 1) { // push
-            // var F2 = 0;
-            if ((gameState.F1 - mapY === 0) && (gameState.F2 - mapX === 0)) {
-                S = 0;
-                T = 0;
-                Z5 = 1; // stop food being used at end of bait action
-                inputString = "";
-            } else {
-                terminal.println("ARE YOU ABOVE,BELOW,RIGHT, OR LEFT OF IT");
-                inputStr();
-            }
-            gameStateMachine.stateMode = 73;
-        } else {
-            R = 5;
-            switch (gameState.wizardSpellbook[M]) {
-                case 2:
-                    gameStateMachine.stateMode = 88;
-                    break;
-                case 3:
-                    Q = 2;
-                    gameStateMachine.stateMode = 89;
-                    break;
-                case 4:
-                    Q = 2;
-                    gameStateMachine.stateMode = 90;
-                    break;
-                case 5:
-                    Q = 0;
-                    gameStateMachine.stateMode = 91.5;
-                    break;
-                case 6:
-                    Q = 3;
-                    gameStateMachine.stateMode = 83; // shared with cleric
-                    break;
-                case 7:
-                    Q = 6;
-                    gameStateMachine.stateMode = 80; // shared with cleric
-                    break;
-                case 8:
-                    Q = 9;
-                    gameStateMachine.stateMode = 84; // shared with cleric
-                    break;
-                case 9:
-                    Q = 3;
-                    gameStateMachine.stateMode = 89;
-                    break;
-                case 10:
-                    Q = 1;
-                    gameStateMachine.stateMode = 91.5;
-                    break;
-                default:
-                    terminal.println("YOU DONT HAVE THAT ONE");
-                    gameStateMachine.stateMode = 25;
-                    break;
-            }
-        }
-    } else {
-        terminal.println("YOU DONT HAVE THAT ONE");
-        gameStateMachine.stateMode = 25;
-    }
-}
-
-function wizardSpellKill() { //88 KILL
-    if (rnd(3) > 1) {
-        terminal.println("DONE");
-        K1 = -1;
-    } else {
-        terminal.println("FAILED");
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-function wizardSpellFindTrap() { //89 find traps
-    gameState.wizardSpellbook[M] = 0; //?
-    for (M = -3; M < 4; M++) {
-        for (N = -3; N < 4; N++) {
-            if (inBounds(mapY + M, mapX + N))
-                if (gameState.dungeonMap[mapY + M][mapX + N] === Q) terminal.println("THERE IS ONE AT " + (mapY + M) + "LAT." + (mapX + N) + "LONG.");
-        }
-    }
-    terminal.println("NO MORE");
-    gameStateMachine.stateMode = 200;
-}
-
-function wizardSpellTeleport() { //90 teleport
-    gameStateMachine.stateMode = 91;
-    getSpellCoordinates();
-}
-
-function gotTeleportCoordinates() { //91 teleport
-    M = parseInt(inputStrings[1]);
-    N = parseInt(inputStrings[0]);
-    if (inBounds(M, N)) {
-        terminal.println("DONE");
-        mapY = M;
-        mapX = N;
-    } else {
-        terminal.println("FAILED");
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-function getSpellCoordinates() {
-    terminal.print("INPUT CO-ORDINATES");
-    inputX(2);
-}
-
-function gotSpellChange() { //91.5
-    terminal.print("INPUT CO-ORDINATES");
-    gameStateMachine.stateMode = 91.6;
-    getSpellCoordinates();
-}
-
-function gotChangeCoordinates() { //91.6
-    let toCell;
-    let fromCell;
-    if (Q === 1) {
-        fromCell = 0;
-        toCell = 1;
-    } else {
-        fromCell = 1;
-        toCell = 0;
-    }
-    M = parseInt(inputStrings[1]);
-    N = parseInt(inputStrings[0]);
-    if (inBounds(M, N)) {
-        if (gameState.dungeonMap[M][N] === fromCell) {
-            gameState.dungeonMap[M][N] = toCell;
-            terminal.println("DONE");
-        } else {
-            terminal.println("FAILED");
-        }
-    } else {
-        terminal.println("FAILED");
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-function buyMagic() { //92
-    if (attributeNames[constants.playerClass] === "CLERIC") {
-        gameStateMachine.stateMode = 93;
-    } else if (attributeNames[constants.playerClass] === "WIZARD") {
-        gameStateMachine.stateMode = 94;
-    } else {
-        terminal.println("YOU CANT BUY ANY");
-        gameStateMachine.stateMode = 25;
-    }
-}
-
-function askACleric() { //93
-    terminal.println("DO YOU KNOW THE CHOICES");
-    inputStr();
-    gameStateMachine.stateMode = 95;
-}
-
-function askAWizard() { //94
-    terminal.println("DO YOU KNOW THE SPELLS");
-    inputStr();
-    gameStateMachine.stateMode = 96;
-}
-
-function clericSpellChoices() { //95
-    strQ = inputString.trim();
-    if (strQ === "NO") {
-        terminal.println("1-KILL-500  5-MAG. MISS. #1-100");
-        terminal.println("2-MAG. MISS. #2-200  6-MAG.MISS. #3-300");
-        terminal.println("3-CURE LIGHT #1-200  7-CURE LIGHT #2-1000");
-        terminal.println("4-FIND ALL TRAPS-200  8-FIND ALL S.DOORS-200");
-        terminal.print("INPUT # WANTED   NEG.NUM.TO STOP");
-    }
-    input();
-    gameStateMachine.stateMode = 97;
-}
-
-function wizardSpellChoices() { //96
-    strQ = inputString.trim();
-    if (strQ === "NO") {
-        terminal.println("1-PUSH-75   6-MAG. MISS. #1-100");
-        terminal.println("2-KIHL-500  7-MAG. MISS. #2-200");
-        terminal.println("3-FIND TRAPS-200  8-MAG. MISS. #3-300");
-        terminal.println("4-TELEPORT-750  9-FIND S.DOORS-200");
-        terminal.println("5-CHANGE 1+0-600  10-CHANGE 0+1-600");
-        terminal.print("#OF ONE YOU WANT  NEG.NUM.TO STOP");
-    }
-    input();
-    gameStateMachine.stateMode = 98;
-}
-
-function clericSpellPurchase() { //97
-    if (Q > 0) { //Then Goto 10290
-        if (Q <= 8) { //Then Goto 10100
-            if (gameState.attributes[constants.playerGold] - clericSpellPrices[int(Q)] < 0) {// Then Goto 10270
-                terminal.println("COSTS TOO MUCH");
-            } else {
-                gameState.attributes[constants.playerGold] -= clericSpellPrices[int(Q)];
-                terminal.println("IT IS YOURS");
-                gameState.clericSpellbook[gameState.clericSpellCounter] = int(Q);
-                gameState.clericSpellCounter += 1;
-            }
-        }
-        input();
-        gameStateMachine.stateMode = 97;
-    } else {
-        terminal.println("YOUR SPELLS ARE");
-        for (M = 1; M <= gameState.clericSpellCounter; M++) {
-            if (gameState.clericSpellbook[M] !== 0) terminal.println("#" + gameState.clericSpellbook[M]);
-        }
-        terminal.println("DONE");
-        gameStateMachine.stateMode = 25;
-    }
-}
-
-function wizardSpellPurchase() { //98
-    if (Q > 0) {
-        if (Q <= 10) {
-            if (gameState.attributes[constants.playerGold] - wizardSpellPrices[int(Q)] < 0) {
-                terminal.println("COSTS TOO MUCH");
-            } else {
-                gameState.attributes[constants.playerGold] -= wizardSpellPrices[int(Q)];
-                terminal.println("IT IS YOURS");
-                gameState.wizardSpellCounter += 1;
-                gameState.wizardSpellbook[gameState.wizardSpellCounter] = int(Q);
-            }
-        }
-        input();
-        gameStateMachine.stateMode = 98;
-    } else {
-        terminal.println("YOU NOW HAVE");
-        for (M = 1; M <= wizardSpellCounter; M++) {
-            if (gameState.wizardSpellbook[M] !== 0) terminal.println("#" + gameState.wizardSpellbook[M]);
-        }
-        gameStateMachine.stateMode = 25;
-    }
-}
-
-function showCheatMap() { //99 - cheating
-    let line;
-    for (M = 0; M <= 25; M++) {
-        line = "";
-        for (N = 0; N <= 25; N++) line += gameState.dungeonMap[M][N];
-        terminal.println(line);
-    }
-    gameStateMachine.stateMode = 25;
-}
-
-function buyHP() { //100
-    terminal.print("HOW MANY 200 GP. EACH ");
-    input();
-    gameStateMachine.stateMode = 101;
-}
-
-function addHP() { //101
-    Q = parseInt(inputString.trim());
-    if (gameState.attributes[7] - 200 * Q < 0) {
-        terminal.println("NO");
-        gameStateMachine.stateMode = 100;
-    } else {
-        gameState.attributes[constants.playerHp] += int(Q);
-        gameState.attributes[constants.playerGold] -= int(Q) * 200;
-        terminal.println("OK DONE");
-        terminal.println("HP= " + gameState.attributes[0]);
-        for (M = 1; M <= 7; M++) terminal.println(attributeNames[M] + "= " + gameState.attributes[M]);
-        gameStateMachine.stateMode = 200;
-    }
-}
-
-function modifyMap() { //102
-    terminal.print("DNG");
-    input();
-    gameStateMachine.stateMode = 102.5;
-}
-
-function modifyGotMap() { //102.5
-    gameState.Dn = parseInt(inputString.trim());
-    gameStateMachine.stateMode = 103;
-}
-
-function modifyMapPos() { //103
-    terminal.print("X,Y,C");
-    inputX(3);
-    gameStateMachine.stateMode = 104;
-}
-
-function modifyMapDone() { //104
-    let targetX = parseInt(inputStrings[2]);
-    let targetY = parseInt(inputStrings[1]);
-    let content = parseInt(inputStrings[0]);
-    if (content < 0) {
-        terminal.println("SAVE");
-        input();
-        gameStateMachine.stateMode = 105;
-    } else {
-        gameState.dungeonMap[targetY][targetX] = content;
-        gameStateMachine.stateMode = 103;
-    }
-}
-
-function modifyMapSave() {
-    let stream;
-    Q = parseInt(inputString.trim());
-    if (Q === 1) {
-        let DName = "dnd1file" + gameState.Dn + ".dungeonMap.";
-        for (M = 0; M <= 25; M++) {
-            stream = "";
-            for (N = 0; N <= 25; N++) {
-                if (gameState.dungeonMap[M][N] !== 7 && gameState.dungeonMap[M][N] !== 8) {
-                    stream += gameState.dungeonMap[M][N] + "|";
-                } else {
-                    stream += "0|";
-                }
-            }
-            setCookie(Document, DName + M, stream, cookieLifespan);
-        }
-    }
-    gameStateMachine.stateMode = 200;
-}
-
-function checkPlayerHealth() {
-    if (gameState.attributes[constants.playerHp] < 2) { // low on health
-        if (gameState.attributes[constants.playerHp] < 1) { // bleeding out
-            while (gameState.attributes[constants.playerHp] < 0) {
-                if (gameState.attributes[constants.playerCon] < 9) {
-                    gameState.attributes[constants.playerHp] = 0;
-                    gameState.attributes[constants.playerCon] = 0; //exit loop, force dead
-                } else {
-                    gameState.attributes[constants.playerCon] -= 2;
-                    gameState.attributes[constants.playerHp] += 1;
-                }
-            }
-            if (gameState.attributes[constants.playerHp] === 0) {
-                if (gameState.attributes[constants.playerCon] < 9) {
-                    terminal.println("SORRY YOUR DEAD");
-                    gameStateMachine.stateMode = 30;
-                } else {
-                    terminal.println("H.P.=0 BUT CONST. HOLDS");
-                }
-            }
-        } else {
-            terminal.println("WATCH IT H.P.=" + gameState.attributes[constants.playerHp]);
-        }
-    }
-}
-
-function testForCloneMove() { // 50% change to start a clone move
-    if (rnd(20) > 10) gameStateMachine.stateMode = 202; else gameStateMachine.stateMode = 25;
-}
-
-/***
- * Route game move
- * One of the trickier pieces of code to decipher
- *
- */
-function routeGameMove() { //200
-    gameStateMachine.stateMode = 0;
-    if (K1 === -1) { // if target is dead credit the kill
-        gameStateMachine.stateMode = 203;
-    } else { //check player health and report
-        checkPlayerHealth();
-    }
-    if (gameStateMachine.stateMode === 0) {
-        if (gameState.currentMonster > 0) { // 07160
-            gameStateMachine.stateMode = 206;    //monster action (actual move)
-        } else if (!(mapY === 1 && mapX === 12)) {
-            testForCloneMove();
-        } else {
-            terminal.println("SO YOU HAVE RETURNED");
-            if (gameState.attributes[constants.playerGold] < 100) {
-                testForCloneMove();
-            } else {
-                gameState.attributes[constants.playerGold] -= 100;
-                terminal.println("WANT TO BUY MORE EQUIPMENT");
-                inputStr();
-                gameStateMachine.stateMode = 201;
-            }
-        }
-    }
-}
-
-/***
- * Response to user input to buy more equipment
- */
-function gotMoreEquipment() { //201
-    strQ = inputString.trim();
-    if (strQ === "YES") {
-        terminal.println("YOUR H.P. ARE RESTORED 2 POINTS");
-        gameState.attributes[constants.playerHp] += 2;
-        gameStateMachine.stateMode = 18;
-    } else {
-        testForCloneMove();
-    }
-}
-
-/***
- * Moves one monster - not so much a move as a clone as it
- * potentially leaves a "5" on the map elsewhere.
- * Scan all living monsters and give each one a 7.5% change to "move"
- * Make 50 attempts and stop after the first successful move
- */
-function monsterMove() { //202
-    let moved = false;
-    let alive = false;
-    let Z7 = 1;
-    while (!moved && Z7 <= 50) {
-        M = 1;
-        while (!moved && M <= 10) {
-            if (gameState.monsterStats[M][constants.monsterHp] > 0) {
-                alive = true;
-                if (rnd(0) > 0.925) {
-                    moved = true;
-                    gameStateMachine.stateMode = 204;
-                    M--; // retard M for a moment to give the right result at the end of the routine
-                }
-            }
-            M++;
-        }
-        Z7++;
-    }
-    if (!moved) {
-        if (!alive) {
-            terminal.println("ALL MONSTERS DEAD");
-            terminal.print("RESET?");
-            inputStr();
-            gameStateMachine.stateMode = 205;
-        } else {
-            gameStateMachine.stateMode = 200;
-        }
-    }
-}
-
-function confirmedKill() { //203
-    K1 = 0;
-    const current = gameState.currentMonster;
-    gameState.attributes[constants.playerGold] += gameState.monsterStats[current][constants.monsterStartHp];
-    gameState.F1 = 0;
-    gameState.F2 = 0;
-    terminal.println("GOOD WORK YOU JUST KILLED A " + gameState.monsterNames[current]);
-    terminal.println("AND GET " + gameState.monsterStats[current][constants.monsterStartHp] + "GOLD PIECES");
-    if (J6 !== 1) gameState.monsterStats[current][constants.monsterStartHp] = 0;
-    terminal.println("YOU HAVE" + gameState.attributes[constants.playerGold] + " GOLD ");
-    gameState.monsterStats[current][constants.monsterHp] = 0;
-    if (J6 === 1) {
-        gameState.monsterStats[current][3] = gameState.monsterStats[gameState.currentMonster][4]
-            * gameState.monsterStats[gameState.currentMonster][1];
-        gameState.monsterStats[current][constants.monsterHp] = gameState.monsterStats[current][constants.monsterStartHp]
-            * gameState.monsterStats[current][1];
-    }
-    gameState.currentMonster = 0;
-    gameStateMachine.stateMode = 25;
-}
-
-/***
- * scans map around player and creates current monster at a random location
- * Sets up F1 and F2 after spawn prior to action check
- */
-function makeAMonster() { //204 line 8000
-    let loopCounter = 0;
-    gameState.currentMonster = M; // value carried from move a monster (202)
-    let moved = false;
-    while (!moved) { //dangerous - but statistically should never lock unless it is a very poor map
-        loopCounter++; //stop it locking permanently
-        let M1 = int(rnd(5) + 3); //select a random range 3-7
-        M = M1 * -1; // vertical from negative range to positive range
-        while (!moved && M <= M1) {
-            N = M1 * -1; // horizontal from negative range to positive range
-            while (!moved && N <= M1) {
-                if (Math.abs(M) > 2 || Math.abs(N) > 2) { // if outside attack range
-                    if (inBounds(mapY + M, mapX + N)) {
-                        if (rnd(0) <= 0.7) { // 70% chance
-                            if (gameState.dungeonMap[mapY + M][mapX + N] === 0) { //if cell is empty
-                                moved = true;
-                                spawnMonsterAt(mapY + M, mapX + N);
-                            }
+        for (let m = 0; m <= 25; m++) {
+            for (let n = 0; n <= 25; n++) {
+                if (d !== 0) {
+                    console.info("M=" + m + " N=" + n);
+                    if (this.gameState.dungeonMap[m][n] === 0) {
+                        if (rnd(0) >= 0.97) {
+                            this.gameState.dungeonMap[m][n] = 7;
+                        } else if (rnd(0) >= 0.97) {
+                            this.gameState.dungeonMap[m][n] = 8;
                         }
                     }
                 }
-                N++;
             }
-            M++;
         }
-        if (loopCounter > 10) {
-            moved = true;
-        } //break out of loop
+        this.loadMonsters();
     }
-    gameStateMachine.stateMode = 200;
-    return loopCounter;
-}
 
-/***
- * Sets a map cell to 5 (monster)
- * @param Y
- * @param X
- */
-function spawnMonsterAt(Y, X) {
-    gameState.dungeonMap[Y][X] = 5;
-    gameState.F1 = Y;
-    gameState.F2 = X;
-}
-
-/***
- * on "yes":
- * resets monsters, increases difficulty level
- * else quit
- */
-function resetAfterClear() { //205
-    strQ = inputString.trim();
-    if (strQ === "YES") {
-        // reset
-        difficultyFactor += 1; //up difficultly level
-        for (let m = 1; m <= 10; m++) {
-            gameState.monsterStats[m][3] = gameState.monsterStats[m][4] * difficultyFactor;
-            gameState.monsterStats[m][constants.monsterHp] = gameState.monsterStats[m][constants.monsterStartHp] * difficultyFactor;
-        }
-        gameState.attributes[constants.playerHp] += 5;
-        gameStateMachine.stateMode = 25;
-    } else {
-        gameStateMachine.stateMode = 30;
-        terminal.println("[STOP]");
+    gotResetInput = () => { //8
+        this.J6 = Math.floor(this.inputString);
+        this.terminal.print("PLAYERS NAME ");
+        this.gameStateMachine.stateMode = 9;
+        this.inputStr();
     }
-}
 
-/***
- * refactored from state 206 (monsterAction)
- * if in range - attack
- * else move closer
- */
-function monsterMovement() {
-    findRange();
-    if (range < 2.0) { //Then Goto 07600
-        //it attacks
-        gameStateMachine.stateMode = 207;
-    } else if (P0 > 10) { //Then Goto 01590 //note P0 is NEVER modified from 0 suspect typo in original printout
-        gameStateMachine.stateMode = 25;
-    } else {
-        resolveMonsterMove();
-    }
-}
-
-/***
- * determine direction of movement and if the move can be made complete it
- */
-function resolveMonsterMove() {
-    let mapRowDelta = 0, mapColumnDelta = 0;
-    // direction of movement
-    if (Math.abs(rangeRowOffset) > Math.abs(rangeColumnOffset)) { //Then Goto 07260
-        mapRowDelta = -(rangeRowOffset / Math.abs(rangeRowOffset));
-    } else {
-        if (M !== 1) { // Then Goto 07270 - obscure logic
-            mapColumnDelta = -(rangeColumnOffset / Math.abs(rangeColumnOffset))
-        }
-    }
-    // check movement is possible and resolve
-    gameStateMachine.stateMode = 25;
-    if (inBounds(gameState.F1 + mapRowDelta, gameState.F2 + mapColumnDelta)) {
-        switch (gameState.dungeonMap[gameState.F1 + mapRowDelta][gameState.F2 + mapColumnDelta]) {
-            case 0:
-            case 6:
-            case 7:
-            case 8:
-                translateMonsterPosition(mapRowDelta, mapColumnDelta);
-                break;
-            case 2:
-                terminal.println("GOOD WORK  YOU LED HIM INTO A TRAP");
-                K1 = -1;
-                gameState.monsterStats[gameState.currentMonster][constants.monsterHp] = 0;
-                gameStateMachine.stateMode = 200; //auto kill
-                break;
-            case 3:
-            case 4:
-                //through a door
-                if (gameState.dungeonMap[gameState.F1 + 2 * mapRowDelta][gameState.F2 + 2 * mapColumnDelta] === 0) { // Then Goto 07510
-                    mapRowDelta = mapRowDelta * 2;
-                    mapColumnDelta = mapColumnDelta * 2;
-                    translateMonsterPosition(mapRowDelta, mapColumnDelta);
-                }
-                break;
-        }
-    }
-}
-
-/***
- * Move monster from A to B
- * note the move destroys anything that the monster moves over
- * @param rowDelta
- * @param columnDelta
- */
-function translateMonsterPosition(rowDelta, columnDelta) {
-    gameState.dungeonMap[gameState.F1][gameState.F2] = 0;
-    gameState.F1 += rowDelta;
-    gameState.F2 += columnDelta;
-    gameState.dungeonMap[gameState.F1][gameState.F2] = 5;
-    findRange();
-}
-
-/***
- * dead or alive?
- */
-function monsterAction() { //206
-    if (gameState.monsterStats[gameState.currentMonster][3] < 1) { //Then Goto 08290
-        gameStateMachine.stateMode = 203; //it's a kill
-    } else {
-        monsterMovement();
-    }
-}
-
-/***
- * Calculate protection value based on stat and equipment
- * note: current method is very stupid
- * @returns {int} protection value
- */
-function calculatePlayerProtection() {
-    let result = 6 + gameState.attributes[constants.playerDex];
-    let i = 1, found = false;
-    while (i <= gameState.inventoryCounter && !found) {
-        switch (gameState.inventory[i]) {
-            case 10:
-                found = true;
-                result = 20 + gameState.attributes[constants.playerDex];
-                break;
-            case 9:
-                found = true;
-                result = 16 + gameState.attributes[constants.playerDex];
-                break;
-            case 8:
-                found = true;
-                result = 8 + gameState.attributes[constants.playerDex];
-                break;
-        }
-        i++;
-    }
-    return result;
-}
-
-/***
- * Determines if the monster's attack connects or not
- * On a hit HP is reduced by 1-n
- * On a miss there is a 50% chance to end the attack
- */
-function monsterSwings() { //207
-    terminal.println(gameState.monsterNames[gameState.currentMonster] + " WATCH IT");
-    if (rnd(40) > calculatePlayerProtection()) {
-        terminal.println("MONSTER SCORES A HIT");
-        gameState.attributes[constants.playerHp] -= int(rnd(gameState.monsterStats[gameState.currentMonster][2]) + 1);
-        terminal.println("H.P.=" + gameState.attributes[constants.playerHp]);
-        gameStateMachine.stateMode = 200;
-    } else {
-        if (rnd(2) > 1) {
-            terminal.println("HE HIT BUT NOT GOOD ENOUGH");
-            gameStateMachine.stateMode = 200;
+    gotNameInput = () => {
+        this.gameState.characterName = this.inputString.trim();
+        if (this.gameState.characterName === "SHAVS") {
+            this.gameStateMachine.stateMode = 10;
         } else {
-            terminal.println("HE MISSED");
+            this.gameStateMachine.stateMode = 4;
+        }
+    }
+
+    rollNew = () => {
+        for (let M = 1; M <= 7; M++) {
+            for (let N = 1; N <= 3; N++) {
+                let R = int(rnd(6) + 1);
+                this.gameState.attributes[M] = this.gameState.attributes[M] + R;
+            }
+            if (M === 7) {
+                this.gameState.attributes[M] = this.gameState.attributes[M] * 15;
+            }
+            this.terminal.println(attributeNames[M] + "=" + this.gameState.attributes[M]);
+        }
+        this.gameStateMachine.stateMode = 10.5;
+    }
+
+    pickClass = () => {
+        this.terminal.println("");
+        this.terminal.println("CLASSIFICATION");
+        this.terminal.println("WHICH DO YOU WANT TO BE");
+        this.terminal.print("FIGHTER, CLERIC, OR WIZARD ");
+        this.gameStateMachine.stateMode = 11;
+        this.inputStr();
+    }
+
+    gotClassInput = () => {
+        this.gameState.attributeNames[this.constants.playerHp] = this.inputString.trim();
+        if (this.gameState.attributeNames[0] === "NONE") {
+            for (let M = 0; M <= 7; M++) {
+                this.gameState.attributes[M] = 0;
+            }
+            this.gameStateMachine.stateMode = 10;
+        } else {
+            switch (this.gameState.attributeNames[this.constants.playerClass]) {
+                case "FIGHTER":
+                    this.gameStateMachine.stateMode = 12;
+                    break;
+                case "CLERIC":
+                    this.gameStateMachine.stateMode = 13;
+                    break;
+                case "WIZARD":
+                    this.gameStateMachine.stateMode = 14;
+                    break;
+                default:
+                    this.gameStateMachine.stateMode = 10.5;
+            }
+        }
+    }
+
+    gotFighter = () => {
+        this.gameState.attributes[this.constants.playerHp] = int(rnd(8) + 1);
+        this.gameStateMachine.stateMode = 15;
+    }
+
+    gotCleric = () => {
+        this.gameState.attributes[this.constants.playerHp] = int(rnd(6) + 1);
+        this.gameStateMachine.stateMode = 15;
+    }
+
+    gotWizard = () => {
+        this.gameState.attributes[this.constants.playerHp] = int(rnd(4) + 1);
+        this.gameStateMachine.stateMode = 15;
+    }
+
+    shopTop = () => {
+        this.terminal.println("BUYING WEAPONS");
+        this.terminal.println("FAST OR NORM ");
+        this.gameStateMachine.stateMode = 16;
+        this.inputStr();
+    }
+
+    gotShopFastNorm = () => {
+        this.strQ = inputString.trim();
+        if (this.strQ === "FAST") {
+            this.gameStateMachine.stateMode = 18;
+        } else {
+            this.gameStateMachine.stateMode = 17;
+        }
+        this.terminal.println("NUMBER" + this.vbTab + "ITEM" + this.vbTab + "PRICE");
+        this.terminal.println("-1-STOP");
+    }
+
+    shopList = () => { //17
+        for (let M = 1; M <= 15; M++) {
+            this.terminal.println(
+                M + this.vbTab +
+                this.gameState.equipmentNames[M] + this.vbTab +
+                this.equipmentPrice[M]
+            );
+        }
+        this.gameStateMachine.stateMode = 18;
+    }
+
+    shopping = () => { //18
+        this.gameStateMachine.stateMode = 19;
+        this.input();
+    }
+
+    buyItem = (item) => {
+        this.gameState.inventoryCounter++;
+        this.gameState.attributes[this.constants.playerGold] -= this.equipmentPrice[item];
+        this.terminal.println("GP= " + this.gameState.attributes[this.constants.playerGold]);
+        this.gameState.inventory[this.gameState.inventoryCounter] = item;
+    }
+
+    gotShoppingInput = () => {
+        let inputInt = Math.floor(this.inputString);
+        if (inputInt < 0 || inputInt > 15) {
+            this.gameStateMachine.stateMode = 20; //stop shopping
+        } else {
+            if (this.gameState.attributes[this.constants.playerGold] <
+                this.equipmentPrice[inputInt]) {
+                this.terminal.println("COSTS TOO MUCH");
+                this.terminal.println("TRY AGAIN ");
+            } else {
+                if (this.gameState.attributeNames[this.constants.playerClass] === "CLERIC") {
+                    if (inputInt === 4 || inputInt === 8 || inputInt === 9 ||
+                        inputInt > 10) {
+                        this.buyItem(inputInt);
+                    } else {
+                        this.terminal.println("YOUR A CLERIC YOU CANT USE THAT ");
+                    }
+                } else if (this.gameState.attributeNames[this.constants.playerClass] === "WIZARD") {
+                    if (inputInt === 3 || inputInt === 8 || inputInt > 10) {
+                        this.buyItem(inputInt);
+                    } else {
+                        this.terminal.println("YOUR A WIZARD YOU CANT USE THAT ");
+                    }
+                } else {
+                    this.buyItem(inputInt);
+                }
+            }
+            this.gameStateMachine.stateMode = 18;
+        }
+    }
+
+    showInvQuestion = () => {
+        this.terminal.print("EQ LIST ");
+        this.gameStateMachine.stateMode = 20.5;
+        this.inputStr();
+    }
+
+    gotInvQuestion = () => {
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "NO") {
+            this.gameStateMachine.stateMode = 22;
+        } else {
+            this.gameStateMachine.stateMode = 21;
+        }
+    }
+
+    showInventory = () => {
+        for (let m = 1; m <= this.gameState.inventoryCounter; m++) {
+            if (this.gameState.inventory[m] !== 0) {
+                this.terminal.println(
+                    this.gameState.inventory[m] + this.vbTab +
+                    this.gameState.equipmentNames[this.gameState.inventory[m]]
+                );
+            }
+        }
+        this.gameStateMachine.stateMode = 22;
+    }
+
+    showStats = () => {
+        this.terminal.println("YOUR CHARACTERISTICS ARE:");
+        this.terminal.println(
+            this.gameState.attributeNames[this.constants.playerClass]
+        );
+        if (this.gameState.attributes[this.constants.playerHp] === 1) {
+            this.gameState.attributes[this.constants.playerHp] = 2;
+        }
+        this.terminal.println(
+            "HIT POINTS" + this.vbTab +
+            this.gameState.attributes[this.constants.playerHp]
+        );
+        this.terminal.println("");
+        this.terminal.println("");
+        this.gameStateMachine.stateMode = 23;
+    }
+
+    welcome() {
+        this.loadDungeon(this.gameState.Dn);
+        this.terminal.println("");
+        this.terminal.println("");
+        this.terminal.println("");
+        this.terminal.println("WELCOME TO DUNGEON #" + this.gameState.Dn);
+        this.terminal.println("YOU ARE AT (" + mapY + "," + mapX + ")");
+        this.terminal.println("");
+        this.terminal.print("COMMANDS LIST" + this.vbTab);
+        this.gameStateMachine.stateMode = 23.5;
+        this.inputStr();
+    }
+
+    gotCommandsQuestion = () => {
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "YES") {
+            this.gameStateMachine.stateMode = 24;
+        } else {
+            this.gameStateMachine.stateMode = 25;
+        }
+    }
+
+    showCommands = () => {
+        this.terminal.println("");
+        this.terminal.println(
+            "1=MOVE  2=OPEN DOOR  3=SEARCH FOR TRAPS AND SECRET DOORS");
+        this.terminal.println("4=SWITCH WEAPON HN HAND  5=FIGHT");
+        this.terminal.println(
+            "6=LOOK AROUND  7=SAVE GAME  8=USER MAGIC  9=BUY MAGIC");
+        this.terminal.println("0=PASS  11=BUY H.P.");
+        this.gameStateMachine.stateMode = 25;
+    }
+
+    getCommand = () => { //25
+        this.terminal.print("COMMAND=");
+        this.gameStateMachine.stateMode = 26;
+        this.input();
+    }
+
+    gotCommand = () => {
+        switch (parseInt(this.inputString.trim())) {
+            case 1: // move
+                this.gameStateMachine.stateMode = 45;
+                break;
+            case 2: // open door
+                this.gameStateMachine.stateMode = 55;
+                break;
+            case 3: // search
+                this.gameStateMachine.stateMode = 57;
+                break;
+            case 4: // change weapon
+                this.gameStateMachine.stateMode = 58;
+                break;
+            case 5: // fight
+                this.gameStateMachine.stateMode = 60;
+                break;
+            case 6: // look around
+                this.gameStateMachine.stateMode = 75;
+                break;
+            case 7: // save game
+                this.gameStateMachine.stateMode = 76;
+                break;
+            case 8: // use magic
+                this.gameStateMachine.stateMode = 77;
+                break;
+            case 9: // buy magic
+                this.gameStateMachine.stateMode = 92;
+                break;
+            case 10: // cheat show map
+                this.gameStateMachine.stateMode = 99;
+                break;
+            case 11: // buy hp
+                this.gameStateMachine.stateMode = 100;
+                break;
+            case 12: // cheat modify map
+                this.gameStateMachine.stateMode = 102;
+                break;
+            case 0: //pass
+                this.gameStateMachine.stateMode = 200;
+                break;
+            default:
+                this.terminal.println("COME ON ");
+                this.gameStateMachine.stateMode = 25;
+                break;
+        }
+    }
+
+    getBASIC = () => { //30
+        this.terminal.print(">");
+        this.inputStr();
+        this.gameStateMachine.stateMode = 31;
+    }
+
+    gotBASIC = () => { //31
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "RUN") {
+            this.gameStateMachine.stateMode = 1;
+        } else if (this.strQ === "CLS") {
+            this.terminal.cls();
+            this.gameStateMachine.stateMode = 30;
+        } else {
+            this.terminal.println("SYNTAX ERROR");
+            this.gameStateMachine.stateMode = 30;
+        }
+    }
+
+    startMove = () => { //45
+        this.terminal.println("YOU ARE AT " + mapY + " , " + mapX);
+        this.terminal.println("  DOWN  RIGHT  LEFT  OR  UP");
+        this.inputStr();
+        this.gameStateMachine.stateMode = 46;
+    }
+
+    gotMove = () => {
+        this.strQ = this.inputString.trim();
+        this.S = 0;
+        this.T = 0;
+        if (this.strQ === "RIGHT" || this.strQ === "R") {
+            this.T = 1;
+        }
+        if (this.strQ === "LEFT" || this.strQ === "L") {
+            this.T = -1;
+        }
+        if (this.strQ === "UP" || this.strQ === "U") {
+            this.S = -1;
+        }
+        if (this.strQ === "DOWN" || this.strQ === "n") {
+            this.S = 1;
+        }
+        if (this.S === 0 && this.T === 0) {
+            this.gameStateMachine.stateMode = 45;
+        } else {
+            let look = this.gameState.dungeonMap[this.mapY + this.S][this.mapX + this.T];
+            switch (look) {
+                case 0:
+                    this.gameStateMachine.stateMode = 47; // space
+                    break;
+                case 2:
+                    this.gameStateMachine.stateMode = 49; // trap
+                    break;
+                case 3:
+                    this.gameStateMachine.stateMode = 50; // secret door
+                    break;
+                case 7:
+                    this.gameStateMachine.stateMode = 51; // inc str
+                    break;
+                case 8:
+                    this.gameStateMachine.stateMode = 52; // inc con
+                    break;
+                case 5:
+                    this.gameStateMachine.stateMode = 53; // monster
+                    break;
+                case 6:
+                    this.gameStateMachine.stateMode = 54; // gold
+                    break;
+                default:
+                    this.gameStateMachine.stateMode = 48; // wall
+                    break;
+            }
+        }
+    }
+
+    completeMove = () => {
+        this.mapY += this.S;
+        this.mapX += this.T;
+        this.terminal.println("DONE");
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    thud = () => {
+        this.terminal.println("YOU RAN INTO A WALL");
+        if ((rnd(12) + 1) > 9) {
+            this.terminal.println("AND LOOSE 1 HIT POINT");
+            this.gameState.attributes[this.constants.playerHp] -= 1;
+        } else {
+            this.terminal.println("BUT NO DAMAGE WAS INFLICTED");
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    itsATrap = () => {
+        let m;
+        this.terminal.println("OOPS A TRAP AND YOU FELL IN");
+        if ((rnd(2)) < 2) {
+            this.terminal.println("AND HIT POINTS LOOSE 1");
+            this.gameState.attributes[this.constants.playerHp] -= 1;
+        }
+        this.terminal.println("I HOPE YOU HAVE SOME SPIKES AND PREFERABLY ROPE");
+        this.terminal.println("LET ME SEE");
+        let found1 = false;
+        let found2 = false;
+        for (m = 1; m <= this.gameState.inventoryCounter; m++) {
+            if (this.gameState.inventory[m] === 12) {
+                this.gameState.inventory[m] = 0;
+                m = this.gameState.inventoryCounter + 1;
+                found1 = true;
+            }
+        }
+        if (found1) {
+            for (m = 1; m <= this.gameState.inventoryCounter; m++) {
+                if (this.gameState.inventory[m] === 11) {
+                    this.gameState.inventory[m] = 0;
+                    m = this.gameState.inventoryCounter + 1;
+                    found2 = true;
+                }
+            }
+            if (found2) {
+                this.terminal.println("GOOD BOTH");
+                this.terminal.println("YOU MANAGE TO GET OUT EASY");
+                this.terminal.println(
+                    "YOUR STANDING NEXT TO THE EDGE THOUGH I'D MOVE");
+                this.gameStateMachine.stateMode = 45;
+            } else {
+                this.terminal.println("NO ROPE BUT AT LEAST SPIKES");
+                let loop = true;
+                while (loop) {
+                    if (int(rnd(3)) + 1 !== 2) {
+                        this.terminal.println("YOU MANAGE TO GET OUT EASY");
+                        this.terminal.println(
+                            "YOUR STANDING NEXT TO THE EDGE THOUGH I'D MOVE");
+                        this.gameStateMachine.stateMode = 45;
+                        loop = false;
+                    } else {
+                        this.terminal.println("YOU FALL HALFWAY UP");
+                        if (int(rnd(6)) > this.gameState.attributes[this.constants.playerStr] / 3) {
+                            this.terminal.println(
+                                "OOPS mapX.equipmentPrice. LOOSE 1");
+                            this.gameState.attributes[0] -= 1;
+                        }
+                        this.terminal.println("TRY AGAIN ");
+                    }
+                }
+            }
+        } else {
+            this.terminal.println("NO SPIKES AH THAT'S TOO BAD 'CAUSE YOU'RE DEAD");
+            this.terminal.println("[STOP]");
+            this.gameStateMachine.stateMode = 30;
+        }
+    }
+
+    hush = () => {
+        if (int(rnd(6)) < 1) { //check original code - only partial logic present
+            this.terminal.println("YOU JUST RAN INTO A SECRET DOOR");
+            this.terminal.println("AND OPENED IT");
+            this.mapY += this.S;
+            this.mapX += this.T;
+            this.gameStateMachine.stateMode = 200;
+        } else {
+            this.gameStateMachine.stateMode = 48;
+        }
+    }
+
+    boost1 = () => {
+        this.gameState.attributes[this.constants.playerStr] += 1;
+        this.gameState.dungeonMap[this.mapY + this.S][this.mapX + this.T] = 0;
+        if (rnd(0) <= 0.2) {
+            this.terminal.println("       POISON      ");
+            this.gameState.attributes[this.constants.playerHp] -= int(rnd(4) + 1);
+            this.terminal.println("HP= " + this.gameState.attributes[this.constants.playerHp]);
+        }
+        this.gameStateMachine.stateMode = 47;
+    }
+
+    boost2 = () => {
+        this.gameState.attributes[this.constants.playerCon] += 1;
+        this.gameState.dungeonMap[this.mapY + this.S][this.mapX + this.T] = 0;
+        if (rnd(0) <= 0.2) {
+            this.terminal.println("       POISON      ");
+            this.gameState.attributes[0] -= int(rnd(0) * 4 + 1);
+            this.terminal.println("HP= " + this.gameState.attributes[this.constants.playerHp]);
+        }
+        gameStateMachine.stateMode = 47;
+    }
+
+    surprise = () => {
+        this.terminal.println("YOU RAN INTO THE MONSTER");
+        this.terminal.println("HE SHOVES YOU BACK");
+        this.terminal.println("");
+        if (int(rnd(2)) + 1 !== 2) {
+            this.terminal.println("YOU LOOSE 6 HIT POINT ");
+            this.gameState.attributes[this.constants.playerHp] -= 6
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    gold = () => {
+        this.terminal.println("AH......GOLD......");
+        let goldFind = int(rnd(500) + 10);
+        this.terminal.println(goldFind + "PIECES");
+        this.gameState.attributes[this.constants.playerGold] += goldFind;
+        this.terminal.println("GP= " + this.gameState.attributes[this.constants.playerGold]);
+        this.gameState.dungeonMap[this.mapY + this.S][this.mapX + this.T] = 0;
+        if (rnd(0) <= 0.2) {
+            this.terminal.printc("POISON");
+            this.gameState.attributes[this.constants.playerHp] -= int(rnd(4) + 1);
+            this.terminal.println("HP= " + this.gameState.attributes[this.constants.playerHp]);
+        }
+        this.gameStateMachine.stateMode = 47;
+    }
+
+    openDoor = () => {
+        this.terminal.println("DOOR LEFT RIGHT UP OR DOWN");
+        this.gameStateMachine.stateMode = 56;
+        this.inputStr();
+    }
+
+    gotDoorMove = () => {
+        this.strQ = this.inputString.trim();
+        this.S = 0;
+        this.T = 0;
+        if (this.strQ === "RIGHT" || this.strQ === "R") {
+            this.T = 1;
+        }
+        if (this.strQ === "LEFT" || this.strQ === "L") {
+            this.T = -1;
+        }
+        if (this.strQ === "UP" || this.strQ === "U") {
+            this.S = -1;
+        }
+        if (this.strQ === "DOWN" || this.strQ === "D") {
+            this.S = 1;
+        }
+        if (this.S === 0 && this.T === 0) {
+            this.gameStateMachine.stateMode = 55;
+        } else {
+            let look = this.gameState.dungeonMap[this.mapY + this.S][this.mapX + this.T];
+            if (look === 3 || look === 4) {
+                this.terminal.println("PUSH");
+                if (int(rnd(20)) + 1 >=
+                    this.gameState.attributes[this.constants.playerStr]) {
+                    this.terminal.println("DIDNT BUDGE");
+                    this.gameStateMachine.stateMode = 200;
+                } else {
+                    terminal.println("ITS OPEN");
+                    this.mapY += this.S;
+                    this.mapX += this.T;
+                    this.gameStateMachine.stateMode = 47;
+                }
+            } else {
+                this.terminal.println("THERE IS NOT A DOOR THERE");
+                this.gameStateMachine.stateMode = 25;
+            }
+        }
+    }
+
+    searching = () => {
+        this.terminal.println("SEARCH.........SEARCH...........SEARCH...........");
+        this.Z = 0;
+        if (int(rnd(40)) < this.gameState.attributes[this.constants.playerWis] +
+            this.gameState.attributes[this.constants.playerInt]) {
+            for (let M = -1; M <= 1; M++) {
+                for (let N = -1; N <= 1; N++) {
+                    if (this.gameState.dungeonMap[this.mapY + M][this.mapX + N] === 2) {
+                        this.terminal.println("YES THERE IS A TRAP");
+                        this.terminal.println("IT IS " + M + "VERTICALLY  " + N +
+                            "HORIZONTALLY FROM YOU");
+                        this.Z = 1;
+                    }
+                    if (this.gameState.dungeonMap[this.mapY + M][this.mapX + N] === 3) {
+                        this.terminal.println("YES ITS A DOOR");
+                        this.terminal.println(
+                            "IT IS " + M + "VERTICALLY  " + N + "HORIZONTALLY");
+                        this.Z = 1;
+                    }
+                }
+            }
+        }
+        if (this.Z === 0) this.terminal.println("NO NOT THAT YOU CAN TELL");
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    swapWeapon = () => { //58
+        this.terminal.println("WHICH WEAPON WILL YOU HOLD, NUM OF WEAPON ");
+        this.gameStateMachine.stateMode = 59;
+        this.input();
+    }
+
+    gotSwap = () => { //59
+        this.inputInt = parseInt(inputString.trim());
+        if (this.inputInt !== 0) {
+            let originalChoice = this.gameState.currentWeaponIndex;
+            let found = this.setCurrentWeapon(this.inputInt);
+            if (found) {
+                this.terminal.println("O.K. YOU ARE NOW HOLDING A " +
+                    this.gameState.equipmentNames[this.inputInt]);
+                this.gameStateMachine.stateMode = 200;
+            } else {
+                this.gameState.currentWeaponIndex = originalChoice;
+                this.terminal.println("SORRY YOU DONT HAVE THAT ONE");
+                this.gameStateMachine.stateMode = 58;
+            }
+        } else {
+            this.gameStateMachine.stateMode = 200;
+        }
+    }
+
+    resolveFight = () => { //60
+        this.terminal.println(
+            "YOUR WEAPON IS " + this.gameState.equipmentNames[this.getCurrentWeapon()]);
+        if (this.gameState.currentMonster === 0) {
+            this.gameStateMachine.stateMode = 25;
+        } else {
+            this.terminal.println(this.gameState.monsterNames[this.gameState.currentMonster]);
+            this.terminal.println(
+                "HP=" + this.gameState.monsterStats[this.gameState.currentMonster][3]);
+            if (this.getCurrentWeapon() === 0) {
+                this.gameStateMachine.stateMode = 61;
+            }
+            if (this.getCurrentWeapon() === 1) {
+                this.gameStateMachine.stateMode = 62;
+            }
+            if (this.getCurrentWeapon() === 2) {
+                this.gameStateMachine.stateMode = 63;
+            }
+            if (this.getCurrentWeapon() === 3) {
+                this.gameStateMachine.stateMode = 64;
+            }
+            if (this.getCurrentWeapon() === 4) {
+                this.gameStateMachine.stateMode = 65;
+            }
+            if (this.getCurrentWeapon() > 4 && this.getCurrentWeapon() < 15) { //no weapon
+                this.gameStateMachine.stateMode = 66;
+            }
+            if (this.getCurrentWeapon() === 15) {
+                this.terminal.println("FOOD ???.... WELL O.K.");
+                this.terminal.print("IS IT TO HIT OR DISTRACT");
+                this.gameStateMachine.stateMode = 67;
+                this.inputStr();
+            }
+        }
+    }
+
+    knuckles = () => { //61
+        this.terminal.println("DO YOU REALIZE YOU ARE BARE HANDED");
+        this.terminal.print("DO YOU WANT TO MAKE ANOTHER CHOICE");
+        this.gameStateMachine.stateMode = 68;
+        this.inputStr();
+    }
+
+    swingASword = () => { //62
+        this.terminal.println("SWING");
+        this.findRange();
+        if (this.range >= 2) {
+            this.terminal.println("HE IS OUT OF RANGE");
+            this.gameStateMachine.stateMode = 200;
+        } else {
+            switch (this.toHitRoll) {
+                case 0:
+                    this.terminal.println("MISSED TOTALLY");
+                    this.gameStateMachine.stateMode = 200;
+                    break;
+                case 1:
+                    this.terminal.println("NOT GOOD ENOUGH");
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+                case 2:
+                    this.terminal.println("GOOD HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                        this.gameState.attributes[this.constants.playerStr] * 4 / 5);
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+                default:
+                    this.terminal.println("CRITICAL HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                        this.gameState.attributes[this.constants.playerStr] / 2);
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+            }
+        }
+    }
+
+    swingABigSword() { //63
+        this.terminal.println("SWING");
+        this.findRange();
+        if (range > 2) {
+            this.terminal.println("HE IS OUT OF RANGE");
+            this.gameStateMachine.stateMode = 200;
+        } else {
+            switch (this.toHitRoll) {
+                case 0:
+                    this.terminal.println("MISSED TOTALLY");
+                    this.gameStateMachine.stateMode = 200;
+                    break;
+                case 1:
+                    this.terminal.println("HIT BUT NOT WELL ENOUGH");
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+                case 2:
+                    this.terminal.println("HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                        this.gameState.attributes[this.constants.playerStr] * 5 / 7);
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+                default:
+                    this.terminal.println("CRITICAL HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= this.gameState.attributes[this.constants.playerStr];
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+            }
+        }
+    }
+
+    pokeADagger = () => { //64
+        if (this.getCurrentWeapon() !== 3) {
+            this.terminal.println("YOU DONT HAVE A DAGGER");
+        } else {
+            this.findRange();
+            if (this.range > 5) { //Then Goto 04710 'OUT OF RANGE
+                this.terminal.println("HE IS OUT OF RANGE");
+            } else {
+                switch (this.toHitRoll) {
+                    case 0:
+                        this.terminal.println("MISSED TOTALLY");
+                        break;
+                    case 1:
+                        this.terminal.println("HIT BUT NO DAMAGE");
+                        break;
+                    case 2:
+                        this.terminal.println("HIT");
+                        this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                            this.gameState.attributes[this.constants.playerStr] / 4);
+                        break;
+                    default:
+                        this.terminal.println("CRITICAL HIT");
+                        this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                            this.gameState.attributes[this.constants.playerStr] * 3 / 10);
+                        break;
+                }
+                if (this.range >= 2) {
+                    this.gameState.inventory[this.gameState.currentWeaponIndex] = 0;
+                    this.gameState.currentWeaponIndex = -1;
+                    for (let M = 1; M <= this.gameState.inventoryCounter; M++)
+                        if (this.gameState.inventory[M] === 3)
+                            this.gameState.currentWeaponIndex = M;
+                }
+            }
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    swingAMace = () => { //65
+        this.terminal.println("SWING");
+        this.findRange();
+        if (this.range >= 2) {
+            this.terminal.println("HE IS OUT OF RANGE");
+            this.gameStateMachine.stateMode = 200;
+        } else {
+            switch (this.toHitRoll) {
+                case 0:
+                    this.terminal.println("MISS");
+                    this.gameStateMachine.stateMode = 200;
+                    break;
+                case 1:
+                    this.terminal.println("HIT BUT NO DAMAGE");
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+                case 2:
+                    this.terminal.println("HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                        this.gameState.attributes[this.constants.playerStr] * 5 / 11);
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+                default:
+                    this.terminal.println("CRITICAL HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                        this.gameState.attributes[this.constants.playerStr] * 4 / 9);
+                    this.gameStateMachine.stateMode = 25;
+                    break;
+            }
+        }
+    }
+
+    improvise = () => { //66
+        let found = (this.getCurrentWeapon() > 0);
+        if (!found) {
+            this.terminal.println("NO WEAPON FOUND");
+            this.gameStateMachine.stateMode = 25;
+        } else {
+            this.findRange();
+            switch (this.getCurrentWeapon()) {
+                case 5:
+                    this.R3 = 10;
+                    this.R4 = 3 / 7;
+                    this.R5 = 5 / 11;
+                    this.gameStateMachine.stateMode = 69;
+                    break;
+                case 6:
+                    this.R3 = 15;
+                    this.R4 = 3 / 7;
+                    this.R5 = 5 / 11;
+                    found = false;
+                    let arrowIndex = -1;
+                    for (let i = 0; (i <= this.gameState.inventoryCounter &&
+                        !found); i++)
+                        if (this.gameState.inventory[i] === 7) {
+                            arrowIndex = i;
+                            found = true;
+                        }
+                    if (!found) {
+                        this.terminal.println("MISS");
+                        this.gameStateMachine.stateMode = 71;
+                    } else {
+                        this.gameState.inventory[arrowIndex] = 0;
+                        this.gameStateMachine.stateMode = 69;
+                    }
+                    break;
+                case 7:
+                    this.R3 = 1.5;
+                    this.R4 = 1 / 7;
+                    this.R5 = 1 / 5;
+                    this.gameStateMachine.stateMode = 69;
+                    break;
+                case 8:
+                    this.R3 = 4;
+                    this.R4 = 1 / 10;
+                    this.R5 = 1 / 8;
+                    this.gameStateMachine.stateMode = 69;
+                    break;
+                case 9:
+                    this.R3 = 4;
+                    this.R4 = 1 / 7;
+                    this.R5 = 1 / 6;
+                    this.gameStateMachine.stateMode = 69;
+                    break;
+                case 10:
+                    this.R3 = 3;
+                    this.R4 = 1 / 8;
+                    this.R5 = 1 / 5;
+                    this.gameStateMachine.stateMode = 69;
+                    break;
+                case 11:
+                    this.R3 = 5;
+                    this.R4 = 1 / 9;
+                    this.R5 = 1 / 6;
+                    this.gameStateMachine.stateMode = 69;
+                    break;
+                case 12:
+                    this.R3 = 8;
+                    this.R4 = 1 / 9;
+                    this.R5 = 1 / 4;
+                    this.gameStateMachine.stateMode = 69;
+                    break;
+                case 13:
+                    this.R3 = 6;
+                    this.R4 = 1 / 3;
+                    this.R5 = 2 / 3;
+                    this.gameStateMachine.stateMode = 69;
+                    break;
+                default: //14
+                    this.terminal.print("AS A CLUB OR SIGHT");
+                    this.gameStateMachine.stateMode = 70;
+                    this.inputStr();
+                    break;
+            }
+        }
+    }
+
+    throwFood = () => { //67
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "HIT") {
+            this.gameStateMachine.stateMode = 72;
+        } else {
+            this.terminal.print(
+                "THROW A-ABOVE,B-BELOW,L-LEFT,OR R-RIGHT OF THE MONSTER");
+            this.Z5 = 0;
+            this.gameStateMachine.stateMode = 73;
+            this.inputStr();
+        }
+    }
+
+    knucklehead = () => { //68
+        this.strQ = this.inputString.trim();
+        if (this.strQ !== "NO") {
+            this.gameStateMachine.stateMode = 25;
+        } else {
+            this.terminal.println("O.K. PUNCH BITE SCRATCH HIT ........");
+            let m = 0;
+            let n = 0;
+            for (let M = -1; M <= 1; M++) {
+                for (let N = -1; N <= 1; N++) {
+                    if (this.gameState.dungeonMap[this.mapY + M][this.mapX + N] === 5) {
+                        m = M;
+                        M = 2;
+                        n = N;
+                        N = 2;
+                    }
+                }
+            }
+            if (m === 0 && n === 0) {
+                this.terminal.println("NO GOOD ONE");
+                this.gameStateMachine.stateMode = 25;
+            } else {
+                if (int(rnd(0) * 20) + 1 >
+                    this.gameState.monsterStats[this.gameState.currentMonster][2]) {
+                    this.terminal.println("GOOD A HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                        this.gameState.attributes[this.constants.playerStr] / 6);
+                    this.gameStateMachine.stateMode = 25;
+                } else {
+                    this.terminal.println("TERRIBLE NO GOOD");
+                    this.gameStateMachine.stateMode = 200;
+                }
+            }
+        }
+    }
+
+    resolveImprov = () => { //69
+        if (this.range > this.R3) {
+            this.terminal.println("HE IS OUT OF RANGE");
+            this.gameStateMachine.stateMode = 200;
+        } else {
+            switch (this.toHitRoll) {
+                case 0:
+                    this.terminal.println("MISS");
+                    break;
+                case 1:
+                    this.terminal.println("HIT BUT NO DAMAGE");
+                    break;
+                case 2:
+                    this.terminal.println("HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                        this.gameState.attributes[this.constants.playerStr] * R4);
+                    break;
+                default:
+                    this.terminal.println("CRITICAL HIT");
+                    this.gameState.monsterStats[this.gameState.currentMonster][3] -= int(
+                        this.gameState.attributes[this.constants.playerStr] * R5);
+                    break;
+            }
+            this.gameStateMachine.stateMode = 71;
+        }
+    }
+
+    gotSilverCross = () => { //70
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "SIGHT") {
+            if (this.range < 10) {
+                this.terminal.println("THE MONSTER IS HURT");
+                this.R5 = 1 / 6;
+                if (this.gameState.currentMonster === 2 ||
+                    this.gameState.currentMonster === 10 ||
+                    this.gameState.currentMonster === 4) {
+                    this.toHitRoll = 3;
+                } else {
+                    this.toHitRoll = 1;
+                }
+                this.range = R3 - 1;
+                this.gameStateMachine.stateMode = 69;
+            } else {
+                this.terminal.println("FAILED");
+                this.gameStateMachine.stateMode = 200;
+            }
+        } else {
+            if (this.getCurrentWeapon() === 14) {
+                this.R3 = 1.5;
+                this.R4 = 1 / 3;
+                this.R5 = 1 / 2;
+                this.gameStateMachine.stateMode = 69;
+            } else {
+                this.terminal.println("NO WEAPON FOUND");
+                this.gameStateMachine.stateMode = 25;
+            }
+        }
+    }
+
+    /***
+     * Uses up the player's weapon when used at range
+     */
+    consumeWpn = () => { //71 //line 6300
+        if (this.getCurrentWeapon() === 14) { //silver cross as sight
+            this.gameStateMachine.stateMode = 200;
+        } else {
+            let weapon = this.getCurrentWeapon();
+            this.gameState.inventory[this.gameState.currentWeaponIndex] = 0;
+            if (weapon !== 7) { //not arrows
+                this.setCurrentWeapon(0);
+            } else {
+                this.setCurrentWeapon(7);
+            }
+            if (this.toHitRoll > 0) {
+                this.gameStateMachine.stateMode = 25;
+            } else {
+                this.gameStateMachine.stateMode = 200;
+            }
+        }
+    }
+
+    /***
+     * Pelt the monster with food to damage it
+     */
+    peltMonster = () => { //72
+        if (int(rnd(20)) + 1 === 20) {
+            this.terminal.println("DIRECT HIT");
+            this.gameState.monsterStats[this.gameState.currentMonster][this.constants.monsterHp] -= int(
+                this.gameState.attributes[this.constants.playerStr] / 6);
+        } else if (int(rnd(20)) + 1 >
+            this.gameState.monsterStats[this.gameState.currentMonster][2] -
+            this.gameState.attributes[this.constants.playerDex] / 3) {
+            this.terminal.println("HIT");
+            this.gameState.monsterStats[this.gameState.currentMonster][this.constants.monsterHp] -= int(
+                this.gameState.attributes[this.constants.playerStr] / 8);
+        } else if (int(rnd(20)) + 1 > 10 -
+            this.gameState.attributes[this.constants.playerDex] / 3) {
+            this.terminal.println("YOU HIT HIM BUT NOT GOOD ENOUGH");
+        } else {
+            this.terminal.println("TOTAL MISS");
+        }
+        this.gameStateMachine.stateMode = 74;
+    }
+
+    /***
+     * Bait the monster with food to steer it
+     */
+    kiteMonster = () => { //73
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "B") {
+            this.S = -1;
+            this.T = 0;
+        } else if (this.strQ === "A") {
+            this.S = 1;
+            this.T = 0;
+        } else if (this.strQ === "L") {
+            this.S = 0;
+            this.T = -1;
+        } else if (this.strQ === "R") {
+            this.S = 0;
+            this.T = 1;
+        }
+        let look = this.gameState.dungeonMap[this.gameState.F1 + this.S][this.gameState.F2 + this.T];
+        if (look === 0) {
+            this.terminal.println("MONSTER MOVED BACK");
+            this.gameState.dungeonMap[this.gameState.F1][this.gameState.F2] = 0;
+            this.gameState.F1 += this.S;
+            this.gameState.F2 += this.T;
+            this.gameState.dungeonMap[this.gameState.F1][this.gameState.F2] = 5;
+        } else if (look === 2) { //Then Goto 04280
+            this.terminal.println(
+                "GOOD WORK THE MONSTER FELL INTO A TRAP AND IS DEAD");
+            this.K1 = -1;
+            this.gameState.monsterStats[this.gameState.currentMonster][this.constants.monsterHp] = 0;
+            this.gameState.dungeonMap[this.gameState.F1][this.gameState.F2] = 0; //bug - monster stayed on map
+            //stateMode = 200; //bug - kept the food
+        } else {
+            this.terminal.println("DIDN'T WORK");
+        }
+        this.gameStateMachine.stateMode = 74;
+    }
+
+    /***
+     * Use up the food being equipped after baiting a monster
+     */
+    consumeFood = () => { //74
+        if (Z5 === 0) {
+            for (let M = 1; M <= this.gameState.inventoryCounter; M++) {
+                let weapon = this.getCurrentWeapon();
+                this.gameState.inventory[this.gameState.currentWeaponIndex] = 0;
+                this.setCurrentWeapon(weapon);
+            }
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    /***
+     * Display the surroundings of the player
+     * Obscure secret details
+     */
+    looking = () => { //75
+        let line, m, n;
+        for (let M = -5; M < 6; M++) {
+            line = "";
+            for (let N = -5; N < 6; N++) {
+                m = M + this.mapY;
+                n = N + this.mapX;
+                if (this.inBounds(m, n)) {
+                    if ((M === 0) && (N === 0)) {
+                        line += "9";
+                    } else {
+                        switch (this.gameState.dungeonMap[m][n]) {
+                            case 3:
+                                line += "1";
+                                break;
+                            case 2:
+                            case 7:
+                            case 8:
+                                line += "0";
+                                break;
+                            default:
+                                line += this.gameState.dungeonMap[m][n];
+                        }
+                    }
+                }
+            }
+            if (line !== "") this.terminal.println(line);
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    saveGame = () => { //76
+        this.gameState.serialiseToCookie(Document, 'dnd1file7', this.cookieLifespan);
+        this.gameStateMachine.stateMode = 25;
+    }
+
+    casting = () => { //77
+        this.terminal.println("MAGIC");
+        if (this.getCurrentWeapon() !== 0) { //Then Goto 08740
+            this.terminal.println("YOU CAN'T USE MAGIC WITH WEAPON IN HAND");
+            this.gameStateMachine.stateMode = 200;
+        } else if (this.attributeNames[this.constants.playerClass] === "CLERIC") {
+            this.terminal.print("CLERICAL SPELL #");
+            this.gameStateMachine.stateMode = 78;
+            this.input();
+        } else if (this.attributeNames[this.constants.playerClass] === "WIZARD") {
+            this.terminal.print("SPELL #");
+            this.gameStateMachine.stateMode = 87;
+            this.input();
+        } else {
+            this.terminal.println("YOU CANT USE MAGIC YOU'RE NOT A M.U.");
+            this.gameStateMachine.stateMode = 200;
+        }
+    }
+
+    gotClericSpell = () => { //78
+        this.Q = parseInt(this.inputString.trim());
+        let found = false;
+        let spellChoice;
+        for (let m = 1; m <= this.gameState.clericSpellCounter; m++) {
+            if (Q === this.gameState.clericSpellbook[m]) {
+                this.M = m;
+                found = true;
+                m = this.gameState.clericSpellCounter + 1;
+            }
+        }
+        if (!found) {
+            this.terminal.println("YOU DONT HAVE THAT SPELL");
+            this.gameStateMachine.stateMode = 200;
+        } else {
+            spellChoice = this.gameState.clericSpellbook[M];
+            this.gameState.clericSpellbook[M] = 0;
+            //route clerical spell choice
+            if (spellChoice > 3) {
+                this.Q = 2;
+            } //bug fix - find all spell uses Q to match floor tile types, not Q2 or Q3
+            if (spellChoice > 4) {
+                this.Q = 3;
+            }
+            switch (spellChoice) {
+                case 1:
+                    this.gameStateMachine.stateMode = 79;
+                    break;
+                case 2:
+                    this.gameStateMachine.stateMode = 80;
+                    break;
+                case 3:
+                    this.gameStateMachine.stateMode = 81;
+                    break;
+                case 4:
+                    this.gameStateMachine.stateMode = 82;
+                    break;
+                case 5:
+                    this.gameStateMachine.stateMode = 83;
+                    break;
+                case 6:
+                    this.gameStateMachine.stateMode = 84;
+                    break;
+                case 7:
+                    this.gameStateMachine.stateMode = 85;
+                    break;
+                case 8:
+                    this.gameStateMachine.stateMode = 82;
+                    break;
+                case 9: //cheat - there is no spell #9 for clerics, this is the push spell
+                    this.gameStateMachine.stateMode = 86;
+                    break;
+                default:
+                    this.terminal.println("YOU DONT HAVE THAT SPELL");
+                    this.gameStateMachine.stateMode = 200;
+                    break;
+            }
+        }
+    }
+
+    clericSpellKill = () => { //79
+        if (rnd(3) > 1) {
+            this.terminal.println("FAILED");
+        } else {
+            this.terminal.println("DONE");
+            this.K1 = -1;
+        }
+        this.gameState.clericSpellbook[this.M] = 0;
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    clericSpellMagicMissileAdvanced = () => { //80
+        this.terminal.println("DONE");
+        this.gameState.monsterStats[this.gameState.currentMonster][this.constants.monsterHp] -= 4;
+        this.gameState.clericSpellbook[this.M] = 0;
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    clericSpellCureLight = () => { //81
+        this.gameState.attributes[this.constants.playerCon] += 3;
+        this.gameState.clericSpellbook[this.M] = 0;
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    clericSpellFindTraps = () => { //82
+        this.gameState.clericSpellbook[this.M] = 0;
+        for (let M = -3; M < 4; M++) {
+            for (let N = -3; N < 4; N++) {
+                if (!((this.mapY + M < 0) || (this.mapY + M > 25) || (this.mapX + N < 0) ||
+                    (this.mapX + N > 25))) {
+                    if (this.gameState.dungeonMap[this.mapY + M][this.mapX + N] === Q)
+                        this.terminal.println(
+                            "THERE IS ONE AT " + (this.mapY + M) + "LAT." +
+                            (this.mapX + N) + "LONG.");
+                }
+            }
+        }
+        this.terminal.println("NO MORE");
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    clericSpellMagicMissile = () => { //83
+        this.terminal.println("DONE");
+        this.gameState.clericSpellbook[this.M] = 0;
+        this.gameState.monsterStats[this.gameState.currentMonster][this.constants.monsterHp] -= 2;
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    clericSpellMagicMissileUltimate = () => { //84
+        this.terminal.println("DONE");
+        this.gameState.clericSpellbook[this.M] = 0;
+        this.gameState.monsterStats[this.gameState.currentMonster][this.constants.monsterHp] -= 6;
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    clericSpellCureLightAdvanced = () => { //85
+        this.terminal.println("DONE");
+        this.gameState.attributes[this.constants.playerCon] += 3;
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    clericSpell9 = () => { //86
+        if (this.gameState.currentMonster === 4 || this.gameState.currentMonster === 10) {
+            this.terminal.println("DONE");
+            this.terminal.println("YOU DONT HAVE THAT ONE");
+            this.gameStateMachine.stateMode = 25;
+        } else {
+            this.terminal.println("FAILED");
+            this.gameStateMachine.stateMode = 200;
+        }
+    }
+
+    gotWizardSpell = () => { //87  //09320
+        this.Q = parseInt(this.inputString.trim());
+        let found = false;
+        for (let m = 1; m <= this.gameState.wizardSpellCounter; m++) {
+            if (Q === this.gameState.wizardSpellbook[m]) {
+                found = true;
+                this.M = m;
+                m = this.gameState.wizardSpellCounter + 1;
+            }
+        }
+        if (found) {  //09380
+            if (this.gameState.wizardSpellbook[this.M] === 1) { // push
+                // var F2 = 0;
+                if ((this.gameState.F1 - this.mapY === 0) &&
+                    (this.gameState.F2 - this.mapX === 0)) {
+                    this.S = 0;
+                    this.T = 0;
+                    this.Z5 = 1; // stop food being used at end of bait action
+                    this.inputString = "";
+                } else {
+                    this.terminal.println(
+                        "ARE YOU ABOVE,BELOW,RIGHT, OR LEFT OF IT");
+                    this.inputStr();
+                }
+                this.gameStateMachine.stateMode = 73;
+            } else {
+                this.R = 5;
+                switch (this.gameState.wizardSpellbook[this.M]) {
+                    case 2:
+                        this.gameStateMachine.stateMode = 88;
+                        break;
+                    case 3:
+                        this.Q = 2;
+                        this.gameStateMachine.stateMode = 89;
+                        break;
+                    case 4:
+                        this.Q = 2;
+                        this.gameStateMachine.stateMode = 90;
+                        break;
+                    case 5:
+                        this.Q = 0;
+                        this.gameStateMachine.stateMode = 91.5;
+                        break;
+                    case 6:
+                        this.Q = 3;
+                        gameStateMachine.stateMode = 83; // shared with cleric
+                        break;
+                    case 7:
+                        this.Q = 6;
+                        this.gameStateMachine.stateMode = 80; // shared with cleric
+                        break;
+                    case 8:
+                        this.Q = 9;
+                        this.gameStateMachine.stateMode = 84; // shared with cleric
+                        break;
+                    case 9:
+                        this.Q = 3;
+                        this.gameStateMachine.stateMode = 89;
+                        break;
+                    case 10:
+                        this.Q = 1;
+                        this.gameStateMachine.stateMode = 91.5;
+                        break;
+                    default:
+                        this.terminal.println("YOU DONT HAVE THAT ONE");
+                        this.gameStateMachine.stateMode = 25;
+                        break;
+                }
+            }
+        } else {
+            this.terminal.println("YOU DONT HAVE THAT ONE");
+            this.gameStateMachine.stateMode = 25;
+        }
+    }
+
+    wizardSpellKill = () => { //88 KILL
+        if (rnd(3) > 1) {
+            this.terminal.println("DONE");
+            this.K1 = -1;
+        } else {
+            this.terminal.println("FAILED");
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    wizardSpellFindTrap = () => { //89 find traps
+        this.gameState.wizardSpellbook[this.M] = 0; //?
+        for (let M = -3; M < 4; M++) {
+            for (let N = -3; N < 4; N++) {
+                if (this.inBounds(this.mapY + M, this.mapX + N))
+                    if (this.gameState.dungeonMap[this.mapY + M][this.mapX + N] ===
+                        this.Q) {
+                        terminal.println(
+                            "THERE IS ONE AT " + (mapY + M) + "LAT." +
+                            (mapX + N) +
+                            "LONG."
+                        );
+                    }
+            }
+        }
+        this.terminal.println("NO MORE");
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    wizardSpellTeleport = () => { //90 teleport
+        this.gameStateMachine.stateMode = 91;
+        this.getSpellCoordinates();
+    }
+
+    gotTeleportCoordinates = () => { //91 teleport
+        this.M = parseInt(inputStrings[1]);
+        this.N = parseInt(inputStrings[0]);
+        if (this.inBounds(this.M, this.N)) {
+            this.terminal.println("DONE");
+            this.mapY = this.M;
+            this.mapX = this.N;
+        } else {
+            this.terminal.println("FAILED");
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    getSpellCoordinates = () => {
+        this.terminal.print("INPUT CO-ORDINATES");
+        this.inputX(2);
+    }
+
+    gotSpellChange = () => { //91.5
+        this.terminal.print("INPUT CO-ORDINATES");
+        this.gameStateMachine.stateMode = 91.6;
+        this.getSpellCoordinates();
+    }
+
+    gotChangeCoordinates = () => { //91.6
+        let toCell;
+        let fromCell;
+        if (this.Q === 1) {
+            fromCell = 0;
+            toCell = 1;
+        } else {
+            fromCell = 1;
+            toCell = 0;
+        }
+        this.M = parseInt(this.inputStrings[1]);
+        this.N = parseInt(this.inputStrings[0]);
+        if (this.inBounds(this.M, this.N)) {
+            if (this.gameState.dungeonMap[this.M][this.N] === fromCell) {
+                this.gameState.dungeonMap[this.M][this.N] = toCell;
+                this.terminal.println("DONE");
+            } else {
+                this.terminal.println("FAILED");
+            }
+        } else {
+            this.terminal.println("FAILED");
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    buyMagic = () => { //92
+        if (this.gameState.attributeNames[this.constants.playerClass] === "CLERIC") {
+            this.gameStateMachine.stateMode = 93;
+        } else if (this.gameState.attributeNames[this.constants.playerClass] === "WIZARD") {
+            this.gameStateMachine.stateMode = 94;
+        } else {
+            this.terminal.println("YOU CANT BUY ANY");
+            this.gameStateMachine.stateMode = 25;
+        }
+    }
+
+    askACleric = () => { //93
+        this.terminal.println("DO YOU KNOW THE CHOICES");
+        this.inputStr();
+        this.gameStateMachine.stateMode = 95;
+    }
+
+    askAWizard = () => { //94
+        this.terminal.println("DO YOU KNOW THE SPELLS");
+        this.inputStr();
+        this.gameStateMachine.stateMode = 96;
+    }
+
+    clericSpellChoices = () => { //95
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "NO") {
+            this.terminal.println("1-KILL-500  5-MAG. MISS. #1-100");
+            this.terminal.println("2-MAG. MISS. #2-200  6-MAG.MISS. #3-300");
+            this.terminal.println("3-CURE LIGHT #1-200  7-CURE LIGHT #2-1000");
+            this.terminal.println("4-FIND ALL TRAPS-200  8-FIND ALL S.DOORS-200");
+            this.terminal.print("INPUT # WANTED   NEG.NUM.TO STOP");
+        }
+        this.input();
+        this.gameStateMachine.stateMode = 97;
+    }
+
+    wizardSpellChoices = () => { //96
+        this.strQ = inputString.trim();
+        if (this.strQ === "NO") {
+            this.terminal.println("1-PUSH-75   6-MAG. MISS. #1-100");
+            this.terminal.println("2-KIHL-500  7-MAG. MISS. #2-200");
+            this.terminal.println("3-FIND TRAPS-200  8-MAG. MISS. #3-300");
+            this.terminal.println("4-TELEPORT-750  9-FIND S.DOORS-200");
+            this.terminal.println("5-CHANGE 1+0-600  10-CHANGE 0+1-600");
+            this.terminal.print("#OF ONE YOU WANT  NEG.NUM.TO STOP");
+        }
+        this.input();
+        this.gameStateMachine.stateMode = 98;
+    }
+
+    clericSpellPurchase = () => { //97
+        if (this.Q > 0) { //Then Goto 10290
+            if (this.Q <= 8) { //Then Goto 10100
+                if (this.gameState.attributes[this.constants.playerGold] -
+                    this.clericSpellPrices[int(this.Q)] < 0) {// Then Goto 10270
+                    this.terminal.println("COSTS TOO MUCH");
+                } else {
+                    this.gameState.attributes[this.constants.playerGold] -= this.clericSpellPrices[int(
+                        this.Q)];
+                    this.terminal.println("IT IS YOURS");
+                    this.gameState.clericSpellbook[this.gameState.clericSpellCounter] = int(
+                        this.Q);
+                    this.gameState.clericSpellCounter += 1;
+                }
+            }
+            this.input();
+            this.gameStateMachine.stateMode = 97;
+        } else {
+            this.terminal.println("YOUR SPELLS ARE");
+            for (this.M = 1; this.M <= this.gameState.clericSpellCounter; this.M++) {
+                if (this.gameState.clericSpellbook[this.M] !== 0) {
+                    terminal.println("#" + this.gameState.clericSpellbook[this.M]);
+                }
+            }
+            terminal.println("DONE");
             gameStateMachine.stateMode = 25;
+        }
+    }
+
+    wizardSpellPurchase = () => { //98
+        if (this.Q > 0) {
+            if (this.Q <= 10) {
+                if (this.gameState.attributes[this.constants.playerGold] -
+                    this.wizardSpellPrices[int(Q)] < 0) {
+                    this.terminal.println("COSTS TOO MUCH");
+                } else {
+                    this.gameState.attributes[this.constants.playerGold] -= this.wizardSpellPrices[int(
+                        this.Q)];
+                    this.terminal.println("IT IS YOURS");
+                    this.gameState.wizardSpellCounter += 1;
+                    this.gameState.wizardSpellbook[this.gameState.wizardSpellCounter] = int(
+                        this.Q);
+                }
+            }
+            this.input();
+            this.gameStateMachine.stateMode = 98;
+        } else {
+            this.terminal.println("YOU NOW HAVE");
+            for (this.M = 1; this.M <= this.gameState.wizardSpellCounter; this.M++) {
+                if (this.gameState.wizardSpellbook[this.M] !== 0) {
+                    terminal.println("#" + this.gameState.wizardSpellbook[this.M]);
+                }
+            }
+            this.gameStateMachine.stateMode = 25;
+        }
+    }
+
+    showCheatMap = () => { //99 - cheating
+        let line;
+        for (let M = 0; M <= 25; M++) {
+            line = "";
+            for (let N = 0; N <= 25; N++)
+                line += this.gameState.dungeonMap[M][N];
+            this.terminal.println(line);
+        }
+        this.gameStateMachine.stateMode = 25;
+    }
+
+    buyHP = () => { //100
+        this.terminal.print("HOW MANY 200 GP. EACH ");
+        this.input();
+        this.gameStateMachine.stateMode = 101;
+    }
+
+    addHP = () => { //101
+        this.Q = parseInt(this.inputString.trim());
+        if (this.gameState.attributes[7] - 200 * this.Q < 0) {
+            this.terminal.println("NO");
+            this.gameStateMachine.stateMode = 100;
+        } else {
+            this.gameState.attributes[this.constants.playerHp] += int(this.Q);
+            this.gameState.attributes[this.constants.playerGold] -= int(this.Q) * 200;
+            this.terminal.println("OK DONE");
+            this.terminal.println("HP= " + this.gameState.attributes[0]);
+            for (let M = 1; M <= 7; M++) {
+                terminal.println(
+                    this.attributeNames[M] + "= " +
+                    this.gameState.attributes[M]);
+            }
+            this.gameStateMachine.stateMode = 200;
+        }
+    }
+
+    modifyMap = () => { //102
+        this.terminal.print("DNG");
+        this.input();
+        this.gameStateMachine.stateMode = 102.5;
+    }
+
+    modifyGotMap = () => { //102.5
+        this.gameState.Dn = parseInt(this.inputString.trim());
+        this.gameStateMachine.stateMode = 103;
+    }
+
+    modifyMapPos = () => { //103
+        this.terminal.print("X,Y,C");
+        this.inputX(3);
+        this.gameStateMachine.stateMode = 104;
+    }
+
+    modifyMapDone = () => { //104
+        let targetX = parseInt(this.inputStrings[2]);
+        let targetY = parseInt(this.inputStrings[1]);
+        let content = parseInt(this.inputStrings[0]);
+        if (content < 0) {
+            this.terminal.println("SAVE");
+            this.input();
+            this.gameStateMachine.stateMode = 105;
+        } else {
+            this.gameState.dungeonMap[targetY][targetX] = content;
+            this.gameStateMachine.stateMode = 103;
+        }
+    }
+
+    modifyMapSave = () => {
+        let stream;
+        this.Q = parseInt(inputString.trim());
+        if (this.Q === 1) {
+            let DName = "dnd1file" + this.gameState.Dn + ".dungeonMap.";
+            for (let M = 0; M <= 25; M++) {
+                stream = "";
+                for (let N = 0; N <= 25; N++) {
+                    if (this.gameState.dungeonMap[M][N] !== 7 &&
+                        this.gameState.dungeonMap[M][N] !== 8) {
+                        stream += this.gameState.dungeonMap[M][N] + "|";
+                    } else {
+                        stream += "0|";
+                    }
+                }
+                setCookie(Document, DName + M, stream, this.cookieLifespan);
+            }
+        }
+        this.gameStateMachine.stateMode = 200;
+    }
+
+    checkPlayerHealth = () => {
+        if (this.gameState.attributes[this.constants.playerHp] < 2) { // low on health
+            if (this.gameState.attributes[this.constants.playerHp] < 1) { // bleeding out
+                while (this.gameState.attributes[this.constants.playerHp] < 0) {
+                    if (this.gameState.attributes[this.constants.playerCon] < 9) {
+                        this.gameState.attributes[this.constants.playerHp] = 0;
+                        this.gameState.attributes[this.constants.playerCon] = 0; //exit loop, force dead
+                    } else {
+                        this.gameState.attributes[this.constants.playerCon] -= 2;
+                        this.gameState.attributes[this.constants.playerHp] += 1;
+                    }
+                }
+                if (this.gameState.attributes[this.constants.playerHp] === 0) {
+                    if (this.gameState.attributes[this.constants.playerCon] < 9) {
+                        this.terminal.println("SORRY YOUR DEAD");
+                        this.gameStateMachine.stateMode = 30;
+                    } else {
+                        this.terminal.println("H.P.=0 BUT CONST. HOLDS");
+                    }
+                }
+            } else {
+                this.terminal.println("WATCH IT H.P.=" +
+                    this.gameState.attributes[this.constants.playerHp]);
+            }
+        }
+    }
+
+    testForCloneMove = () => { // 50% change to start a clone move
+        if (rnd(20) > 10) {
+            this.gameStateMachine.stateMode = 202;
+        } else {
+            this.gameStateMachine.stateMode = 25;
+        }
+    }
+
+    /***
+     * Route game move
+     * One of the trickier pieces of code to decipher
+     *
+     */
+    routeGameMove = () => { //200
+        this.gameStateMachine.stateMode = 0;
+        if (this.K1 === -1) { // if target is dead credit the kill
+            this.gameStateMachine.stateMode = 203;
+        } else { //check player health and report
+            this.checkPlayerHealth();
+        }
+        if (this.gameStateMachine.stateMode === 0) {
+            if (this.gameState.currentMonster > 0) { // 07160
+                this.gameStateMachine.stateMode = 206;    //monster action (actual move)
+            } else if (!(this.mapY === 1 && this.mapX === 12)) {
+                this.testForCloneMove();
+            } else {
+                this.terminal.println("SO YOU HAVE RETURNED");
+                if (this.gameState.attributes[this.constants.playerGold] < 100) {
+                    this.testForCloneMove();
+                } else {
+                    this.gameState.attributes[this.constants.playerGold] -= 100;
+                    this.terminal.println("WANT TO BUY MORE EQUIPMENT");
+                    this.inputStr();
+                    this.gameStateMachine.stateMode = 201;
+                }
+            }
+        }
+    }
+
+    /***
+     * Response to user input to buy more equipment
+     */
+    gotMoreEquipment = () => { //201
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "YES") {
+            this.terminal.println("YOUR H.P. ARE RESTORED 2 POINTS");
+            this.gameState.attributes[this.constants.playerHp] += 2;
+            this.gameStateMachine.stateMode = 18;
+        } else {
+            this.testForCloneMove();
+        }
+    }
+
+    /***
+     * Moves one monster - not so much a move as a clone as it
+     * potentially leaves a "5" on the map elsewhere.
+     * Scan all living monsters and give each one a 7.5% change to "move"
+     * Make 50 attempts and stop after the first successful move
+     */
+    monsterMove = () => { //202
+        let moved = false;
+        let alive = false;
+        let Z7 = 1;
+        while (!moved && Z7 <= 50) {
+            this.M = 1;
+            while (!moved && this.M <= 10) {
+                if (this.gameState.monsterStats[this.M][this.constants.monsterHp] > 0) {
+                    alive = true;
+                    if (rnd(0) > 0.925) {
+                        moved = true;
+                        this.gameStateMachine.stateMode = 204;
+                        this.M--; // retard M for a moment to give the right result at the end of the routine
+                    }
+                }
+                this.M++;
+            }
+            Z7++;
+        }
+        if (!moved) {
+            if (!alive) {
+                this.terminal.println("ALL MONSTERS DEAD");
+                this.terminal.print("RESET?");
+                this.inputStr();
+                this.gameStateMachine.stateMode = 205;
+            } else {
+                this.gameStateMachine.stateMode = 200;
+            }
+        }
+    }
+
+    confirmedKill = () => { //203
+        this.K1 = 0;
+        const current = this.gameState.currentMonster;
+        this.gameState.attributes[this.constants.playerGold] += this.gameState.monsterStats[current][this.constants.monsterStartHp];
+        this.gameState.F1 = 0;
+        this.gameState.F2 = 0;
+        this.terminal.println(
+            "GOOD WORK YOU JUST KILLED A " + this.gameState.monsterNames[current]);
+        this.terminal.println("AND GET " +
+            this.gameState.monsterStats[current][this.constants.monsterStartHp] +
+            "GOLD PIECES");
+        if (J6 !== 1)
+            this.gameState.monsterStats[current][this.constants.monsterStartHp] = 0;
+        this.terminal.println(
+            "YOU HAVE" + this.gameState.attributes[this.constants.playerGold] + " GOLD ");
+        this.gameState.monsterStats[current][this.constants.monsterHp] = 0;
+        if (this.J6 === 1) {
+            this.gameState.monsterStats[current][3] = this.gameState.monsterStats[this.gameState.currentMonster][4]
+                * this.gameState.monsterStats[this.gameState.currentMonster][1];
+            this.gameState.monsterStats[current][this.constants.monsterHp] = this.gameState.monsterStats[current][this.constants.monsterStartHp]
+                * this.gameState.monsterStats[current][1];
+        }
+        this.gameState.currentMonster = 0;
+        this.gameStateMachine.stateMode = 25;
+    }
+
+    /***
+     * scans map around player and creates current monster at a random location
+     * Sets up F1 and F2 after spawn prior to action check
+     */
+    makeAMonster = () => { //204 line 8000
+        let loopCounter = 0;
+        this.gameState.currentMonster = this.M; // value carried from move a monster (202)
+        let moved = false;
+        while (!moved) { //dangerous - but statistically should never lock unless it is a very poor map
+            loopCounter++; //stop it locking permanently
+            let M1 = int(rnd(5) + 3); //select a random range 3-7
+            this.M = M1 * -1; // vertical from negative range to positive range
+            while (!moved && this.M <= M1) {
+                this.N = M1 * -1; // horizontal from negative range to positive range
+                while (!moved && this.N <= M1) {
+                    if (Math.abs(this.M) > 2 || Math.abs(this.N) > 2) { // if outside attack range
+                        if (this.inBounds(this.mapY + this.M, this.mapX + this.N)) {
+                            if (rnd(0) <= 0.7) { // 70% chance
+                                if (this.gameState.dungeonMap[this.mapY + this.M][this.mapX + this.N] ===
+                                    0) { //if cell is empty
+                                    moved = true;
+                                    this.spawnMonsterAt(this.mapY + this.M, this.mapX + this.N);
+                                }
+                            }
+                        }
+                    }
+                    this.N++;
+                }
+                this.M++;
+            }
+            if (loopCounter > 10) {
+                moved = true;
+            } //break out of loop
+        }
+        this.gameStateMachine.stateMode = 200;
+        return loopCounter;
+    }
+
+    /***
+     * Sets a map cell to 5 (monster)
+     * @param Y
+     * @param X
+     */
+    spawnMonsterAt = (Y, X) => {
+        this.gameState.dungeonMap[Y][X] = 5;
+        this.gameState.F1 = Y;
+        this.gameState.F2 = X;
+    }
+
+    /***
+     * on "yes":
+     * resets monsters, increases difficulty level
+     * else quit
+     */
+    resetAfterClear = () => { //205
+        this.strQ = this.inputString.trim();
+        if (this.strQ === "YES") {
+            // reset
+            this.difficultyFactor += 1; //up difficultly level
+            for (let m = 1; m <= this.maxMonsterIndex; m++) {
+                this.gameState.monsterStats[m][3] = this.gameState.monsterStats[m][4] *
+                    difficultyFactor;
+                this.gameState.monsterStats[m][this.constants.monsterHp] = this.gameState.monsterStats[m][this.constants.monsterStartHp] *
+                    difficultyFactor;
+            }
+            this.gameState.attributes[this.constants.playerHp] += 5;
+            this.gameStateMachine.stateMode = 25;
+        } else {
+            this.gameStateMachine.stateMode = 30;
+            this.terminal.println("[STOP]");
+        }
+    }
+
+    /***
+     * refactored from state 206 (monsterAction)
+     * if in range - attack
+     * else move closer
+     */
+    monsterMovement = () => {
+        this.findRange();
+        if (this.range < 2.0) { //Then Goto 07600
+            //it attacks
+            this.gameStateMachine.stateMode = 207;
+        } else if (this.P0 > 10) { //Then Goto 01590 //note P0 is NEVER modified from 0 suspect typo in original printout
+            this.gameStateMachine.stateMode = 25;
+        } else {
+            this.resolveMonsterMove();
+        }
+    }
+
+    /***
+     * determine direction of movement and if the move can be made complete it
+     */
+    resolveMonsterMove = () => {
+        let mapRowDelta = 0, mapColumnDelta = 0;
+        // direction of movement
+        if (Math.abs(this.rangeRowOffset) > Math.abs(this.rangeColumnOffset)) { //Then Goto 07260
+            mapRowDelta = -(this.rangeRowOffset / Math.abs(this.rangeRowOffset));
+        } else {
+            if (this.M !== 1) { // Then Goto 07270 - obscure logic
+                mapColumnDelta = -(this.rangeColumnOffset /
+                    Math.abs(this.rangeColumnOffset))
+            }
+        }
+        // check movement is possible and resolve
+        this.gameStateMachine.stateMode = 25;
+        if (this.inBounds(this.gameState.F1 + mapRowDelta,
+            this.gameState.F2 + mapColumnDelta)) {
+            switch (this.gameState.dungeonMap[this.gameState.F1 +
+            mapRowDelta][this.gameState.F2 + mapColumnDelta]) {
+                case 0:
+                case 6:
+                case 7:
+                case 8:
+                    this.translateMonsterPosition(mapRowDelta, mapColumnDelta);
+                    break;
+                case 2:
+                    this.terminal.println("GOOD WORK  YOU LED HIM INTO A TRAP");
+                    this.K1 = -1;
+                    this.gameState.monsterStats[this.gameState.currentMonster][this.constants.monsterHp] = 0;
+                    this.gameStateMachine.stateMode = 200; //auto kill
+                    break;
+                case 3:
+                case 4:
+                    //through a door
+                    if (this.gameState.dungeonMap[this.gameState.F1 + 2 *
+                    mapRowDelta][this.gameState.F2 + 2 * mapColumnDelta] === 0) { // Then Goto 07510
+                        mapRowDelta = mapRowDelta * 2;
+                        mapColumnDelta = mapColumnDelta * 2;
+                        this.translateMonsterPosition(mapRowDelta, mapColumnDelta);
+                    }
+                    break;
+            }
+        }
+    }
+
+    /***
+     * Move monster from A to B
+     * note the move destroys anything that the monster moves over
+     * @param rowDelta
+     * @param columnDelta
+     */
+    translateMonsterPosition = (rowDelta, columnDelta) => {
+        this.gameState.dungeonMap[this.gameState.F1][this.gameState.F2] = 0;
+        this.gameState.F1 += rowDelta;
+        this.gameState.F2 += columnDelta;
+        this.gameState.dungeonMap[this.gameState.F1][this.gameState.F2] = 5;
+        this.findRange();
+    }
+
+    /***
+     * dead or alive?
+     */
+    monsterAction = () => { //206
+        if (this.gameState.monsterStats[this.gameState.currentMonster][3] < 1) { //Then Goto 08290
+            this.gameStateMachine.stateMode = 203; //it's a kill
+        } else {
+            this.monsterMovement();
+        }
+    }
+
+    /***
+     * Calculate protection value based on stat and equipment
+     * note: current method is very stupid
+     * @returns {int} protection value
+     */
+    calculatePlayerProtection = () => {
+        let result = 6 + this.gameState.attributes[this.constants.playerDex];
+        let i = 1, found = false;
+        while (i <= this.gameState.inventoryCounter && !found) {
+            switch (this.gameState.inventory[i]) {
+                case 10:
+                    found = true;
+                    result = 20 + this.gameState.attributes[this.constants.playerDex];
+                    break;
+                case 9:
+                    found = true;
+                    result = 16 + this.gameState.attributes[this.constants.playerDex];
+                    break;
+                case 8:
+                    found = true;
+                    result = 8 + this.gameState.attributes[this.constants.playerDex];
+                    break;
+            }
+            i++;
+        }
+        return result;
+    }
+
+    /***
+     * Determines if the monster's attack connects or not
+     * On a hit HP is reduced by 1-n
+     * On a miss there is a 50% chance to end the attack
+     */
+    monsterSwings = () => { //207
+        this.terminal.println(
+            this.gameState.monsterNames[this.gameState.currentMonster] + " WATCH IT");
+        if (rnd(40) > this.calculatePlayerProtection()) {
+            this.terminal.println("MONSTER SCORES A HIT");
+            this.gameState.attributes[this.constants.playerHp] -= int(
+                rnd(this.gameState.monsterStats[this.gameState.currentMonster][2]) + 1);
+            this.terminal.println(
+                "H.P.=" + this.gameState.attributes[this.constants.playerHp]);
+            this.gameStateMachine.stateMode = 200;
+        } else {
+            if (rnd(2) > 1) {
+                this.terminal.println("HE HIT BUT NOT GOOD ENOUGH");
+                this.gameStateMachine.stateMode = 200;
+            } else {
+                this.terminal.println("HE MISSED");
+                this.gameStateMachine.stateMode = 25;
+            }
         }
     }
 }
 
 //global routines
 function initialiseGame() {
-    main(new Console('mainConsole', 30, 40));
-    $(document).on("endInput", function (event) {
-        if (debug) console.log(event);
-        gotInput();
+    const game = new dnd1();
+    game.main(new Console('mainConsole', 30, 40));
+    $(document).on("endInput", function(event) {
+        if (game.debug) console.log(event);
+        game.gotInput();
     });
-    $(document).on("partialInput", function (event) {
-        if (debug) console.log(event);
-        partial();
+    $(document).on("partialInput", function(event) {
+        if (game.debug) console.log(event);
+        game.partial();
     });
-    $(document).keypress(function (event) {
-        console.info(reading, event.which);
-        let charCode = parseInt(event.which);
-        if (reading && charCode === 13) {
+    $(document).keypress(function(event) {
+        console.info(game.reading, event.which);
+        const charCode = event.which;
+        if (game.reading && charCode === 13) {
             event.preventDefault();
-            reading = false;
-            $(document).trigger("endInput", [{
-                type: "endInput",
-                message: "EOL",
-                time: new Date(),
-                inner: event
-            }]);
-        } else if (reading) {
+            game.reading = false;
+            $(document).trigger("endInput", [
+                {
+                    type: "endInput",
+                    message: "EOL",
+                    time: new Date(),
+                    inner: event
+                }]);
+        } else if (game.reading) {
             if (
-                isNumber(inputString + String.fromCharCode(charCode))
+                isNumber(game.inputString + String.fromCharCode(charCode))
                 || (String.fromCharCode(charCode) === "-"
-                && (inputString.length === 0))
+                    && (game.inputString.length === 0))
             ) {
-                inputString += String.fromCharCode(charCode);
+                game.inputString += String.fromCharCode(charCode);
             } else {
-                inputString += String.fromCharCode(charCode);
+                game.inputString += String.fromCharCode(charCode);
             }
-            $(document).trigger("partialInput", [{
-                type: "partialInput",
-                message: "DELTA",
-                time: new Date(),
-                inner: event
-            }]);
+            $(document).trigger("partialInput", [
+                {
+                    type: "partialInput",
+                    message: "DELTA",
+                    time: new Date(),
+                    inner: event
+                }]);
         }
     });
-    $(document).keydown(function (event) {
-        if (reading) {
+    $(document).keydown(function(event) {
+        if (game.reading) {
             if (event.keyCode === 8) {
                 event.preventDefault();
-                if (inputString.length > 0) {
-                    inputString = inputString.substring(0, inputString.length);
-                    $(document).trigger("partialInput", [{
-                        type: "partialInput",
-                        message: "DELTA",
-                        time: new Date(),
-                        inner: event
-                    }]);
+                if (game.inputString.length > 0) {
+                    game.inputString = game.inputString.substring(0,
+                        game.inputString.length);
+                    $(document).trigger("partialInput", [
+                        {
+                            type: "partialInput",
+                            message: "DELTA",
+                            time: new Date(),
+                            inner: event
+                        }]);
                 }
             }
         }
