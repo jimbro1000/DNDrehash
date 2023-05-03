@@ -2977,7 +2977,7 @@ export default class dnd1 {
                 }
                 if (this.gameState.attributes[this.constants.playerHp] === 0) {
                     if (this.gameState.attributes[this.constants.playerCon] < 9) {
-                        this.terminal.println("SORRY YOUR DEAD");
+                        this.terminal.println("SORRY YOU'RE DEAD");
                         this.gameStateMachine.stateMode = 30;
                     } else {
                         this.terminal.println("H.P.=0 BUT CONST. HOLDS");
@@ -3091,7 +3091,7 @@ export default class dnd1 {
         this.terminal.println("AND GET " +
             this.gameState.monsterStats[current][this.constants.monsterStartHp] +
             "GOLD PIECES");
-        if (J6 !== 1)
+        if (this.J6 !== 1)
             this.gameState.monsterStats[current][this.constants.monsterStartHp] = 0;
         this.terminal.println(
             "YOU HAVE" + this.gameState.attributes[this.constants.playerGold] + " GOLD ");

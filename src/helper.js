@@ -10,7 +10,11 @@
  * @return {number}
  */
 function rnd(x) {
-    if (isNaN(x) || x === 0) return Math.random(); else return x * Math.random();
+    if (isNaN(x) || x === 0) {
+        return Math.random();
+    } else {
+        return x * Math.random();
+    }
 }
 
 /**
@@ -56,11 +60,13 @@ function setCookie(client, cookieName, cookieValue, expiryDays) {
  * @returns {object}
  */
 function getCookie(client, cookieName) {
-    var name = cookieName + "=";
-    var ca = client.cookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i].trim();
-        if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+    let name = cookieName + "=";
+    let ca = client.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+        }
     }
     return "";
 }
@@ -72,11 +78,3 @@ export {
     setCookie,
     getCookie
 }
-
-// module.exports = {
-//     rnd,
-//     int,
-//     isNumber,
-//     setCookie,
-//     getCookie
-// }
