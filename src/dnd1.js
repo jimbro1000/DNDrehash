@@ -2903,7 +2903,7 @@ export default class dnd1 {
             this.terminal.println("OK DONE");
             this.terminal.println("HP= " + this.gameState.attributes[0]);
             for (let M = 1; M <= 7; M++) {
-                terminal.println(
+                this.terminal.println(
                     this.attributeNames[M] + "= " +
                     this.gameState.attributes[M]);
             }
@@ -2944,7 +2944,7 @@ export default class dnd1 {
 
     modifyMapSave = () => {
         let stream;
-        this.Q = parseInt(inputString.trim());
+        this.Q = parseInt(this.inputString.trim());
         if (this.Q === 1) {
             let DName = "dnd1file" + this.gameState.Dn + ".dungeonMap.";
             for (let M = 0; M <= 25; M++) {

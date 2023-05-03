@@ -50,7 +50,7 @@ describe("Game Functions", () => {
       game.gameState.currentMonster = 1;
       game.loadMonsters();
       game.gameStateMachine = {
-        stateMode : 0
+        stateMode: 0
       };
     });
 
@@ -61,27 +61,29 @@ describe("Game Functions", () => {
     });
 
     it("routes active monsters to action logic", () => {
-      const spy = jest.spyOn(game, 'monsterMovement').mockImplementation(() => { });
+      const spy = jest.spyOn(game, 'monsterMovement').mockImplementation(() => {
+      });
       game.monsterAction();
       expect(spy).toHaveBeenCalled();
     });
   });
 
   describe("Monster position translation", () => {
-    beforeEach(function() {
+    beforeEach(function () {
       game = new dnd1();
       game.initialiseGlobals(new Console())
       game.loadMonsters();
-      game.gameState.F1=1;
-      game.gameState.F2=1;
-      game.gameState.dungeonMap[0] = [0,0,0];
-      game.gameState.dungeonMap[1] = [0,5,0];
-      game.gameState.dungeonMap[2] = [0,0,0];
+      game.gameState.F1 = 1;
+      game.gameState.F2 = 1;
+      game.gameState.dungeonMap[0] = [0, 0, 0];
+      game.gameState.dungeonMap[1] = [0, 5, 0];
+      game.gameState.dungeonMap[2] = [0, 0, 0];
     });
 
     it("moves monster from A to B", () => {
-      jest.spyOn(game, 'findRange').mockImplementationOnce(() => {});
-      game.translateMonsterPosition(1,0);
+      jest.spyOn(game, 'findRange').mockImplementationOnce(() => {
+      });
+      game.translateMonsterPosition(1, 0);
       expect(game.gameState.dungeonMap[1][1]).toBe(0);
       expect(game.gameState.dungeonMap[2][1]).toBe(5);
     });
@@ -102,7 +104,8 @@ describe("Game Functions", () => {
         game.mapX = 5;
         game.mapY = 12;
         spy = jest.spyOn(game, "translateMonsterPosition");
-        jest.spyOn(game, 'findRange').mockImplementationOnce(() => {});
+        jest.spyOn(game, 'findRange').mockImplementationOnce(() => {
+        });
       });
 
       it("moves across row if vertical offset is larger", () => {
@@ -161,17 +164,21 @@ describe("Game Functions", () => {
       let spyRange;
 
       beforeEach(() => {
-        jest.spyOn(Console.prototype, 'println').mockImplementationOnce(() => {});
+        jest.spyOn(Console.prototype, 'println').mockImplementationOnce(() => {
+        });
         game = new dnd1();
         game.initialiseGlobals(new Console())
         game.gameState.F1 = 1;
         game.gameState.F2 = 1;
-        game.gameState.dungeonMap[0] = [0,1,0,0];
-        game.gameState.dungeonMap[1] = [0,5,2,0];
+        game.gameState.dungeonMap[0] = [0, 1, 0, 0];
+        game.gameState.dungeonMap[1] = [0, 5, 2, 0];
         game.loadMonsters();
         game.gameState.currentMonster = 1;
-        spyBounds = jest.spyOn(game,"inBounds").mockImplementationOnce(() =>  { return true; });
-        spyRange = jest.spyOn(game,"findRange").mockImplementationOnce(() => { });
+        spyBounds = jest.spyOn(game, "inBounds").mockImplementationOnce(() => {
+          return true;
+        });
+        spyRange = jest.spyOn(game, "findRange").mockImplementationOnce(() => {
+        });
       });
 
       it("kills the monster if it finds a trap", () => {
@@ -264,33 +271,42 @@ describe("Game Functions", () => {
       });
     });
 
-    describe("Routes control according to range", function() {
-      beforeEach(function() {
-        game.gameStateMachine = { stateMode : 0 };
+    describe("Routes control according to range", function () {
+      beforeEach(function () {
+        game.gameStateMachine = {stateMode: 0};
       });
 
       it("calculates the range from player to monster", () => {
-        const rangeSpy = jest.spyOn(game,"findRange").mockImplementationOnce(() => { game.range = 0; });
+        const rangeSpy = jest.spyOn(game, "findRange").mockImplementationOnce(() => {
+          game.range = 0;
+        });
         game.monsterMovement();
         expect(rangeSpy).toHaveBeenCalled();
       });
 
       it("routes to attack if range < 2", () => {
-        jest.spyOn(game,"findRange").mockImplementationOnce(() => { game.range = 0; });
+        jest.spyOn(game, "findRange").mockImplementationOnce(() => {
+          game.range = 0;
+        });
         game.monsterMovement();
         expect(game.gameStateMachine.stateMode).toBe(207);
       });
 
       it("routes back to main loop if range >= 2 and P0 > 10", () => {
-        jest.spyOn(game,"findRange").mockImplementationOnce(() => { game.range = 2; });
+        jest.spyOn(game, "findRange").mockImplementationOnce(() => {
+          game.range = 2;
+        });
         game.P0 = 11;
         game.monsterMovement();
         expect(game.gameStateMachine.stateMode).toBe(25);
       });
 
       it("routes back to movement if range >= 2 and P0 <= 10", () => {
-        jest.spyOn(game,"findRange").mockImplementationOnce(() => { game.range = 2; });
-        const resolveMonsterMove = jest.spyOn(game,"resolveMonsterMove").mockImplementationOnce(() => {});
+        jest.spyOn(game, "findRange").mockImplementationOnce(() => {
+          game.range = 2;
+        });
+        const resolveMonsterMove = jest.spyOn(game, "resolveMonsterMove").mockImplementationOnce(() => {
+        });
         game.P0 = 9;
         game.monsterMovement();
         expect(resolveMonsterMove).toHaveBeenCalled();
@@ -301,7 +317,7 @@ describe("Game Functions", () => {
   describe("Reset after clear", () => {
     beforeEach(() => {
       game.loadMonsters();
-      for (let i=1; i<11; i++) {
+      for (let i = 1; i < 11; i++) {
         game.gameState.monsterStats[i][3] = 0;
         game.gameState.monsterStats[i][game.constants.monsterHp] = 0;
       }
@@ -318,7 +334,7 @@ describe("Game Functions", () => {
       expect(game.gameStateMachine.stateMode).toBe(25);
       expect(game.gameState.attributes[game.constants.playerHp]).toBe(15);
       expect(game.difficultyFactor).toBe(2);
-      for(let i=1; i<11; i++) {
+      for (let i = 1; i < 11; i++) {
         expect(game.gameState.monsterStats[i][3]).toBe(game.gameState.monsterStats[i][4] * game.difficultyFactor);
         expect(game.gameState.monsterStats[i][game.constants.monsterHp]).toBe(game.gameState.monsterStats[i][game.constants.monsterStartHp] * game.difficultyFactor);
       }
@@ -326,12 +342,13 @@ describe("Game Functions", () => {
 
     it("stops the game if input is not a 'YES'", () => {
       game.inputString = "";
-      const print = jest.spyOn(Console.prototype,"println").mockImplementationOnce(() => {});
+      const print = jest.spyOn(Console.prototype, "println").mockImplementationOnce(() => {
+      });
       game.resetAfterClear();
       expect(game.gameStateMachine.stateMode).toBe(30);
       expect(game.gameState.attributes[game.constants.playerHp]).toBe(10);
       expect(game.difficultyFactor).toBe(1);
-      for(let i=1; i<11; i++) {
+      for (let i = 1; i < 11; i++) {
         expect(game.gameState.monsterStats[i][3]).toBe(0);
         expect(game.gameState.monsterStats[i][game.constants.monsterHp]).toBe(0);
       }
@@ -355,10 +372,12 @@ describe("Game Functions", () => {
       game.mapY = 4;
       game.gameState.F1 = -1;
       game.gameState.F2 = -1;
-      rnd = jest.spyOn(helper,"rnd").mockImplementation(() =>{ return randomResults[randomFakeCounter++]; });
-      spawn = jest.spyOn(game,"spawnMonsterAt");
-      bounds = jest.spyOn(game,"inBounds");
-      game.gameStateMachine = { stateMode : 0 };
+      rnd = jest.spyOn(helper, "rnd").mockImplementation(() => {
+        return randomResults[randomFakeCounter++];
+      });
+      spawn = jest.spyOn(game, "spawnMonsterAt");
+      bounds = jest.spyOn(game, "inBounds");
+      game.gameStateMachine = {stateMode: 0};
       randomFakeCounter = 0;
     });
 
@@ -453,10 +472,11 @@ describe("Game Functions", () => {
         stateMode: 0
       };
       game.terminal = {};
-      game.terminal.println = () => {};
+      game.terminal.println = () => {
+      };
       game.gameState.currentMonster = 1;
       game.K1 = -1;
-      spy = jest.spyOn(game.terminal,"println");
+      spy = jest.spyOn(game.terminal, "println");
     });
 
     it("reports the kill to the terminal", () => {
@@ -515,17 +535,22 @@ describe("Game Functions", () => {
         stateMode: 0
       };
       game.terminal = {};
-      game.terminal.println = function() {};
-      game.terminal.print = function() {};
-      println = jest.spyOn(game.terminal,"println");
-      print = jest.spyOn(game.terminal,"print");
-      rndspy = jest.spyOn(helper, "rnd").mockImplementation(() => { return randomResults[randomFakeCounter++]; });
-      inputstr = jest.spyOn(game, "inputStr").mockImplementation(() => {});
+      game.terminal.println = function () {
+      };
+      game.terminal.print = function () {
+      };
+      println = jest.spyOn(game.terminal, "println");
+      print = jest.spyOn(game.terminal, "print");
+      rndspy = jest.spyOn(helper, "rnd").mockImplementation(() => {
+        return randomResults[randomFakeCounter++];
+      });
+      inputstr = jest.spyOn(game, "inputStr").mockImplementation(() => {
+      });
       randomFakeCounter = 0;
     });
 
     it("routes game state to 205 if no monsters left to move (all dead)", () => {
-      for(let i=1; i<11; i++) {
+      for (let i = 1; i < 11; i++) {
         game.gameState.monsterStats[i][game.constants.monsterHp] = 0;
       }
       game.monsterMove();
@@ -539,7 +564,7 @@ describe("Game Functions", () => {
     });
 
     it("routes game state to 200 if no moves are identified", () => {
-      for (let i=0;i<500;i++) {
+      for (let i = 0; i < 500; i++) {
         randomResults[i] = 0;
       }
       game.monsterMove();
@@ -547,7 +572,7 @@ describe("Game Functions", () => {
     });
 
     it("asks the user if a reset is desired if all monsters are dead", () => {
-      for(let i=1; i<11; i++) {
+      for (let i = 1; i < 11; i++) {
         game.gameState.monsterStats[i][game.constants.monsterHp] = 0;
       }
       game.monsterMove();
@@ -569,7 +594,7 @@ describe("Game Functions", () => {
     });
   });
 
-  describe("Got more equipment",() => {
+  describe("Got more equipment", () => {
     let randomResults = [];
     let randomFakeCounter;
 
@@ -581,9 +606,12 @@ describe("Game Functions", () => {
         stateMode: 0
       };
       game.terminal = {};
-      game.terminal.println = function() {};
-      println = jest.spyOn(game.terminal,"println");
-      rndspy = jest.spyOn(helper, "rnd").mockImplementation(() => { return randomResults[randomFakeCounter++]; });
+      game.terminal.println = function () {
+      };
+      println = jest.spyOn(game.terminal, "println");
+      rndspy = jest.spyOn(helper, "rnd").mockImplementation(() => {
+        return randomResults[randomFakeCounter++];
+      });
       randomFakeCounter = 0;
       game.gameState.attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
     });
@@ -654,16 +682,18 @@ describe("Game Functions", () => {
   describe("Check Player Health", () => {
     let println;
 
-    beforeEach(function() {
+    beforeEach(function () {
       game.gameState.attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
       game.terminal = {
-        lastInput : ""
+        lastInput: ""
       };
-      game.terminal.println = (value) => { game.terminal.lastInput = value; };
+      game.terminal.println = (value) => {
+        game.terminal.lastInput = value;
+      };
       game.gameStateMachine = {
-        stateMode : 1
+        stateMode: 1
       };
-      println = jest.spyOn(game.terminal,"println");
+      println = jest.spyOn(game.terminal, "println");
     });
 
     it("checks HP to see if it is 2 or over and does nothing if true", () => {
@@ -706,10 +736,10 @@ describe("Game Functions", () => {
 
     it("checks if HP is less than 0 and transfers Con to HP (2:1) until HP is 0 and Con is 9 or more then warns player", () => {
       game.gameState.attributes[game.constants.playerHp] = -2;
-      game.gameState.attributes[game.constants.playerCon] = 13;
+      game.gameState.attributes[game.constants.playerCon] = 14;
       game.checkPlayerHealth();
       expect(game.gameState.attributes[game.constants.playerHp]).toBe(0);
-      expect(game.gameState.attributes[game.constants.playerCon]).toBe(9);
+      expect(game.gameState.attributes[game.constants.playerCon]).toBe(10);
       expect(println).toHaveBeenCalled();
       expect(game.terminal.lastInput).toBe("H.P.=0 BUT CONST. HOLDS");
     });
@@ -723,6 +753,282 @@ describe("Game Functions", () => {
       expect(println).toHaveBeenCalled();
       expect(game.terminal.lastInput).toBe("SORRY YOU'RE DEAD");
       expect(game.gameStateMachine.stateMode).toBe(30);
+    });
+  });
+
+  describe("Route Game Move", () => {
+    let println;
+    let health;
+    let move;
+
+    beforeEach(() => {
+      game.K1 = 0;
+      game.gameState.attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+      game.terminal = {
+        lastInput: ""
+      };
+      game.terminal.println = (value) => {
+        game.terminal.lastInput = value;
+      };
+      game.gameStateMachine = {
+        stateMode: 1,
+        waitTransition: false
+      };
+      println = jest.spyOn(game.terminal, "println");
+      health = jest.spyOn(game, "checkPlayerHealth");
+      move = jest.spyOn(game, "testForCloneMove").mockImplementation(() => {
+        game.gameStateMachine.stateMode = 25;
+      });
+    });
+
+    it("checks for a kill", () => {
+      game.K1 = -1;
+      game.routeGameMove();
+      expect(game.gameStateMachine.stateMode).toBe(203);
+    });
+
+    it("checks if not a kill then check player is dead", () => {
+      game.gameState.attributes[game.constants.playerHp] = -1;
+      game.gameState.attributes[game.constants.playerCon] = 8;
+      game.routeGameMove();
+      expect(game.gameStateMachine.stateMode).toBe(30);
+      expect(health).toHaveBeenCalled();
+    });
+
+    it("checks if a monster is waiting to move", () => {
+      game.gameState.currentMonster = 1;
+      game.routeGameMove();
+      expect(game.gameStateMachine.stateMode).toBe(206);
+    });
+
+    it("checks if player is at the starting position and offers to shop if gold >= 100", () => {
+      game.gameState.currentMonster = 0;
+      game.mapY = 1;
+      game.mapX = 12;
+      jest.spyOn(game, "inputStr").mockImplementation(() => {
+        game.gameStateMachine.waitTransition = true;
+      });
+      game.routeGameMove();
+      expect(game.gameStateMachine.stateMode).toBe(201);
+      expect(game.gameState.attributes[game.constants.playerGold]).toBe(900);
+      expect(game.gameStateMachine.waitTransition).toBe(true);
+      expect(game.terminal.lastInput).toBe("WANT TO BUY MORE EQUIPMENT");
+    });
+
+    it("checks if player is at the starting position and welcomes if gold < 100 and hands off to main routine", () => {
+      game.gameState.currentMonster = 0;
+      game.mapY = 1;
+      game.mapX = 12;
+      game.gameState.attributes[game.constants.playerGold] = 99;
+      game.routeGameMove();
+      expect(move).toHaveBeenCalled();
+      expect(game.gameState.attributes[game.constants.playerGold]).toBe(99);
+      expect(game.terminal.lastInput).toBe("SO YOU HAVE RETURNED");
+      expect(game.gameStateMachine.stateMode).not.toBe(0);
+    });
+
+    it("checks the player is not at the starting position and hands off to main routine", () => {
+      game.gameState.currentMonster = 0;
+      game.mapY = 2;
+      game.mapX = 12;
+      game.routeGameMove();
+      expect(move).toHaveBeenCalled();
+      expect(game.gameStateMachine.stateMode).not.toBe(0);
+    });
+  })
+
+  describe("Modify Map Process", () => {
+    describe("Modify Map Save", () => {
+      let cookie;
+
+      beforeEach(() => {
+        game.defaultMap();
+        game.gameStateMachine = {
+          stateMode: 1
+        };
+        game.cookieLifespan = 2000;
+        cookie = jest.spyOn(helper, "setCookie").mockImplementation(() => {});
+      });
+
+      afterEach(() => {
+        jest.clearAllMocks();
+      });
+
+      it("checks player input to confirm save (1) and writes to cookie", () => {
+        game.inputString = "1";
+        game.gameState.Dn = 1;
+        game.modifyMapSave();
+        expect(cookie).toHaveBeenCalledTimes(26);
+        expect(cookie).toHaveBeenNthCalledWith(1, Document, "dnd1file1.dungeonMap.0", "1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|", 2000);
+        expect(game.gameStateMachine.stateMode).toBe(200);
+      });
+
+      it("checks player input to confirm save (0)", () => {
+        game.inputString = "0";
+        game.gameState.Dn = 1;
+        game.modifyMapSave();
+        expect(cookie).not.toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(200);
+      });
+    });
+
+    describe("Modify Map Done", () => {
+      let cookie;
+      let println;
+      let input;
+
+      beforeEach(() => {
+        game.terminal = {
+          lastInput : ""
+        };
+        game.terminal.println = (value) => { game.terminal.lastInput = value; };
+        game.gameStateMachine = {
+          stateMode : 1,
+          waitTransition : false
+        };
+        game.defaultMap();
+        cookie = jest.spyOn(helper,"setCookie").mockImplementation(() => {});
+        println = jest.spyOn(game.terminal,"println");
+        input = jest.spyOn(game,"input").mockImplementation(() => { game.gameStateMachine.waitTransition = true; });
+      });
+
+      it("accepts player input x,y,content and modifies map", () => {
+        game.inputStrings[2] = "1";
+        game.inputStrings[1] = "2";
+        game.inputStrings[0] = "5";
+        game.modifyMapDone();
+        expect(game.gameState.dungeonMap[2][1]).toBe(5);
+        expect(input).not.toHaveBeenCalled();
+        expect(println).not.toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(103);
+      });
+
+      it("treats a negative content value as an instruction to stop", () => {
+        game.inputStrings[2] = "1";
+        game.inputStrings[1] = "2";
+        game.inputStrings[0] = "-5";
+        game.modifyMapDone();
+        expect(input).toHaveBeenCalled();
+        expect(game.gameState.dungeonMap[2][1]).toBe(0);
+        expect(println).toHaveBeenCalled();
+        expect(game.terminal.lastInput).toBe("SAVE");
+        expect(game.gameStateMachine.stateMode).toBe(105);
+      });
+    });
+
+    describe("Modify Got Map", () => {
+      beforeEach(() => {
+        game.gameStateMachine = {
+          stateMode : 1
+        };
+      });
+
+      it("converts user input into dungeon number", () => {
+        game.gameState.Dn = 0;
+        game.inputString = "1";
+        game.modifyGotMap();
+        expect(game.gameState.Dn).toBe(1);
+        expect(game.gameStateMachine.stateMode).toBe(103);
+      });
+    });
+
+    describe("Modify Map", () => {
+      let print;
+      let input;
+
+      beforeEach(() => {
+        game.terminal = {
+          lastInput : ""
+        };
+        game.terminal.print = function(value) { game.terminal.lastInput = value; };
+        game.gameStateMachine = {
+          stateMode : 1,
+          waitTransition : false
+        };
+        print = jest.spyOn(game.terminal,"print");
+        input = jest.spyOn(game,"input").mockImplementation(() => { game.gameStateMachine.waitTransition = true; })
+      });
+
+      it("prompts the user for a dungeon number", () => {
+        game.modifyMap();
+        expect(print).toHaveBeenCalledWith("DNG");
+        expect(input).toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(102.5);
+      });
+    });
+  });
+
+  describe("Buy Health", () => {
+    let println;
+    let print;
+    let input;
+
+    beforeEach(() => {
+      game.gameState.attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+      game.terminal = {
+        lastInput : ""
+      };
+      game.terminal.println = (value) => { game.terminal.lastInput = value; };
+      game.terminal.print = (value) => { game.terminal.lastInput = value; };
+      game.gameStateMachine = {
+        stateMode : 1,
+        waitTransition : false
+      };
+      println = jest.spyOn(game.terminal,"println");
+      print = jest.spyOn(game.terminal,"print");
+      input = jest.spyOn(game,"input").mockImplementation(() => {});
+    });
+
+    describe("Add HP", () => {
+      it("accepts player input and converts gold to health if enough gold is carried and reports result", () => {
+        game.inputString = "4";
+        game.addHP();
+        expect(game.gameState.attributes[game.constants.playerGold]).toBe(200);
+        expect(game.gameState.attributes[game.constants.playerHp]).toBe(14);
+        expect(game.gameStateMachine.stateMode).toBe(200);
+        expect(println).toHaveBeenCalledTimes(9);
+      });
+
+      it("rejects player input if insufficient gold carried", () => {
+        game.inputString = "6";
+        game.addHP();
+        expect(game.gameState.attributes[game.constants.playerGold]).toBe(1000);
+        expect(game.gameState.attributes[game.constants.playerHp]).toBe(10);
+        expect(game.gameStateMachine.stateMode).toBe(100);
+        expect(println).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe("Buy HP", () => {
+      it("prompts the user for quantity of hp to buy", () => {
+        game.buyHP();
+        expect(input).toHaveBeenCalled();
+        expect(print).toHaveBeenCalledWith("HOW MANY 200 GP. EACH ");
+        expect(game.gameStateMachine.stateMode).toBe(101);
+      });
+    });
+  });
+
+  describe("Show Cheat Map", () => {
+    let println;
+
+    beforeEach(() => {
+      game.terminal = {
+        lastInput : ""
+      };
+      game.terminal.println = (value) => { game.terminal.lastInput = value; };
+      game.gameStateMachine = {
+        stateMode : 1,
+        waitTransition : false
+      };
+      game.defaultMap();
+      println = jest.spyOn(game.terminal,"println");
+    });
+
+    it("displays the entire map to the player", () => {
+      game.showCheatMap();
+      expect(println).toHaveBeenCalledTimes(26);
+      expect(game.gameStateMachine.stateMode).toBe(25);
     });
   });
 });
