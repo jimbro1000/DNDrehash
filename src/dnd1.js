@@ -309,7 +309,7 @@ export default class dnd1 {
 
     getCurrentWeapon = () => {
         if (this.gameState.currentWeaponIndex === -1) return 0;
-        return this.gameState.inventory[currentWeaponIndex];
+        return this.gameState.inventory[this.gameState.currentWeaponIndex];
     }
 
     setCurrentWeapon = (item) => {
@@ -2483,7 +2483,7 @@ export default class dnd1 {
         let found = false;
         let spellChoice;
         for (let m = 1; m <= this.gameState.clericSpellCounter; m++) {
-            if (Q === this.gameState.clericSpellbook[m]) {
+            if (this.Q === this.gameState.clericSpellbook[m]) {
                 this.M = m;
                 found = true;
                 m = this.gameState.clericSpellCounter + 1;
@@ -2493,8 +2493,8 @@ export default class dnd1 {
             this.terminal.println("YOU DONT HAVE THAT SPELL");
             this.gameStateMachine.stateMode = 200;
         } else {
-            spellChoice = this.gameState.clericSpellbook[M];
-            this.gameState.clericSpellbook[M] = 0;
+            spellChoice = this.gameState.clericSpellbook[this.M];
+            this.gameState.clericSpellbook[this.M] = 0;
             //route clerical spell choice
             if (spellChoice > 3) {
                 this.Q = 2;
@@ -2568,7 +2568,7 @@ export default class dnd1 {
             for (let N = -3; N < 4; N++) {
                 if (!((this.mapY + M < 0) || (this.mapY + M > 25) || (this.mapX + N < 0) ||
                     (this.mapX + N > 25))) {
-                    if (this.gameState.dungeonMap[this.mapY + M][this.mapX + N] === Q)
+                    if (this.gameState.dungeonMap[this.mapY + M][this.mapX + N] === this.Q)
                         this.terminal.println(
                             "THERE IS ONE AT " + (this.mapY + M) + "LAT." +
                             (this.mapX + N) + "LONG.");
@@ -2614,7 +2614,7 @@ export default class dnd1 {
         this.Q = parseInt(this.inputString.trim());
         let found = false;
         for (let m = 1; m <= this.gameState.wizardSpellCounter; m++) {
-            if (Q === this.gameState.wizardSpellbook[m]) {
+            if (this.Q === this.gameState.wizardSpellbook[m]) {
                 found = true;
                 this.M = m;
                 m = this.gameState.wizardSpellCounter + 1;
@@ -2702,8 +2702,8 @@ export default class dnd1 {
                 if (this.inBounds(this.mapY + M, this.mapX + N))
                     if (this.gameState.dungeonMap[this.mapY + M][this.mapX + N] ===
                         this.Q) {
-                        terminal.println(
-                            "THERE IS ONE AT " + (mapY + M) + "LAT." +
+                        this.terminal.println(
+                            "THERE IS ONE AT " + (this.mapY + M) + "LAT." +
                             (mapX + N) +
                             "LONG."
                         );
@@ -2774,7 +2774,7 @@ export default class dnd1 {
         } else if (this.gameState.attributeNames[this.constants.playerClass] === "WIZARD") {
             this.gameStateMachine.stateMode = 94;
         } else {
-            this.terminal.println("YOU CANT BUY ANY");
+            this.terminal.println("YOU CAN'T BUY ANY");
             this.gameStateMachine.stateMode = 25;
         }
     }
@@ -2805,7 +2805,7 @@ export default class dnd1 {
     }
 
     wizardSpellChoices = () => { //96
-        this.strQ = inputString.trim();
+        this.strQ = this.inputString.trim();
         if (this.strQ === "NO") {
             this.terminal.println("1-PUSH-75   6-MAG. MISS. #1-100");
             this.terminal.println("2-KIHL-500  7-MAG. MISS. #2-200");
@@ -2828,9 +2828,7 @@ export default class dnd1 {
                     this.gameState.attributes[this.constants.playerGold] -= this.clericSpellPrices[int(
                         this.Q)];
                     this.terminal.println("IT IS YOURS");
-                    this.gameState.clericSpellbook[this.gameState.clericSpellCounter] = int(
-                        this.Q);
-                    this.gameState.clericSpellCounter += 1;
+                    this.gameState.addClericSpell(int(this.Q));
                 }
             }
             this.input();
@@ -2839,11 +2837,11 @@ export default class dnd1 {
             this.terminal.println("YOUR SPELLS ARE");
             for (this.M = 1; this.M <= this.gameState.clericSpellCounter; this.M++) {
                 if (this.gameState.clericSpellbook[this.M] !== 0) {
-                    terminal.println("#" + this.gameState.clericSpellbook[this.M]);
+                    this.terminal.println("#" + this.gameState.clericSpellbook[this.M]);
                 }
             }
-            terminal.println("DONE");
-            gameStateMachine.stateMode = 25;
+            this.terminal.println("DONE");
+            this.gameStateMachine.stateMode = 25;
         }
     }
 
@@ -2851,15 +2849,13 @@ export default class dnd1 {
         if (this.Q > 0) {
             if (this.Q <= 10) {
                 if (this.gameState.attributes[this.constants.playerGold] -
-                    this.wizardSpellPrices[int(Q)] < 0) {
+                    this.wizardSpellPrices[int(this.Q)] < 0) {
                     this.terminal.println("COSTS TOO MUCH");
                 } else {
                     this.gameState.attributes[this.constants.playerGold] -= this.wizardSpellPrices[int(
                         this.Q)];
                     this.terminal.println("IT IS YOURS");
-                    this.gameState.wizardSpellCounter += 1;
-                    this.gameState.wizardSpellbook[this.gameState.wizardSpellCounter] = int(
-                        this.Q);
+                    this.gameState.addWizardSpell(int(this.Q));
                 }
             }
             this.input();
@@ -2868,7 +2864,7 @@ export default class dnd1 {
             this.terminal.println("YOU NOW HAVE");
             for (this.M = 1; this.M <= this.gameState.wizardSpellCounter; this.M++) {
                 if (this.gameState.wizardSpellbook[this.M] !== 0) {
-                    terminal.println("#" + this.gameState.wizardSpellbook[this.M]);
+                    this.terminal.println("#" + this.gameState.wizardSpellbook[this.M]);
                 }
             }
             this.gameStateMachine.stateMode = 25;

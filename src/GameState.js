@@ -122,8 +122,18 @@ export default class GameState {
     return this.#clericSpellCounter;
   }
 
+  clearClericSpellbook() {
+    this.#clericSpellCounter = 0;
+    this.#clericSpellbook = [0];
+  }
+
   get wizardSpellCounter() {
     return this.#wizardSpellCounter;
+  }
+
+  clearWizardSpellbook() {
+    this.#wizardSpellCounter = 0;
+    this.#wizardSpellbook = [0];
   }
 
   get clericSpellbook() {
@@ -132,6 +142,16 @@ export default class GameState {
 
   get wizardSpellbook() {
     return this.#wizardSpellbook;
+  }
+
+  addWizardSpell(spell) {
+    this.#wizardSpellbook.push(spell);
+    this.#wizardSpellCounter++;
+  }
+
+  addClericSpell(spell) {
+    this.#clericSpellbook.push(spell);
+    this.#clericSpellCounter++;
   }
 
   #serialiseMapRow = (row) => {

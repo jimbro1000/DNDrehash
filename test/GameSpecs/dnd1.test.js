@@ -1031,4 +1031,777 @@ describe("Game Functions", () => {
       expect(game.gameStateMachine.stateMode).toBe(25);
     });
   });
+
+  describe("Purchase Magic (Cleric & Wizard)", () => {
+    let println;
+    let print;
+    let inputStr;
+    let input;
+
+    beforeEach(() => {
+      game.gameState.attributes = [10, 10, 10, 10, 10, 10, 10, 1000];
+      game.gameState.attributeNames = [];
+      game.terminal = {
+        lastInput : ""
+      };
+      game.terminal.println = (value) => { game.terminal.lastInput = value; };
+      game.terminal.print = (value) => { game.terminal.lastInput = value; };
+      game.gameStateMachine = {
+        stateMode : 1,
+        waitTransition : false
+      };
+      game.gameState.clearClericSpellbook();
+      game.gameState.clearWizardSpellbook();
+      game.gameState.clericSpellPrices = [0, 500, 200, 200, 200, 100, 300, 1000, 200];
+      game.gameState.wizardSpellPrices = [0, 75, 500, 200, 750, 600, 100, 200, 300, 200, 600];
+      println = jest.spyOn(game.terminal,"println");
+      print = jest.spyOn(game.terminal,"print");
+      inputStr = jest.spyOn(game,"inputStr").mockImplementation(() => {});
+      input = jest.spyOn(game,"input").mockImplementation(() => {});
+    });
+
+    describe("Buy Magic Prompt", () => {
+      it("rejects non-MU", () => {
+        game.gameState.attributeNames[game.constants.playerClass] = "FIGHTER";
+        game.buyMagic();
+        expect(println).toHaveBeenCalledWith("YOU CAN'T BUY ANY");
+        expect(game.gameStateMachine.stateMode).toBe(25);
+      });
+
+      it("accepts cleric class", () => {
+        game.gameState.attributeNames[game.constants.playerClass] = "CLERIC";
+        game.buyMagic();
+        expect(println).not.toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(93);
+      });
+
+      it("accepts wizard class", () => {
+        game.gameState.attributeNames[game.constants.playerClass] = "WIZARD";
+        game.buyMagic();
+        expect(println).not.toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(94);
+      });
+    });
+
+    describe("Ask A Cleric", () => {
+      it("prompts the user if the list of spell choices is known", () => {
+        game.askACleric();
+        expect(println).toHaveBeenCalledWith("DO YOU KNOW THE CHOICES");
+        expect(inputStr).toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(95);
+      });
+    });
+
+    describe("Ask A Wizard", () => {
+      it("prompts the user if the list of spell choices is known", () => {
+        game.askAWizard();
+        expect(println).toHaveBeenCalledWith("DO YOU KNOW THE SPELLS");
+        expect(inputStr).toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(96);
+      });
+    });
+
+    describe("Cleric Spell Choices", () => {
+      it("routes to the input response for cleric spell choices", () => {
+        game.inputString = "";
+        game.clericSpellChoices();
+        expect(input).toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(97);
+      });
+
+      it("if the user inputs 'NO' the list of spells is shown", () => {
+        game.inputString = "NO";
+        game.clericSpellChoices();
+        expect(println).toHaveBeenCalledTimes(4);
+        expect(print).toHaveBeenCalledTimes(1);
+      });
+
+      it("if the user doesn't input 'NO' the list of spells is skipped", () => {
+        game.inputString = "YES";
+        game.clericSpellChoices();
+        expect(println).not.toHaveBeenCalled();
+        expect(print).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("Wizard Spell Choices", () => {
+      it("routes to the input response for wizard spell choices", () => {
+        game.inputString = "";
+        game.wizardSpellChoices();
+        expect(input).toHaveBeenCalled();
+        expect(game.gameStateMachine.stateMode).toBe(98);
+      });
+
+      it("if the user inputs 'NO' the list of spells is shown", () => {
+        game.inputString = "NO";
+        game.wizardSpellChoices();
+        expect(println).toHaveBeenCalledTimes(5);
+        expect(print).toHaveBeenCalledTimes(1);
+      });
+
+      it("if the user doesn't input 'NO' the list of spells is skipped", () => {
+        game.inputString = "YES";
+        game.wizardSpellChoices();
+        expect(println).not.toHaveBeenCalled();
+        expect(print).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("Purchase Cleric Spell", () => {
+      it("checks input for a negative number and lists spellbook and exits purchase if true", () => {
+        game.Q = -1;
+        game.gameState.addClericSpell("A");
+        game.gameState.addClericSpell("B");
+        game.gameState.addClericSpell("C");
+        game.clericSpellPurchase();
+        expect(game.gameStateMachine.stateMode).toBe(25);
+        expect(println).toHaveBeenCalledWith("YOUR SPELLS ARE");
+        expect(println).toHaveBeenCalledTimes(5);
+      });
+
+      it("checks input for the upper positive limit and if true skips input and repeats", () => {
+        game.Q = 9;
+        game.clericSpellPurchase();
+        expect(game.gameStateMachine.stateMode).toBe(97);
+        expect(input).toHaveBeenCalled();
+        expect(println).not.toHaveBeenCalled();
+      });
+
+      it("adds the chosen spell if enough gold is carried", () => {
+        game.Q = 4;
+        game.clericSpellPurchase();
+        expect(game.gameStateMachine.stateMode).toBe(97);
+        expect(input).toHaveBeenCalled();
+        expect(println).toHaveBeenCalledWith("IT IS YOURS");
+        expect(game.gameState.clericSpellCounter).toBe(1);
+        expect(game.gameState.clericSpellbook[1]).toBe(4);
+        expect(game.gameState.attributes[game.constants.playerGold]).toBe(800);
+      });
+
+      it("warns player if insufficient gold is carried", () => {
+        game.Q = 4;
+        game.gameState.attributes[game.constants.playerGold] = 0;
+        game.clericSpellPurchase();
+        expect(game.gameStateMachine.stateMode).toBe(97);
+        expect(input).toHaveBeenCalled();
+        expect(println).toHaveBeenCalledWith("COSTS TOO MUCH");
+        expect(game.gameState.clericSpellCounter).toBe(0);
+        expect(game.gameState.attributes[game.constants.playerGold]).toBe(0);
+      });
+    });
+
+    describe("Purchase Wizard Spell", () => {
+      it("checks input for a negative number and lists spellbook and exits purchase if true", () => {
+        game.Q = -1;
+        game.gameState.addWizardSpell("A");
+        game.gameState.addWizardSpell("B");
+        game.gameState.addWizardSpell("C");
+        game.wizardSpellPurchase();
+        expect(game.gameStateMachine.stateMode).toBe(25);
+        expect(println).toHaveBeenCalledWith("YOU NOW HAVE");
+        expect(println).toHaveBeenCalledTimes(4);
+      });
+
+      it("checks input for the upper positive limit and if true skips input and repeats", () => {
+        game.Q = 11;
+        game.wizardSpellPurchase();
+        expect(game.gameStateMachine.stateMode).toBe(98);
+        expect(input).toHaveBeenCalled();
+        expect(println).not.toHaveBeenCalled();
+      });
+
+      it("adds the chosen spell if enough gold is carried", () => {
+        game.Q = 4;
+        game.wizardSpellPurchase();
+        expect(game.gameStateMachine.stateMode).toBe(98);
+        expect(input).toHaveBeenCalled();
+        expect(println).toHaveBeenCalledWith("IT IS YOURS");
+        expect(game.gameState.wizardSpellCounter).toBe(1);
+        expect(game.gameState.wizardSpellbook[1]).toBe(4);
+        expect(game.gameState.attributes[game.constants.playerGold]).toBe(250);
+      });
+
+      it("warns player if insufficient gold is carried", () => {
+        game.Q = 4;
+        game.gameState.attributes[game.constants.playerGold] = 0;
+        game.wizardSpellPurchase();
+        expect(game.gameStateMachine.stateMode).toBe(98);
+        expect(input).toHaveBeenCalled();
+        expect(println).toHaveBeenCalledWith("COSTS TOO MUCH");
+        expect(game.gameState.wizardSpellCounter).toBe(0);
+        expect(game.gameState.attributes[game.constants.playerGold]).toBe(0);
+      });
+    });
+  });
+
+  describe("Casting Spells (Cleric & Wizard)", () => {
+    let randomResults = [];
+    let randomCounter;
+    let println;
+    let print;
+    let input;
+    let inputStr;
+    let inputX;
+    let rndSpy;
+    let inBounds;
+
+    beforeAll(() => {
+      game = new dnd1();
+      game.initialiseGlobals({
+        lastInput: "",
+        println: (value) => {
+          game.terminal.lastInput = value;
+        },
+        print: (value) => {
+          game.terminal.lastInput = value;
+        }
+      });
+      game.defaultMap();
+    });
+
+    beforeEach(() => {
+      game.gameStateMachine = {
+        stateMode : 1,
+        waitTransition : false
+      };
+      game.gameState.currentWeaponIndex = 0;
+      randomCounter = 0;
+      println = jest.spyOn(game.terminal,"println");
+      print = jest.spyOn(game.terminal,"print");
+      input = jest.spyOn(game,"input").mockImplementation(() => {});
+      inputStr = jest.spyOn(game,"inputStr").mockImplementation(() => {});
+      inputX = jest.spyOn(game, "inputX").mockImplementation(() => {});
+      rndSpy = jest.spyOn(helper, "rnd").mockImplementation(() => { return randomResults[randomCounter++]; });
+      inBounds = jest.spyOn(game, "inBounds");
+    });
+
+    describe("Validate Casting Action Choice", () => {
+      it("checks that a weapon isn't equipped", () => {
+        game.gameState.currentWeaponIndex = 1;
+        game.casting();
+        expect(game.gameStateMachine.stateMode).toBe(200);
+        expect(println).toHaveBeenCalledWith("YOU CAN'T USE MAGIC WITH WEAPON IN HAND");
+      });
+
+      it("checks that the player is not a magic user", () => {
+        game.attributeNames[game.constants.playerClass] = "FIGHTER";
+        game.casting();
+        expect(game.gameStateMachine.stateMode).toBe(200);
+        expect(println).toHaveBeenCalledWith("YOU CAN'T USE MAGIC YOUR NOT A M.U.");
+      });
+
+      it("checks that the player is a wizard", () => {
+        game.attributeNames[game.constants.playerClass] = "WIZARD";
+        game.casting();
+        expect(game.gameStateMachine.stateMode).toBe(87);
+        expect(print).toHaveBeenCalledWith("SPELL #");
+        expect(input).toHaveBeenCalled();
+      });
+
+      it("checks that the player is a cleric", () => {
+        game.attributeNames[game.constants.playerClass] = "CLERIC";
+        game.casting();
+        expect(game.gameStateMachine.stateMode).toBe(78);
+        expect(print).toHaveBeenCalledWith("CLERICAL SPELL #");
+        expect(input).toHaveBeenCalled();
+      });
+    });
+
+    describe("Wizard Spell Casting", () => {
+      beforeEach(() => {
+        game.gameState.clearWizardSpellbook();
+        for (let i = 0; i < 11; ++i)
+          game.gameState.addWizardSpell(i);
+        game.mapX = 5;
+        game.mapY = 5;
+      });
+
+      describe("Route Spell Choice", () => {
+        it("accepts user input and checks it is a valid spell choice, warns user if not", () => {
+          game.gameState.wizardSpellbook[5] = 0;
+          game.inputString = "5";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(25);
+          expect(println).toHaveBeenCalledWith("YOU DON'T HAVE THAT ONE");
+        });
+
+        it("accepts PUSH(1) spell and skips input if range is 0", () => {
+          game.inputString = "1";
+          game.gameState.F1 = mapY;
+          game.gameState.F2 = mapX;
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(73);
+          expect(game.S).toBe(0);
+          expect(game.T).toBe(0);
+          expect(game.Z5).toBe(1);
+          expect(game.inputString).toBe("");
+          expect(println).not.toHaveBeenCalled();
+        });
+
+        it("accepts PUSH(1) spell and prompts user for further input if range > 0", () => {
+          game.inputString = "1";
+          game.gameState.F1 = 1;
+          game.gameState.F2 = 1;
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(73);
+          expect(println).toHaveBeenCalledWith("ARE YOU ABOVE,BELOW,RIGHT, OR LEFT OF IT");
+          expect(inputStr).toHaveBeenCalled();
+        });
+
+        it("accepts KILL(2) and routes to function", () => {
+          game.inputString = "2";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(88);
+        });
+
+        it("accepts FIND TRAPS(3) and routes to function", () => {
+          game.inputString = "3";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(89);
+          expect(game.Q).toBe(2);
+        });
+
+        it("accepts TELEPORT(4) and routes to function", () => {
+          game.inputString = "4";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(90);
+          expect(game.Q).toBe(2);
+        });
+
+        it("accepts CHANGE(5) and routes to function", () => {
+          game.inputString = "5";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(91.5);
+          expect(game.Q).toBe(0);
+        });
+
+        it("accepts MAG.MISS 1(6) and routes to equivalent cleric function", () => {
+          game.inputString = "6";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(83);
+          expect(game.Q).toBe(3);
+        });
+
+        it("accepts MAG.MISS 2(7) and routes to equivalent cleric function", () => {
+          game.inputString = "7";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(80);
+          expect(game.Q).toBe(6);
+        });
+
+        it("accepts MAG.MISS 3(8) and routes to equivalent cleric function", () => {
+          game.inputString = "8";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(84);
+          expect(game.Q).toBe(9);
+        });
+
+        it("accepts FIND SECRET DOORS (9) and routes to function", () => {
+          game.inputString = "9";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(89);
+          expect(game.Q).toBe(3);
+        });
+
+        it("accepts CHANGE(10) and routes to function", () => {
+          game.inputString = "10";
+          game.gotWizardSpell();
+          expect(game.gameStateMachine.stateMode).toBe(91.5);
+          expect(game.Q).toBe(1);
+        });
+      });
+
+      describe("KILL spell", () => {
+        it("fails on the first 33% chance", () => {
+          randomResults = [ 1 ];
+          game.wizardSpellKill();
+          expect(game.gameStateMachine.stateMode).toBe(200);
+          expect(rndSpy).toHaveBeenCalled();
+          expect(println).toHaveBeenCalledWith("FAILED");
+        });
+
+        it("succeeds on the upper 66% chance", () => {
+          game.randomResults = [ 1.1 ];
+          game.wizardSpellKill();
+          expect(game.gameStateMachine.stateMode).toBe(200);
+          expect(rndSpy).toHaveBeenCalled();
+          expect(println).toHaveBeenCalledWith("DONE");
+          expect(game.K1).toBe(-1);
+        });
+      });
+
+      describe("FIND TRAPS spell", () => {
+        it("identifies any traps within a 7x7 area centred on the player", () => {
+          game.Q = 2;
+          game.wizardSpellFindTrap();
+          expect(println).toHaveBeenCalledWith("THERE IS ONE AT 3LAT.6LONG.");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+          expect(println).toHaveBeenCalledWith("NO MORE");
+          expect(inBounds).toHaveBeenCalled();
+        });
+      });
+
+      describe("TELEPORT spell", () => {
+        it("prompts user for a target location on map", () => {
+          game.wizardSpellTeleport();
+          expect(inputX).toHaveBeenCalled();
+          expect(print).toHaveBeenCalledWith("INPUT CO-ORDINATES");
+          expect(game.gameStateMachine.stateMode).toBe(91);
+        });
+
+        it("accepts user input for a target location on map and moves the player to that point if in bounds", () => {
+          game.inputStrings = ["6", "7"];
+          game.gotTeleportCoordinates();
+          expect(mapX).toBe(6);
+          expect(mapY).toBe(7);
+          expect(println).toHaveBeenCalledWith("DONE");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+
+        it("accepts user input for a target location on map and blocks the move if not in bounds", () => {
+          game.inputStrings = ["6", "27"];
+          game.gotTeleportCoordinates();
+          expect(mapX).toBe(5);
+          expect(mapY).toBe(5);
+          expect(println).toHaveBeenCalledWith("FAILED");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      describe("CHANGE spell", () => {
+        it("prompts the user for map coordinates", () => {
+          game.gotSpellChange();
+          expect(inputX).toHaveBeenCalled();
+          expect(print).toHaveBeenCalledWith("INPUT CO-ORDINATES");
+          expect(game.gameStateMachine.stateMode).toBe(91.6);
+        });
+
+        it("rejects map coordinates outside the bounds of the map", () => {
+          game.inputStrings = ["28", "1"];
+          game.gotChangeCoordinates();
+          expect(println).toHaveBeenCalledWith("FAILED");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+
+        it("converts a map cell from a wall to open space", () => {
+          game.Q = 0;
+          game.inputStrings = ["6", "6"];
+          game.gotChangeCoordinates();
+          expect(game.gameState.dungeonMap[6][6]).toBe(0);
+          expect(println).toHaveBeenCalledWith("DONE");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+
+        it("fails to convert anything but wall to open space", () => {
+          game.Q = 0;
+          game.inputStrings = ["8", "1"];
+          game.gotChangeCoordinates();
+          expect(game.gameState.dungeonMap[1][8]).toBe(4);
+          expect(println).toHaveBeenCalledWith("FAILED");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+
+        it("converts a map cell from open space to a wall", () => {
+          game.Q = 1;
+          game.inputStrings = ["5", "6"];
+          game.gotChangeCoordinates();
+          expect(game.gameState.dungeonMap[6][5]).toBe(1);
+          expect(println).toHaveBeenCalledWith("DONE");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+
+        it("fails to convert anything but open space to wall", () => {
+          game.Q = 1;
+          game.inputStrings = ["8", "1"];
+          game.gotChangeCoordinates();
+          expect(game.gameState.dungeonMap[1][8]).toBe(4);
+          expect(println).toHaveBeenCalledWith("FAILED");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      describe("FIND SECRET DOORS spell", () => {
+        it("identifies any secret doors within a 7x7 area centred on the player", () => {
+          game.Q = 3;
+          game.wizardSpellFindTrap();
+          expect(println).toHaveBeenCalledWith("THERE IS ONE AT 4LAT.3LONG.");
+          expect(println).toHaveBeenCalledWith("THERE IS ONE AT 8LAT.4LONG.");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+          expect(println).toHaveBeenCalledWith("NO MORE");
+          expect(inBounds).toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe("Cleric Spell Casting", () => {
+      beforeEach(() => {
+        game.gameState.clearClericSpellbook();
+        for (let i = 1; i < 10; ++i)
+          game.gameState.addClericSpell(i);
+        game.mapX = 5;
+        game.mapY = 5;
+        game.loadMonsters();
+      });
+
+      describe("Route Spell Choice", () => {
+        it("accepts user input and checks it is a valid spell choice, warns user if not", () => {
+          game.gameState.clericSpellbook[5] = 0;
+          game.inputString = "5";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(200);
+          expect(println).toHaveBeenCalledWith("YOU DON'T HAVE THAT SPELL");
+        });
+
+        it("accepts KILL(1) and routes to function", () => {
+          game.inputString = "1";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(79);
+        });
+
+        it("accepts MAG.MISS 2(2) and routes to function", () => {
+          game.inputString = "2";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(80);
+        });
+
+        it("accepts CURE LIGHT WOUNDS(3) and routes to function", () => {
+          game.inputString = "3";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(81);
+        });
+
+        it("accepts FIND TRAPS(4) and routes to function", () => {
+          game.inputString = "4";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(82);
+          expect(game.Q).toBe(2);
+        });
+
+        it("accepts MAG.MISS 1(5) and routes to function", () => {
+          game.inputString = "5";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(83);
+        });
+
+        it("accepts MAG.MISS 3(6) and routes to function", () => {
+          game.inputString = "6";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(84);
+        });
+
+        it("accepts CURE LIGHT WOUNDS 2(7) and routes to function", () => {
+          game.inputString = "7";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(85);
+        });
+
+        it("accepts FIND SECRET DOORS(8) and routes to function", () => {
+          game.inputString = "8";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(82);
+          expect(game.Q).toBe(3);
+        });
+
+        it("accepts UNKNOWN(9) and routes to function", () => {
+          game.inputString = "9";
+          game.gotClericSpell();
+          expect(game.gameStateMachine.stateMode).toBe(86);
+        });
+      });
+
+      describe("KILL spell", () => {
+        it("is removed from the cleric spellbook after casting", () => {
+          game.M = 1;
+          game.clericSpellKill();
+          expect(game.gameState.clericSpellbook[game.M]).toBe(0);
+        });
+
+        it("fails on the upper 66% chance", () => {
+          randomResults = [ 1.1 ];
+          game.clericSpellKill();
+          expect(game.gameStateMachine.stateMode).toBe(200);
+          expect(rndSpy).toHaveBeenCalled();
+          expect(println).toHaveBeenCalledWith("FAILED");
+        });
+
+        it("succeeds on the first 33% chance", () => {
+          randomResults = [ 1 ];
+          game.K1 = 1;
+          game.clericSpellKill();
+          expect(game.gameStateMachine.stateMode).toBe(200);
+          expect(rndSpy).toHaveBeenCalled();
+          expect(println).toHaveBeenCalledWith("DONE");
+          expect(game.K1).toBe(-1);
+        });
+      });
+
+      describe("MAGIC MISSILE 2 spell", () => {
+        it("is removed from the cleric spellbook after casting", () => {
+          game.M = 2;
+          game.currentMonster = 1;
+          game.clericSpellMagicMissileAdvanced();
+          expect(game.gameState.clericSpellbook[2]).toBe(0);
+        });
+
+        it("decreases the health of the current monster by 4", () => {
+          game.currentMonster = 1;
+          game.M = 2;
+          game.gameState.monsterStats[game.currentMonster][game.constants.monsterHp] = 10;
+          game.clericSpellMagicMissileAdvanced();
+          expect(game.gameState.monsterStats[game.currentMonster][game.constants.monsterHp]).toBe(6);
+        });
+
+        it("notifies the player that the action is complete", () => {
+          game.currentMonster = 1;
+          game.M = 2;
+          game.clericSpellMagicMissileAdvanced();
+          expect(println).toHaveBeenCalledWith("DONE");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      describe("CURE LIGHT WOUNDS 1 spell", () => {
+        beforeEach(() => {
+          game.M = 3;
+          game.gameState.clericSpellbook[game.M] = 3;
+          game.gameState.attributes[game.constants.playerCon] = 10;
+          game.clericSpellCureLight();
+        });
+
+        it("is removed from the cleric spellbook after casting", () => {
+          expect(game.gameState.clericSpellbook[game.M]).toBe(0);
+        });
+
+        it("increases the constitution of the player by 3", () => {
+          expect(game.gameState.attributes[game.constants.playerCon]).toBe(13);
+        });
+
+        it("routes control to the main loop", () => {
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      describe("FIND TRAPS spell", () => {
+        beforeEach(() => {
+          game.Q = 2;
+          game.M = 4; // M is destroyed by the spell function
+        });
+
+        it("is removed from the cleric spellbook after casting", () => {
+          game.clericSpellFindTraps();
+          expect(game.gameState.clericSpellbook[4]).toBe(0);
+        });
+
+        it("reports findings to the player", () => {
+          game.clericSpellFindTraps();
+          expect(println).toHaveBeenCalledWith("THERE IS ONE AT 3LAT.6LONG.");
+          expect(println).toHaveBeenCalledWith("NO MORE");
+        });
+
+        it("routes control to the main loop", () => {
+          game.clericSpellFindTraps();
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      describe("MAGIC MISSILE 1 spell", () => {
+        beforeEach(() => {
+          game.M = 5;
+          game.currentMonster = 1;
+        });
+
+        it("is removed from the cleric spellbook after casting", () => {
+          game.clericSpellMagicMissile();
+          expect(game.gameState.clericSpellbook[game.M]).toBe(0);
+        });
+
+        it("decreases the health of the current monster by 2", () => {
+          game.gameState.monsterStats[game.currentMonster][game.constants.monsterHp] = 10;
+          game.clericSpellMagicMissile();
+          expect(game.gameState.monsterStats[game.currentMonster][game.constants.monsterHp]).toBe(8);
+        });
+
+        it("notifies the player that the action is complete", () => {
+          game.clericSpellMagicMissile();
+          expect(println).toHaveBeenCalledWith("DONE");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      describe("MAGIC MISSILE 3 spell", () => {
+        beforeEach(() => {
+          game.M = 6;
+          game.currentMonster = 1;
+        });
+
+        it("is removed from the cleric spellbook after casting", () => {
+          game.clericSpellMagicMissileUltimate();
+          expect(game.gameState.clericSpellbook[game.M]).toBe(0);
+        });
+
+        it("decreases the health of the current monster by 6", () => {
+          game.gameState.monsterStats[game.currentMonster][game.constants.monsterHp] = 10;
+          game.clericSpellMagicMissileUltimate();
+          expect(game.gameState.monsterStats[game.currentMonster][game.constants.monsterHp]).toBe(4);
+        });
+
+        it("notifies the player that the action is complete", () => {
+          game.clericSpellMagicMissileUltimate();
+          expect(println).toHaveBeenCalledWith("DONE");
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      describe("CURE LIGHT WOUNDS 2 spell", () => {
+        beforeEach(() => {
+          game.M = 7;
+          game.gameState.attributes[game.constants.playerCon] = 10;
+          game.clericSpellCureLightAdvanced();
+        });
+
+        it("is stays in the cleric spellbook after casting", () => {
+          expect(game.gameState.clericSpellbook[game.M]).toBe(7);
+        });
+
+        it("increases the constitution of the player by 3", () => {
+          expect(game.gameState.attributes[game.constants.playerCon]).toBe(13);
+        });
+
+        it("routes control to the main loop", () => {
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      describe("FIND SECRET DOORS spell", () => {
+        beforeEach(() => {
+          game.Q = 3;
+          game.M = 8;
+        });
+
+        it("is removed from the cleric spellbook after casting", () => {
+          game.clericSpellFindTraps();
+          expect(game.gameState.clericSpellbook[8]).toBe(0);
+        });
+
+        it("reports findings to the player", () => {
+          game.clericSpellFindTraps();
+          expect(println).toHaveBeenCalledWith("THERE IS ONE AT 4LAT.3LONG.");
+          expect(println).toHaveBeenCalledWith("THERE IS ONE AT 8LAT.4LONG.");
+          expect(println).toHaveBeenCalledWith("NO MORE");
+        });
+
+        it("routes control to the main loop", () => {
+          game.clericSpellFindTraps();
+          expect(game.gameStateMachine.stateMode).toBe(200);
+        });
+      });
+
+      // xdescribe("spell 9 (undefined)", function() {
+      //   // this spell is incomplete with no definable result and cannot be purchased
+      //   // original code suggests this would be a turn undead as it checks for skeleton or mummy as the current monster
+      //   xit("only affects a skeleton or mummy");
+      // });
+    });
+  });
+
 });
